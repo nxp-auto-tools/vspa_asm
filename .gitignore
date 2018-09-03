@@ -1,0 +1,16 @@
+CVS
+Debug
+debug_vspa2
+Release
+release_vspa2
+debug_vspa3
+release_vspa3
+bin
+*.suo
+*.ncb
+*.sdf
+*.opensdf
+*.vcproj.*.user
+*.vcxproj.user
+*.db
+*.opendb
