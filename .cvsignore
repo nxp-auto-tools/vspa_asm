@@ -1,0 +1,12 @@
+Debug
+debug_vspa2
+Release
+release_vspa2
+*.vcproj.*.user
+*.ncb
+*.suo
+*.sdf
+*.opensdf
+*.vcxproj.user
+.git
+bin
