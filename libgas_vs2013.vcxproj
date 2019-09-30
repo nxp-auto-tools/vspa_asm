@@ -1,0 +1,159 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="debug_vspa3|Win32">
+      <Configuration>debug_vspa3</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="release_vspa3|Win32">
+      <Configuration>release_vspa3</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{B9914C42-CA8A-452D-88C1-A1BDDE774913}</ProjectGuid>
+    <RootNamespace>libgas</RootNamespace>
+    <Keyword>Win32Proj</Keyword>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='release_vspa3|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <PlatformToolset>v120</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='debug_vspa3|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <PlatformToolset>v120</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='release_vspa3|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='debug_vspa3|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>11.0.60610.1</_ProjectFileVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='debug_vspa3|Win32'">
+    <OutDir>$(SolutionDir)$(Configuration)\</OutDir>
+    <IntDir>$(Configuration)\libgas\</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='release_vspa3|Win32'">
+    <OutDir>$(SolutionDir)$(Configuration)\</OutDir>
+    <IntDir>$(Configuration)\libgas\</IntDir>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='debug_vspa3|Win32'">
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>$(SolutionDir)\assembler;$(SolutionDir)\external\binutils-adl\gas;$(SolutionDir)\external\binutils-adl\gas\config;$(SolutionDir)\external\binutils-adl\win-build\gas;$(SolutionDir)\external\binutils-adl\;$(SolutionDir)\external\binutils-adl\include;$(SolutionDir)\external\binutils-adl\bfd;$(SolutionDir)\external\binutils-adl\win-build\bfd;$(SolutionDir)\external\binutils-adl\win-headers;$(SolutionDir)\..\enterprise_tools\target;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>HAVE_CONFIG_H;_VSPA3_;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MinimalRebuild>true</MinimalRebuild>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+      <DisableSpecificWarnings>4267;4244;4800;4101;4102;4715;4312;4355;4311;4312;4996;4099;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='release_vspa3|Win32'">
+    <ClCompile>
+      <Optimization>MaxSpeed</Optimization>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <AdditionalIncludeDirectories>$(SolutionDir)\external\binutils-adl\gas;$(SolutionDir)\external\binutils-adl\gas\config;$(SolutionDir)\external\binutils-adl\win-build\gas;$(SolutionDir)\external\binutils-adl\;$(SolutionDir)\external\binutils-adl\include;$(SolutionDir)\external\binutils-adl\bfd;$(SolutionDir)\external\binutils-adl\win-build\bfd;$(SolutionDir)\external\binutils-adl\win-headers;$(SolutionDir)\..\enterprise_tools\target;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>HAVE_CONFIG_H;strdup=_strdup;_VSPA3_;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <DisableSpecificWarnings>4267;4244;4800;4101;4102;4715;4312;4355;4311;4312;4996;4099;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+      <PreprocessToFile>false</PreprocessToFile>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="..\enterprise_tools\target\target_ISA.c" />
+    <ClCompile Include="external\binutils-adl\gas\adl-asm-common.C">
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='debug_vspa3|Win32'">CompileAsCpp</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='release_vspa3|Win32'">CompileAsCpp</CompileAs>
+    </ClCompile>
+    <ClCompile Include="external\binutils-adl\gas\adl-asm-impl-gas.C">
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='debug_vspa3|Win32'">CompileAsCpp</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='release_vspa3|Win32'">CompileAsCpp</CompileAs>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='release_vspa3|Win32'">false</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="external\binutils-adl\gas\adl-asm-impl.C">
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='debug_vspa3|Win32'">CompileAsCpp</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='release_vspa3|Win32'">CompileAsCpp</CompileAs>
+      <PreprocessToFile Condition="'$(Configuration)|$(Platform)'=='debug_vspa3|Win32'">false</PreprocessToFile>
+    </ClCompile>
+    <ClCompile Include="external\binutils-adl\gas\app.c" />
+    <ClCompile Include="external\binutils-adl\gas\as.c" />
+    <ClCompile Include="external\binutils-adl\gas\asm-translate.C">
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='debug_vspa3|Win32'">CompileAsCpp</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='release_vspa3|Win32'">CompileAsCpp</CompileAs>
+    </ClCompile>
+    <ClCompile Include="external\binutils-adl\gas\atof-generic.c" />
+    <ClCompile Include="external\binutils-adl\gas\config\atof-ieee.c" />
+    <ClCompile Include="external\binutils-adl\gas\compress-debug.c" />
+    <ClCompile Include="external\binutils-adl\gas\cond.c" />
+    <ClCompile Include="external\binutils-adl\gas\depend.c" />
+    <ClCompile Include="external\binutils-adl\gas\dw2gencfi.c" />
+    <ClCompile Include="external\binutils-adl\gas\dwarf2dbg.c" />
+    <ClCompile Include="external\binutils-adl\gas\ecoff.c" />
+    <ClCompile Include="external\binutils-adl\gas\ehopt.c" />
+    <ClCompile Include="external\binutils-adl\gas\expr.c" />
+    <ClCompile Include="external\binutils-adl\gas\flonum-copy.c" />
+    <ClCompile Include="external\binutils-adl\gas\flonum-konst.c" />
+    <ClCompile Include="external\binutils-adl\gas\flonum-mult.c" />
+    <ClCompile Include="external\binutils-adl\gas\frags.c" />
+    <ClCompile Include="external\binutils-adl\gas\hash.c" />
+    <ClCompile Include="external\binutils-adl\gas\input-file.c" />
+    <ClCompile Include="external\binutils-adl\gas\input-scrub.c" />
+    <ClCompile Include="external\binutils-adl\gas\listing.c" />
+    <ClCompile Include="external\binutils-adl\gas\literal.c" />
+    <ClCompile Include="external\binutils-adl\gas\macro.c" />
+    <ClCompile Include="external\binutils-adl\gas\messages.c" />
+    <ClCompile Include="external\binutils-adl\gas\mw-info.C">
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='debug_vspa3|Win32'">CompileAsCpp</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='release_vspa3|Win32'">CompileAsCpp</CompileAs>
+    </ClCompile>
+    <ClCompile Include="external\binutils-adl\gas\config\obj-elf.c" />
+    <ClCompile Include="external\binutils-adl\gas\output-file.c" />
+    <ClCompile Include="external\binutils-adl\gas\config\ppc-support.C">
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='debug_vspa3|Win32'">CompileAsCpp</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='release_vspa3|Win32'">CompileAsCpp</CompileAs>
+    </ClCompile>
+    <ClCompile Include="external\binutils-adl\gas\read.c" />
+    <ClCompile Include="external\binutils-adl\gas\remap.c" />
+    <ClCompile Include="external\binutils-adl\gas\sb.c" />
+    <ClCompile Include="external\binutils-adl\gas\stabs.c" />
+    <ClCompile Include="external\binutils-adl\gas\subsegs.c" />
+    <ClCompile Include="external\binutils-adl\gas\symbols.c" />
+    <ClCompile Include="external\binutils-adl\gas\write.c" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\enterprise_tools\target\target_ISA.h" />
+    <ClInclude Include="external\binutils-adl\gas\adl-asm-common.h" />
+    <ClInclude Include="external\binutils-adl\gas\adl-asm-impl.h" />
+    <ClInclude Include="external\binutils-adl\gas\adl-asm-info.h" />
+    <ClInclude Include="external\binutils-adl\gas\adl-asm-setup.h" />
+    <ClInclude Include="external\binutils-adl\gas\AsmDriver.h" />
+    <ClInclude Include="external\binutils-adl\gas\asm-translate.h" />
+    <ClInclude Include="external\binutils-adl\gas\mw-info.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="ReadMe.txt" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>
