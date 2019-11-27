@@ -1,5 +1,7 @@
 /* as.h - global header file
-   Copyright (C) 1987-2014 Free Software Foundation, Inc.
+   Copyright 1987, 1990, 1991, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
+   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
+   2011 Free Software Foundation, Inc.
 
    This file is part of GAS, the GNU Assembler.
 
@@ -21,13 +23,13 @@
 #ifndef GAS
 #define GAS 1
 /* I think this stuff is largely out of date.  xoxorich.
-
+ 
    CAPITALISED names are #defined.
    "lowercaseH" is #defined if "lowercase.h" has been #include-d.
    "lowercaseT" is a typedef of "lowercase" objects.
    "lowercaseP" is type "pointer to object of type 'lowercase'".
    "lowercaseS" is typedef struct ... lowercaseS.
-
+  
    #define DEBUG to enable all the "know" assertion tests.
    #define SUSPECT when debugging hash code.
    #define COMMON as "extern" for all modules except one, where you #define
@@ -40,11 +42,6 @@
 
 /* System include files first...  */
 #include <stdio.h>
-
-#ifdef STRING_WITH_STRINGS
-#include <string.h>
-#include <strings.h>
-#else
 #ifdef HAVE_STRING_H
 #include <string.h>
 #else
@@ -52,8 +49,6 @@
 #include <strings.h>
 #endif
 #endif
-#endif
-
 #ifdef HAVE_STDLIB_H
 #include <stdlib.h>
 #endif
@@ -90,7 +85,7 @@
 #undef abort
 #define abort()		as_abort (__FILE__, __LINE__, __PRETTY_FUNCTION__)
 
-// ADL:  Fix for https://bugzilla.redhat.com/show_bug.cgi?id=487995
+// BCK:  Fix for https://bugzilla.redhat.com/show_bug.cgi?id=487995
 #define HAVE_DECL_BASENAME 1
 
 /* Now GNU header files...  */
@@ -418,7 +413,6 @@ enum debug_info_type
 
 extern enum debug_info_type debug_type;
 extern int use_gnu_debug_info_extensions;
-COMMON bfd_boolean flag_dwarf_sections;
 
 /* Maximum level of macro nesting.  */
 extern int max_macro_nest;
@@ -488,6 +482,7 @@ VPRINTF_LIKE (as_vwarn);
 VPRINTF_WHERE_LIKE (as_vbad_where);
 VPRINTF_WHERE_LIKE (as_vwarn_where);
 
+
 void   as_assert (const char *, int, const char *);
 void   as_abort (const char *, int, const char *) ATTRIBUTE_NORETURN;
 void   sprint_value (char *, addressT);
@@ -505,7 +500,7 @@ void   input_scrub_insert_line (const char *);
 void   input_scrub_insert_file (char *);
 char * input_scrub_new_file (char *);
 char * input_scrub_next_buffer (char **bufp);
-size_t do_scrub_chars (size_t (*get) (char *, size_t), char *, size_t);
+int    do_scrub_chars (int (*get) (char *, int), char *, int);
 int    gen_to_words (LITTLENUM_TYPE *, int, long);
 int    had_err (void);
 int    ignore_input (void);
@@ -646,8 +641,5 @@ flag_size_check;
 #if OCTETS_PER_BYTE != (1<<OCTETS_PER_BYTE_POWER)
  #error "Octets per byte conflicts with its power-of-two definition!"
 #endif
-
-#define CORE_VCPU 0
-#define CORE_IPPU 1
 
 #endif /* GAS */

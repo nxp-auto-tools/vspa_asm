@@ -30,12 +30,12 @@ public:
 
 #else
 
-template <class _Key, class _Tp, class _HashFcn = std::tr1::hash<_Key>, 
+template <class _Key, class _Tp, class _HashFcn = __gnu_cxx::hash<_Key>, 
           class _EqualKey = std::equal_to<_Key> >
-class gc_hash_map : public gc, public std::tr1::unordered_map<_Key,_Tp,_HashFcn,_EqualKey,gc_allocator<_Tp> >
+class gc_hash_map : public gc, public __gnu_cxx::hash_map<_Key,_Tp,_HashFcn,_EqualKey,gc_allocator<_Tp> >
 {  
 public:
-  typedef typename std::tr1::unordered_map<_Tp,gc_allocator<_Tp> > Base;
+  typedef typename __gnu_cxx::hash_map<_Tp,gc_allocator<_Tp> > Base;
   typedef typename Base::size_type                             size_type;
   typedef typename std::pair<const _Key,_Tp>                   value_type;
   typedef typename Base::hasher                                hasher;
@@ -60,12 +60,12 @@ public:
               const allocator_type& __a = allocator_type()) : Base(__f,__l,__n,__hf,__eql,__a) {};
 };
 
-template <class _Key, class _Tp, class _HashFcn = std::tr1::hash<_Key>, 
+template <class _Key, class _Tp, class _HashFcn = __gnu_cxx::hash<_Key>, 
           class _EqualKey = std::equal_to<_Key> >
-class gc_hash_multimap : public gc, public std::tr1::unordered_multimap<_Key,_Tp,_HashFcn,_EqualKey,gc_allocator<_Tp> >
+class gc_hash_multimap : public gc, public __gnu_cxx::hash_multimap<_Key,_Tp,_HashFcn,_EqualKey,gc_allocator<_Tp> >
 {
 public:
-  typedef typename std::tr1::unordered_multimap<_Tp,gc_allocator<_Tp> > Base;
+  typedef typename __gnu_cxx::hash_multimap<_Tp,gc_allocator<_Tp> > Base;
   typedef typename Base::size_type                             size_type;
   typedef typename std::pair<const _Key,_Tp>                   value_type;
   typedef typename Base::hasher                                hasher;
@@ -94,12 +94,12 @@ public:
 // Versions which use the traceable_allocator.
 //
 
-template <class _Key, class _Tp, class _HashFcn = std::tr1::hash<_Key>, 
+template <class _Key, class _Tp, class _HashFcn = __gnu_cxx::hash<_Key>, 
           class _EqualKey = std::equal_to<_Key> >
-class tr_hash_map : public gc, public std::tr1::unordered_map<_Key,_Tp,_HashFcn,_EqualKey,traceable_allocator<_Tp> >
+class tr_hash_map : public gc, public __gnu_cxx::hash_map<_Key,_Tp,_HashFcn,_EqualKey,traceable_allocator<_Tp> >
 {  
 public:
-  typedef typename std::tr1::unordered_map<_Tp,traceable_allocator<_Tp> > Base;
+  typedef typename __gnu_cxx::hash_map<_Tp,traceable_allocator<_Tp> > Base;
   typedef typename Base::size_type                             size_type;
   typedef typename std::pair<const _Key,_Tp>                   value_type;
   typedef typename Base::hasher                                hasher;
@@ -124,12 +124,12 @@ public:
               const allocator_type& __a = allocator_type()) : Base(__f,__l,__n,__hf,__eql,__a) {};
 };
 
-template <class _Key, class _Tp, class _HashFcn = std::tr1::hash<_Key>, 
+template <class _Key, class _Tp, class _HashFcn = __gnu_cxx::hash<_Key>, 
           class _EqualKey = std::equal_to<_Key> >
-class tr_hash_multimap : public gc, public std::tr1::unordered_multimap<_Key,_Tp,_HashFcn,_EqualKey,traceable_allocator<_Tp> >
+class tr_hash_multimap : public gc, public __gnu_cxx::hash_multimap<_Key,_Tp,_HashFcn,_EqualKey,traceable_allocator<_Tp> >
 {
 public:
-  typedef typename std::tr1::unordered_multimap<_Tp,traceable_allocator<_Tp> > Base;
+  typedef typename __gnu_cxx::hash_multimap<_Tp,traceable_allocator<_Tp> > Base;
   typedef typename Base::size_type                             size_type;
   typedef typename std::pair<const _Key,_Tp>                   value_type;
   typedef typename Base::hasher                                hasher;

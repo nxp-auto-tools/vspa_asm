@@ -1,5 +1,8 @@
 ## Process this file with automake to generate Makefile.in
 
+## FIXME: Work around apparent bug in automake.
+INTLLIBS = @INTLLIBS@
+
 AUTOMAKE_OPTIONS = foreign
 
 SUBDIRS = doc po
@@ -22,7 +25,7 @@ WARN_CFLAGS = @WARN_CFLAGS@
 NO_WERROR = @NO_WERROR@
 AM_CFLAGS = $(WARN_CFLAGS) -w
 
-lib_LIBRARIES = libobjdump.a libaddr2line.a
+lib_LIBRARIES = libobjdump.a
 
 
 BASEDIR = $(srcdir)/..
@@ -31,12 +34,12 @@ INCDIR	= $(BASEDIR)/include
 
 MKDEP = gcc -MM
 
-AM_CPPFLAGS = -I. -I$(srcdir) -I../bfd -I$(BFDDIR) -I$(INCDIR) \
+INCLUDES = -D_GNU_SOURCE \
+	 -I. -I$(srcdir) -I../bfd -I$(BFDDIR) -I$(INCDIR) \
 	 @HDEFINES@ \
-	 @INCINTL@ \
+	 -I$(srcdir)/../intl -I../intl \
 	 -DLOCALEDIR="\"$(datadir)/locale\"" \
 	 -Dbin_dummy_emulation=$(EMULATION_VECTOR)
-
 
 HFILES = \
 	binemul.h  budbg.h     dwarf.h  sysdep.h \
@@ -53,11 +56,7 @@ CFILES = \
 	version.c \
 	wrstabs.c
 
-ALL_CFILES = addr2line.c objdump.c $(CFILES)
-
-libobjdump_a_SOURCES = objdump.c $(CFILES)
-
-libaddr2line_a_SOURCES = addr2line.c $(CFILES)
+libobjdump_a_SOURCES = $(CFILES)
 
 DEBUG_SRCS = rddbg.c debug.c stabs.c ieee.c rdcoff.c
 WRITE_DEBUG_SRCS = $(DEBUG_SRCS) wrstabs.c
@@ -65,19 +64,8 @@ WRITE_DEBUG_SRCS = $(DEBUG_SRCS) wrstabs.c
 # Code shared by all the binutils.
 BULIBS = bucomm.c version.c filemode.c
 
-POTFILES = $(ALL_CFILES) $(DEBUG_SRCS) $(HFILES)
+POTFILES = $(CFILES) $(DEBUG_SRCS) $(HFILES)
 po/POTFILES.in: @MAINT@ Makefile
 	for f in $(POTFILES); do echo $$f; done | LC_COLLATE= sort > tmp \
 	  && mv tmp $(srcdir)/po/POTFILES.in
 
-objdump.@OBJEXT@:objdump.c
-if am__fastdepCC
-	$(COMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $(OBJDUMP_DEFS) $(srcdir)/objdump.c
-	mv -f $(DEPDIR)/$*.Tpo $(DEPDIR)/$*.Po
-else
-if AMDEP
-	source='objdump.c' object='$@' libtool=no @AMDEPBACKSLASH@
-	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-endif
-	$(COMPILE) -c $(OBJDUMP_DEFS) $(srcdir)/objdump.c
-endif

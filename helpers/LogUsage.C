@@ -18,7 +18,6 @@
 # include <netdb.h>
 # include <netinet/in.h>
 # include <pwd.h>
-# include <unistd.h>
 
 # include <iostream>
 # include <sstream>
@@ -104,10 +103,9 @@ namespace adl {
     const int MaxPath = 1024;
 
     char cwd[MaxPath+1];
-    const char *path = getcwd(cwd,MaxPath);
-    // Just use what we have and ignore it if it overflows.
+    getcwd(cwd,MaxPath);
 
-    o << get_username() << ':' << prog << ":rc=" << rc << ":cwd=" << path << ": ";
+    o << get_username() << ':' << prog << ":rc=" << rc << ":cwd=" << cwd << ": ";
   }
 
   static void log_usage_args(ostream &o,const char *ver, const char *type, const char *gentool )

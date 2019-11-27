@@ -1,5 +1,6 @@
 /* xSYM symbol-file support for BFD.
-   Copyright (C) 1999-2014 Free Software Foundation, Inc.
+   Copyright 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008,
+   2009, 2010 Free Software Foundation, Inc.
 
    This file is part of BFD, the Binary File Descriptor library.
 
@@ -18,10 +19,8 @@
    Foundation, Inc., 51 Franklin Street - Fifth Floor, Boston,
    MA 02110-1301, USA.  */
 
-/* xSYM is the debugging format used by CodeWarrior on Mac OS classic.  */
-
-#include "sysdep.h"
 #include "alloca-conf.h"
+#include "sysdep.h"
 #include "xsym.h"
 #include "bfd.h"
 #include "libbfd.h"
@@ -33,7 +32,6 @@
 #define bfd_sym_bfd_is_target_special_symbol       ((bfd_boolean (*) (bfd *, asymbol *)) bfd_false)
 #define bfd_sym_get_lineno                          _bfd_nosymbols_get_lineno
 #define bfd_sym_find_nearest_line                   _bfd_nosymbols_find_nearest_line
-#define bfd_sym_find_line                           _bfd_nosymbols_find_line
 #define bfd_sym_find_inliner_info                   _bfd_nosymbols_find_inliner_info
 #define bfd_sym_bfd_make_debug_symbol               _bfd_nosymbols_bfd_make_debug_symbol
 #define bfd_sym_read_minisymbols                    _bfd_generic_read_minisymbols
@@ -44,13 +42,13 @@
 #define bfd_sym_bfd_get_relocated_section_contents  bfd_generic_get_relocated_section_contents
 #define bfd_sym_bfd_relax_section                   bfd_generic_relax_section
 #define bfd_sym_bfd_gc_sections                     bfd_generic_gc_sections
-#define bfd_sym_bfd_lookup_section_flags            bfd_generic_lookup_section_flags
 #define bfd_sym_bfd_merge_sections                  bfd_generic_merge_sections
 #define bfd_sym_bfd_is_group_section                bfd_generic_is_group_section
 #define bfd_sym_bfd_discard_group                   bfd_generic_discard_group
 #define bfd_sym_section_already_linked              _bfd_generic_section_already_linked
 #define bfd_sym_bfd_define_common_symbol            bfd_generic_define_common_symbol
 #define bfd_sym_bfd_link_hash_table_create          _bfd_generic_link_hash_table_create
+#define bfd_sym_bfd_link_hash_table_free            _bfd_generic_link_hash_table_free
 #define bfd_sym_bfd_link_add_symbols                _bfd_generic_link_add_symbols
 #define bfd_sym_bfd_link_just_syms                  _bfd_generic_link_just_syms
 #define bfd_sym_bfd_copy_link_hash_symbol_type \
@@ -2248,26 +2246,32 @@ bfd_sym_scan (bfd *abfd, bfd_sym_version version, bfd_sym_data_struct *mdata)
 const bfd_target *
 bfd_sym_object_p (bfd *abfd)
 {
+  struct bfd_preserve preserve;
   bfd_sym_version version = -1;
-  bfd_sym_data_struct *mdata;
 
+  preserve.marker = NULL;
   bfd_seek (abfd, 0, SEEK_SET);
   if (bfd_sym_read_version (abfd, &version) != 0)
     goto wrong;
 
-  mdata = (bfd_sym_data_struct *) bfd_alloc (abfd, sizeof (*mdata));
-  if (mdata == NULL)
+  preserve.marker = bfd_alloc (abfd, sizeof (bfd_sym_data_struct));
+  if (preserve.marker == NULL
+      || ! bfd_preserve_save (abfd, &preserve))
     goto fail;
 
-  if (bfd_sym_scan (abfd, version, mdata) != 0)
+  if (bfd_sym_scan (abfd, version,
+		    (bfd_sym_data_struct *) preserve.marker) != 0)
     goto wrong;
 
+  bfd_preserve_finish (abfd, &preserve);
   return abfd->xvec;
 
  wrong:
   bfd_set_error (bfd_error_wrong_format);
 
  fail:
+  if (preserve.marker != NULL)
+    bfd_preserve_restore (abfd, &preserve);
   return NULL;
 }
 
@@ -2312,7 +2316,6 @@ const bfd_target sym_vec =
   0,				/* Symbol_leading_char.  */
   ' ',				/* AR_pad_char.  */
   16,				/* AR_max_namelen.  */
-  0,				/* match priority.  */
   bfd_getb64, bfd_getb_signed_64, bfd_putb64,
   bfd_getb32, bfd_getb_signed_32, bfd_putb32,
   bfd_getb16, bfd_getb_signed_16, bfd_putb16,	/* Data.  */

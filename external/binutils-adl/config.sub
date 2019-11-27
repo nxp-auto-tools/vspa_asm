@@ -3,7 +3,7 @@
 #   Copyright (C) 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999,
 #   2000, 2001, 2002, 2003, 2004, 2005 Free Software Foundation, Inc.
 
-timestamp='2019-02-08'
+timestamp='2005-07-08'
 
 # This file is (in principle) common to ALL GNU software.
 # The presence of a machine in this file suggests that SOME GNU software
@@ -226,8 +226,7 @@ esac
 case $basic_machine in
 	# Recognize the basic CPU types without company name.
 	# Some are omitted here because they have special meanings below.
-		1750a | 580 \
-	| adl \
+	1750a | 580 \
 	| a29k \
 	| alpha | alphaev[4-8] | alphaev56 | alphaev6[78] | alphapca5[67] \
 	| alpha64 | alpha64ev[4-8] | alpha64ev56 | alpha64ev6[78] | alpha64pca5[67] \
@@ -301,7 +300,6 @@ case $basic_machine in
 		;;
 	# Recognize the basic CPU types with company name.
 	580-* \
-	| adl-* \
 	| a29k-* \
 	| alpha-* | alphaev[4-8]-* | alphaev56-* | alphaev6[78]-* \
 	| alpha64-* | alpha64ev[4-8]-* | alpha64ev56-* | alpha64ev6[78]-* \
@@ -833,9 +831,7 @@ case $basic_machine in
 		basic_machine=pn-gould
 		;;
 	power)	basic_machine=power-ibm
-					;;
-	adl) basic_machine=adl-unknown
-			 ;;
+		;;
 	ppc)	basic_machine=powerpc-unknown
 		;;
 	ppc-*)	basic_machine=powerpc-`echo $basic_machine | sed 's/^[^-]*-//'`

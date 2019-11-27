@@ -17,42 +17,63 @@
 # define NOMINMAX
 #endif
 
-#include <memory>
+// GCC implements the typeof operator natively, so we use that when possible.
+// Otherwise, we switch over to using the Boost implementation, which isn't
+// quite as nice because it requires us to register all types which will be
+// used.
+#ifdef USE_BOOST_TYPEOF
 
-// For clang, so that we don't have to compile in c++11 mode, which causes its own problems...
-#ifdef ADL_JIT_COMPILE
-#define decltype typeof
-#endif
+#include "boost/typeof/typeof.hpp"
 
-// For clang, so that we don't have to compile in c++11 mode, which causes its own problems...
-#ifdef ADL_JIT_COMPILE
-#define decltype typeof
-#endif
+#include BOOST_TYPEOF_INCREMENT_REGISTRATION_GROUP()
 
-#define AdlTypeof(x) auto
+#define ForEach(container,iter)                                         \
+  for (BOOST_AUTO(iter,container.begin()), end = container.end(); iter != end; ++iter)
+
+#define RevForEach(container,iter)                                      \
+  for (BOOST_AUTO(iter,container.rbegin()), rend = container.rend(); iter != rend; ++iter)
+
+#define Var(x,y) BOOST_AUTO(x,y)
+
+#define AdlTypeof(x) BOOST_TYPEOF(x)
+
+#else
+
+#define AdlTypeof(x) typeof(x)
 
 // Iterate over a data structure.  Note that this can be used for
 // constant objects as well as non-constant objects because of the
 // use of the 'typeof' operator.
 #define ForEach(container,iter) \
-  for (auto iter = container.begin(), end = container.end(); iter != end; ++iter)
+       for (typeof(container.begin()) iter = container.begin(), end = container.end(); iter != end; ++iter)
 
 #define RevForEach(container,iter) \
-  for (auto iter = container.rbegin(), rend = container.rend(); iter != rend; ++iter)
+       for (typeof(container.rbegin()) iter = container.rbegin(), rend = container.rend(); iter != rend; ++iter)
 
+// Easy way to declare a variable with the type specified by the rhs.
+#define Var(x,y) typeof(y) x = y
+
+// Easy way to create an auto_ptr of an object.  Note that the rhs should return
+// a pointer, e.g. APtr(x,new Foo);
+#define APtr(x,y) auto_ptr<typeof(*y)> x ( y )
+
+#define BOOST_TYPEOF_REGISTER_TYPE(x)
+#define BOOST_TYPEOF_REGISTER_TEMPLATE(x, params)
+
+#endif // USE_BOOST_TYPEOF
 
 // Execute code if 'z' is found in 'y'.  'x' is the iterator assigned the value.
 #define IfFind(x,y,z) \
-  auto x = y.find(z); if (x != y.end())
+  Var(x,y.find(z)); if (x != y.end())
 
 #define IfNotFind(x,y,z) \
-  auto x = y.find(z); if (x == y.end())
+  Var(x,y.find(z)); if (x == y.end())
 
 #define ForRange(count,iter) \
-  for (unsigned iter = 0; iter != (count); ++iter)
+       for (unsigned iter = 0; iter != (count); ++iter)
 
 #define ForRevRange(count,iter) \
-  for (int iter = count-1; iter >= 0 ; --iter)
+       for (int iter = count-1; iter >= 0 ; --iter)
 
 // Throws a runtime error.  User must include sstream for this to work.
 #define RError(x) { std::ostringstream ss; ss << x; throw std::runtime_error(ss.str()); }
@@ -63,8 +84,6 @@
 #define RAssert(x,y) { if (!(x)) { RError(y); } }
 
 #define VPrint(x) { if (VerboseMode) { std::cout << x; } }
-
-#define QPrint(x) { if (!QuietMode) { std::cerr << x << endl; } }
 
 #define DPrint(x) { if (DebugMode) { std::cout << "DEBUG:  " << x; } }
 
@@ -84,15 +103,6 @@
 
 // Call this to expand 'x' if x is also a preprocessor definition.
 #define Expand(x) Stringify(x)
-
-#ifndef ADL_JIT_COMPILE
-
-// For this one, you have to pass in the heap-allocated object (should be done
-// as an rvalue).
-template <class T>
-inline std::unique_ptr<T> make_uniq_p(T *t) { return std::unique_ptr<T>(t); };
-
-#endif
 
 #endif
 

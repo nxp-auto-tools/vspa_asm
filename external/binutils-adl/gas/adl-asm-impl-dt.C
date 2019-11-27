@@ -2,16 +2,16 @@
 // Machine independent functions for use with the DevTech assembler.
 //
 
-extern "C" {
-# include "as.h"
-# include "xregex.h"
-# include "safe-ctype.h"
-}
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/types.h>
 #include <inttypes.h>
+
+extern "C" {
+# include "xregex.h"
+# include "as.h"
+# include "safe-ctype.h"
+}
 
 #include "AsmDriver.h"
 
@@ -185,6 +185,7 @@ void init_line_assemble(unsigned &a_error_count,CADL_messages &a_messages,CADL_e
 }
 
 // wrapper to expression() method
+
 segT parse_expr(expressionS *ex ATTRIBUTE_UNUSED, char *sval, int len, bool &unresolved_symbol)
 {
   // Null-terminate input argument and pointer input_line_pointer at it.
@@ -193,8 +194,9 @@ segT parse_expr(expressionS *ex ATTRIBUTE_UNUSED, char *sval, int len, bool &unr
   sval[len] = 0;
   input_line_pointer = sval;
 
-  // Parse the expression (which takes input from input_line_pointer).
-  segT e = acb_parse_expr(ex,sval);
+  // Parse the expression (which takes input from input_line_pointer).  Doesn't
+  // currently handle 64-bit literals, which we might need to fix in the future.
+  expr(1,ex,expr_evaluate);
 
   if (ex->X_op == O_symbol) {
     unresolved_symbol = true;
@@ -243,17 +245,14 @@ void alloc_instr_buf(InstrInfo &info)
   info.f = allocate_buffer(info.opcode->size);
 }
 
-
 void save_instr(InstrBundles &instrInfos,char *s ATTRIBUTE_UNUSED, adl_opcode *opcode ATTRIBUTE_UNUSED, 
                 adl_opcode *src_opcode ATTRIBUTE_UNUSED, expressionS *operand_values ATTRIBUTE_UNUSED, 
-                const Args &args ATTRIBUTE_UNUSED,const char *file_name, int line_number ATTRIBUTE_UNUSED, unsigned adl_pc ATTRIBUTE_UNUSED,
-                int maxfields ATTRIBUTE_UNUSED, int instr_table ATTRIBUTE_UNUSED, const char *instr_table_name ATTRIBUTE_UNUSED,
-                const std::string &eoi_str ATTRIBUTE_UNUSED) 
+                const Args &args ATTRIBUTE_UNUSED, int line_number ATTRIBUTE_UNUSED,  int maxfields ATTRIBUTE_UNUSED, 
+                int instr_table ATTRIBUTE_UNUSED, const char *instr_table_name ATTRIBUTE_UNUSED) 
 {
   handle_itable_change(instr_table_name,instr_table);
   InstrInfo &info = instrInfos.add();
-  info.init(s,opcode,src_opcode,operand_values,args,file_name,line_number,adl_pc,maxfields,instr_table,instr_table_name);
-  instrInfos.add_separator(eoi_str);
+  info.init(s,opcode,src_opcode,operand_values,args,line_number,maxfields,instr_table,instr_table_name);
 }
 
 /* Align a section (I don't know why this is machine dependent).  */
@@ -284,7 +283,7 @@ ATTRIBUTE_UNUSED  void handle_fixups(char *f ATTRIBUTE_UNUSED,fragS *curr_frag A
 {
   for(int i = 0 ; i != num_fixups; ++i) {
     struct adl_fixup *fixup = &fixups[i];
-	int  relType = adl_bfd_code_to_howto((bfd_reloc_code_real_type)fixup->operand->ptr->reloc_type)->type;
+    int  relType = fixup->operand->ptr->reloc_type;
     if (relType > 0) {
       int instr_width = fixup->operand->ptr->instr_width;
       int fix_offset = (instr_width > 0) ? instr_sz - instr_width/8 : 0;
@@ -296,6 +295,13 @@ ATTRIBUTE_UNUSED  void handle_fixups(char *f ATTRIBUTE_UNUSED,fragS *curr_frag A
     }
   }
 }
+
+
+void adl_apply_fix (fixS *fixP ATTRIBUTE_UNUSED,valueT *valP ATTRIBUTE_UNUSED ,segT seg ATTRIBUTE_UNUSED)
+{
+}
+
+
 
 
 // Called to process a .switch option.  This is a generated function.
@@ -320,60 +326,4 @@ void adl_get_vles_encoding(const char ** encoding, int *bits)
   *encoding = &vles_buffer[0];
   *bits = (int) (cur_buffer_pos - &vles_buffer[0]);
 }
-
-// Hook to manipulate multiple packets.  This is called immediately before
-// post_packet_asm, so it can be used to combine packets, if necessary.
-void __attribute__((weak)) acb_process_packets(InstrBundles &instrs,int curgrp,int lastgrp)
-{
-  // By default, do nothing.
-}
-
-// This must be overridden in a user supplied library, if relocations require
-// extra handling.
-void __attribute__((weak))  acb_handle_reloc_extra(unsigned *instr,unsigned instr_sz,
-                                                   bfd_reloc_code_real_type reloc,const adl_opcode *operand,
-                                                   const adl_operand *opcode,expressionS *exp)
-{
-  as_bad(_("Relocation requiring machine-dependent extra handling encountered, but no handler exists.")); 
-}
-
-void __attribute__((weak))  acb_handle_convert_frag(bfd *abfd,asection *sec,fragS *fragp)
-{
-  as_bad(_("No handler specified for frag conversion."));
-}
-
-int __attribute__((weak)) acb_estimate_size_before_relax (fragS *fragp,asection *seg)
-{
-  as_bad(_("No handler specified for relax size estimation."));
-}
-
-long __attribute__((weak)) acb_relax_frag (segT segment, fragS *fragP, long stretch)
-{
-  as_bad(_("No handler specified for frag relaxing."));
-}
-
-bool __attribute__((weak)) acb_apply_fix (fixS *fixP ,valueT *valP ,segT seg ATTRIBUTE_UNUSED)
-{
-  // Use ADL's handler by default.
-  return false;
-}
-
-void __attribute__((weak)) acb_setup_finish(struct hash_control *instr_hash, struct adl_field *all_fields,
-	int num_fields, const reloc_howto_type *relocs, int num_relocs,
-	const adl_reloc_name *relocs_by_index, int num_relocs_by_index)
-{
-	// By default, do nothing.
-}
-
-// By default, do pre-allocation so that we can handle packets of instructions.
-bool __attribute__((weak)) acb_prealloc_instr_bufs()
-{
-  return true;
-}
-
-// By default, do nothing- we preallocate buffer space.
-void __attribute__((weak)) acb_alloc_instr_buf(adl::InstrInfo & ATTRIBUTE_UNUSED)
-{
-}
-
 

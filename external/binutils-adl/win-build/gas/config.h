@@ -223,19 +223,19 @@
 /* #undef STRICTCOFF */
 
 /* Target alias. */
-#define TARGET_ALIAS "vspa/lax-elf"
+#define TARGET_ALIAS "vspa-elf"
 
 /* Define as 1 if big endian. */
-#define TARGET_BYTES_BIG_ENDIAN 1
+#define TARGET_BYTES_BIG_ENDIAN 0
 
 /* Canonical target. */
-#define TARGET_CANONICAL "powerpc-unknown-elf64"
+#define TARGET_CANONICAL "vspa-unknown-elf32"
 
 /* Target CPU. */
-#define TARGET_CPU "powerpc"
+#define TARGET_CPU "vspa"
 
 /* Target OS. */
-#define TARGET_OS "elf64"
+#define TARGET_OS "elf32"
 
 /* Define if default target is PowerPC Solaris. */
 /* #undef TARGET_SOLARIS_COMMENT */

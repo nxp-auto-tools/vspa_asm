@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-02-15 13:40-0700\n"
+"POT-Creation-Date: 2013-02-28 14:06-0600\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,12 +17,12 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 
 #. Can't happen.
-#: dis-buf.c:59
+#: dis-buf.c:61
 #, c-format
 msgid "Unknown error %d\n"
 msgstr ""
 
-#: dis-buf.c:68
+#: dis-buf.c:70
 #, c-format
 msgid "Address 0x%s is out of bounds.\n"
 msgstr ""

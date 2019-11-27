@@ -3,16 +3,16 @@ C_COMPILER = gcc
 
 INCLUDE_PATH=-I"./external/binutils-adl/include" -I"./external/binutils-adl/win-build/bfd" #-I"./external/binutils-adl/win-headers"  
 
-ifeq ($(ARCH_TARGET), vspa3)
-VSPA_VERSION=-D_VSPA3_
+ifeq ($(ARCH_TARGET), vspa2)
+VSPA_VERSION=-D_VSPA2_
 else
 VSPA_VERSION=
 endif
 
-PREPROCESSOR_DEFINITIONS=$(VSPA_VERSION) -DHAVE_adl_elf64_vec -DHAVE_adl_elf64_le_vec -DHAVE_adl_elf32_vec -DHAVE_adl_elf32_le_vec -DHAVE_elf64_le_vec -DHAVE_elf64_be_vec -DHAVE_elf32_le_vec -DHAVE_elf32_be_vec -DHAVE_CONFIG_H -DDEBUGDIR=\"C:\\Debug\" -DDEFAULT_VECTOR=adl_elf64_vec -DSELECT_VECS="&adl_elf64_vec,&adl_elf64_le_vec,&adl_elf32_vec,&adl_elf32_le_vec,&elf64_le_vec,&elf64_be_vec,&elf32_le_vec,&elf32_be_vec" -DSELECT_ARCHITECTURES="&bfd_rs6000_arch,&bfd_powerpc_arch" -DGCC_BUILD #-D__USE_MINGW_FSEEK
+PREPROCESSOR_DEFINITIONS=$(VSPA_VERSION) -DHAVE_bfd_elf64_powerpc_vec -DHAVE_bfd_elf64_powerpcle_vec -DHAVE_bfd_elf32_powerpc_vec -DHDAVE_bfd_elf32_powerpcle_vec -DHAVE_rs6000coff_vec -DHAVE_rs6000coff64_vec -DHAVE_bfd_elf64_little_generic_vec -DHAVE_bfd_elf64_big_generic_vec -DHAVE_bfd_elf32_little_generic_vec -DHAVE_bfd_elf32_big_generic_vec -DHAVE_CONFIG_H -DDEBUGDIR=\"C:\\Debug\" -DDEFAULT_VECTOR=bfd_elf64_powerpc_vec -DSELECT_VECS="&bfd_elf64_powerpc_vec,&bfd_elf64_powerpcle_vec,&bfd_elf32_powerpc_vec,&bfd_elf32_powerpcle_vec,&rs6000coff_vec,&rs6000coff64_vec,&bfd_elf64_little_generic_vec,&bfd_elf64_big_generic_vec,&bfd_elf32_little_generic_vec,&bfd_elf32_big_generic_vec"  -DSELECT_ARCHITECTURES="&bfd_rs6000_arch,&bfd_powerpc_arch" -DGCC_BUILD #-D__USE_MINGW_FSEEK
 COMPILER_FLAGS=
  
-OBJECTS = $(OUTPUT_DIR)/libbfd/bfd/aix5ppc-core.o $(OUTPUT_DIR)/libbfd/bfd/archive.o $(OUTPUT_DIR)/libbfd/bfd/archive64.o $(OUTPUT_DIR)/libbfd/bfd/archures.o $(OUTPUT_DIR)/libbfd/bfd/bfd.o $(OUTPUT_DIR)/libbfd/bfd/bfdio.o $(OUTPUT_DIR)/libbfd/bfd/bfdwin.o $(OUTPUT_DIR)/libbfd/bfd/binary.o $(OUTPUT_DIR)/libbfd/bfd/cache.o $(OUTPUT_DIR)/libbfd/bfd/coff-rs6000.o $(OUTPUT_DIR)/libbfd/bfd/coff64-rs6000.o $(OUTPUT_DIR)/libbfd/bfd/coffgen.o $(OUTPUT_DIR)/libbfd/bfd/compress.o $(OUTPUT_DIR)/libbfd/bfd/corefile.o $(OUTPUT_DIR)/libbfd/bfd/cpu-powerpc.o $(OUTPUT_DIR)/libbfd/bfd/cpu-rs6000.o $(OUTPUT_DIR)/libbfd/bfd/dwarf1.o $(OUTPUT_DIR)/libbfd/bfd/dwarf2.o $(OUTPUT_DIR)/libbfd/bfd/elf-attrs.o $(OUTPUT_DIR)/libbfd/bfd/elf-eh-frame.o $(OUTPUT_DIR)/libbfd/bfd/elf-strtab.o $(OUTPUT_DIR)/libbfd/bfd/elf-vxworks.o $(OUTPUT_DIR)/libbfd/bfd/elf.o $(OUTPUT_DIR)/libbfd/bfd/elf32-gen.o $(OUTPUT_DIR)/libbfd/bfd/elf32-adl.o $(OUTPUT_DIR)/libbfd/bfd/elf32.o $(OUTPUT_DIR)/libbfd/bfd/elf64-gen.o $(OUTPUT_DIR)/libbfd/bfd/elf64-adl.o $(OUTPUT_DIR)/libbfd/bfd/elf64.o $(OUTPUT_DIR)/libbfd/bfd/elflink.o $(OUTPUT_DIR)/libbfd/bfd/format.o $(OUTPUT_DIR)/libbfd/bfd/hash.o $(OUTPUT_DIR)/libbfd/bfd/ihex.o $(OUTPUT_DIR)/libbfd/bfd/init.o $(OUTPUT_DIR)/libbfd/bfd/libbfd.o $(OUTPUT_DIR)/libbfd/bfd/linker.o $(OUTPUT_DIR)/libbfd/bfd/merge.o $(OUTPUT_DIR)/libbfd/bfd/opncls.o $(OUTPUT_DIR)/libbfd/bfd/reloc.o $(OUTPUT_DIR)/libbfd/bfd/section.o $(OUTPUT_DIR)/libbfd/bfd/simple.o $(OUTPUT_DIR)/libbfd/bfd/srec.o $(OUTPUT_DIR)/libbfd/bfd/stab-syms.o $(OUTPUT_DIR)/libbfd/bfd/stabs.o $(OUTPUT_DIR)/libbfd/bfd/syms.o $(OUTPUT_DIR)/libbfd/bfd/targets.o $(OUTPUT_DIR)/libbfd/bfd/tekhex.o $(OUTPUT_DIR)/libbfd/bfd/verilog.o $(OUTPUT_DIR)/libbfd/bfd/xcofflink.o 
+OBJECTS = $(OUTPUT_DIR)/libbfd/bfd/aix5ppc-core.o $(OUTPUT_DIR)/libbfd/bfd/archive.o $(OUTPUT_DIR)/libbfd/bfd/archive64.o $(OUTPUT_DIR)/libbfd/bfd/archures.o $(OUTPUT_DIR)/libbfd/bfd/bfd.o $(OUTPUT_DIR)/libbfd/bfd/bfdio.o $(OUTPUT_DIR)/libbfd/bfd/bfdwin.o $(OUTPUT_DIR)/libbfd/bfd/binary.o $(OUTPUT_DIR)/libbfd/bfd/cache.o $(OUTPUT_DIR)/libbfd/bfd/coff-rs6000.o $(OUTPUT_DIR)/libbfd/bfd/coff64-rs6000.o $(OUTPUT_DIR)/libbfd/bfd/coffgen.o $(OUTPUT_DIR)/libbfd/bfd/compress.o $(OUTPUT_DIR)/libbfd/bfd/corefile.o $(OUTPUT_DIR)/libbfd/bfd/cpu-powerpc.o $(OUTPUT_DIR)/libbfd/bfd/cpu-rs6000.o $(OUTPUT_DIR)/libbfd/bfd/dwarf1.o $(OUTPUT_DIR)/libbfd/bfd/dwarf2.o $(OUTPUT_DIR)/libbfd/bfd/elf-attrs.o $(OUTPUT_DIR)/libbfd/bfd/elf-eh-frame.o $(OUTPUT_DIR)/libbfd/bfd/elf-strtab.o $(OUTPUT_DIR)/libbfd/bfd/elf-vxworks.o $(OUTPUT_DIR)/libbfd/bfd/elf.o $(OUTPUT_DIR)/libbfd/bfd/elf32-gen.o $(OUTPUT_DIR)/libbfd/bfd/elf32-ppc.o $(OUTPUT_DIR)/libbfd/bfd/elf32.o $(OUTPUT_DIR)/libbfd/bfd/elf64-gen.o $(OUTPUT_DIR)/libbfd/bfd/elf64-ppc.o $(OUTPUT_DIR)/libbfd/bfd/elf64.o $(OUTPUT_DIR)/libbfd/bfd/elflink.o $(OUTPUT_DIR)/libbfd/bfd/format.o $(OUTPUT_DIR)/libbfd/bfd/hash.o $(OUTPUT_DIR)/libbfd/bfd/ihex.o $(OUTPUT_DIR)/libbfd/bfd/init.o $(OUTPUT_DIR)/libbfd/bfd/libbfd.o $(OUTPUT_DIR)/libbfd/bfd/linker.o $(OUTPUT_DIR)/libbfd/bfd/merge.o $(OUTPUT_DIR)/libbfd/bfd/opncls.o $(OUTPUT_DIR)/libbfd/bfd/reloc.o $(OUTPUT_DIR)/libbfd/bfd/section.o $(OUTPUT_DIR)/libbfd/bfd/simple.o $(OUTPUT_DIR)/libbfd/bfd/srec.o $(OUTPUT_DIR)/libbfd/bfd/stab-syms.o $(OUTPUT_DIR)/libbfd/bfd/stabs.o $(OUTPUT_DIR)/libbfd/bfd/syms.o $(OUTPUT_DIR)/libbfd/bfd/targets.o $(OUTPUT_DIR)/libbfd/bfd/tekhex.o $(OUTPUT_DIR)/libbfd/bfd/verilog.o $(OUTPUT_DIR)/libbfd/bfd/xcofflink.o 
 
 
 all: create_folder $(OUTPUT_DIR)/libbfd/libbfd.a
@@ -95,7 +95,7 @@ $(OUTPUT_DIR)/libbfd/bfd/elf.o: external/binutils-adl/bfd/elf.c
 $(OUTPUT_DIR)/libbfd/bfd/elf32-gen.o: external/binutils-adl/bfd/elf32-gen.c
 	$(C_COMPILER) $< -c -o $@ $(INCLUDE_PATH) $(PREPROCESSOR_DEFINITIONS) $(COMPILER_FLAGS)
 
-$(OUTPUT_DIR)/libbfd/bfd/elf32-adl.o: external/binutils-adl/bfd/elf32-adl.c
+$(OUTPUT_DIR)/libbfd/bfd/elf32-ppc.o: external/binutils-adl/bfd/elf32-ppc.c
 	$(C_COMPILER) $< -c -o $@ $(INCLUDE_PATH) $(PREPROCESSOR_DEFINITIONS) $(COMPILER_FLAGS)
 
 $(OUTPUT_DIR)/libbfd/bfd/elf32.o: external/binutils-adl/bfd/elf32.c
@@ -104,7 +104,7 @@ $(OUTPUT_DIR)/libbfd/bfd/elf32.o: external/binutils-adl/bfd/elf32.c
 $(OUTPUT_DIR)/libbfd/bfd/elf64-gen.o: external/binutils-adl/bfd/elf64-gen.c
 	$(C_COMPILER) $< -c -o $@ $(INCLUDE_PATH) $(PREPROCESSOR_DEFINITIONS) $(COMPILER_FLAGS)
 
-$(OUTPUT_DIR)/libbfd/bfd/elf64-adl.o: external/binutils-adl/bfd/elf64-adl.c
+$(OUTPUT_DIR)/libbfd/bfd/elf64-ppc.o: external/binutils-adl/bfd/elf64-ppc.c
 	$(C_COMPILER) $< -c -o $@ $(INCLUDE_PATH) $(PREPROCESSOR_DEFINITIONS) $(COMPILER_FLAGS)
 
 $(OUTPUT_DIR)/libbfd/bfd/elf64.o: external/binutils-adl/bfd/elf64.c

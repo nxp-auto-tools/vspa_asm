@@ -33,10 +33,8 @@ namespace adl {
     le_intbv(int64_t val)  : Base(val) {};
 #ifdef IS_64BIT
     le_intbv(unsigned long long val) : Base((uint64_t)val) {};
-    le_intbv(long long int val) : Base((int64_t)val) {};
 #else
     le_intbv(unsigned long val) : Base((uint32_t)val) {};
-    le_intbv(long val) : Base((int32_t)val) {};
 #endif
     le_intbv( const char* s) : Base(s) {};
     le_intbv( const std::string& s) : Base(s) {};

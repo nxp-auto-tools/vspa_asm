@@ -33,10 +33,8 @@ namespace adl {
     le_sintbv(int64_t val)  : Base(val) {};
 #ifdef IS_64BIT
     le_sintbv(unsigned long long val) : Base((uint64_t)val) {};
-    le_sintbv(long long int val) : Base((int64_t)val) {};
 #else
     le_sintbv(unsigned long val) : Base((uint32_t)val) {};
-    le_sintbv(long val) : Base((int32_t)val) {};
 #endif
     le_sintbv( const char* s) : Base(s) {};
     le_sintbv( const std::string& s) : Base(s) {};
@@ -231,12 +229,6 @@ namespace adl {
       Base::negate();
       return *this;
     }
-
-    // Unary minus
-    const le_sintbv<_Nb> operator-() const {
-      return Base::operator-();
-    }
-    
     
     // Toggles a given bit to its opposite value.
     le_sintbv<_Nb>& invert(size_t position) {
@@ -246,21 +238,21 @@ namespace adl {
     }
      
     //    Array-indexing support.
-    const le_intbv<1> operator[](size_t position) const {
+    const le_sintbv<1> operator[](size_t position) const {
       return Base::operator[](be2le(position));
     }
     
     template <size_t _Nb2>
-    const le_intbv<1> operator[](const le_sintbv<_Nb2>& position) const { 
+    const le_sintbv<1> operator[](const le_sintbv<_Nb2>& position) const { 
       return Base::operator[](be2le(position)); 
     }
 
-    const le_intbv<1> operator()(size_t position) const { 
+    const le_sintbv<1> operator()(size_t position) const { 
       return Base::operator()(be2le(position)); 
     }
     
     template <size_t _Nb2>
-    const le_intbv<1> operator()(const le_sintbv<_Nb2>& position) const {
+    const le_sintbv<1> operator()(const le_sintbv<_Nb2>& position) const {
       return Base::operator()(be2le(position)); 
     };
 
@@ -374,8 +366,7 @@ namespace adl {
       Base::operator-=(rhs);
       return *this;
     }
-
-    
+     
     ////////////////////
     //
     // Addition
@@ -1387,64 +1378,6 @@ namespace adl {
   {
     return signedDivide(x,y);
   }
-
-  /////////////////////////////////
-  //
-  // Signed modulo.
-  //
-    
-  // Same size
-  template<size_t _Nb>
-  inline le_sintbv<_Nb> le_sbitsSignedMod(const intbv<_Nb>& x, const intbv<_Nb>& y)
-  {
-    return signedMod(x,y);
-  }
-  
-  // Different size
-  template<size_t _Nb1, size_t _Nb2>
-  inline le_sintbv<MAX(_Nb1,_Nb2)> le_sbitsSignedMod(const intbv<_Nb1>& x, const intbv<_Nb2>& y)
-  {
-    return signedMod(x,y);
-  }
-  
-  // uint64_t
-  template<size_t _Nb>
-  inline le_sintbv<MAX(_Nb,64)> le_sbitsSignedMod(const intbv<_Nb>& x, uint64_t y)
-  {
-    return signedMod(x,y);
-  }
-
-  template<size_t _Nb>
-  inline le_sintbv<MAX(_Nb,64)> le_sbitsSignedMod(uint64_t x,const intbv<_Nb>& y)
-  {
-    return signedMod(x,y);
-  }
-
-  // uint32_t
-  template<size_t _Nb>
-  inline le_sintbv<MAX(_Nb,32)> le_sbitsSignedMod(const intbv<_Nb>& x, uint32_t y)
-  {
-    return signedMod(x,y);
-  }
-
-  template<size_t _Nb>
-  inline le_sintbv<MAX(_Nb,32)> le_sbitsSignedMod(uint32_t x,const intbv<_Nb>& y)
-  {
-    return signedMod(x,y);
-  }  
-  
-  // int32_t
-  template<size_t _Nb>
-  inline le_sintbv<MAX(_Nb,32)> le_sbitsSignedMod(const intbv<_Nb>& x, int32_t y)
-  {
-    return signedMod(x,y);
-  }
-
-  template<size_t _Nb>
-  inline le_sintbv<MAX(_Nb,32)> le_sbitsSignedMod(int32_t x,const intbv<_Nb>& y)
-  {
-    return signedMod(x,y);
-  }  
 
 };
 

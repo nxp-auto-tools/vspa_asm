@@ -39,7 +39,6 @@ namespace adl {
     
 #else
     bits(unsigned long val) : Base(val) {};
-    bits(long val) : Base(val) {};
 #endif
     bits(uint64_t val) : Base(val) {};
     bits(int64_t val) : Base(val) {};
@@ -231,8 +230,6 @@ namespace adl {
   
     // Returns the number of bits which are set.
     using Base::count_ones;
-    // Returns the number of leading zeros.
-    using Base::count_leading_zeros;
     // Returns the total number of bits.
     using Base::size;
   

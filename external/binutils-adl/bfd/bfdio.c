@@ -1,6 +1,8 @@
 /* Low-level I/O routines for BFDs.
 
-   Copyright (C) 1990-2014 Free Software Foundation, Inc.
+   Copyright 1990, 1991, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
+   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2011
+   Free Software Foundation, Inc.
 
    Written by Cygnus Support.
 
@@ -85,9 +87,10 @@ FILE *
 real_fopen (const char *filename, const char *modes)
 {
 #ifdef VMS
+  char vms_modes[4];
   char *vms_attr;
 
-  /* On VMS, fopen allows file attributes as optional arguments.
+  /* On VMS, fopen allows file attributes as optionnal arguments.
      We need to use them but we'd better to use the common prototype.
      In fopen-vms.h, they are separated from the mode with a comma.
      Split here.  */
@@ -155,15 +158,9 @@ DESCRIPTION
 .  int (*bclose) (struct bfd *abfd);
 .  int (*bflush) (struct bfd *abfd);
 .  int (*bstat) (struct bfd *abfd, struct stat *sb);
-.  {* Mmap a part of the files. ADDR, LEN, PROT, FLAGS and OFFSET are the usual
-.     mmap parameter, except that LEN and OFFSET do not need to be page
-.     aligned.  Returns (void *)-1 on failure, mmapped address on success.
-.     Also write in MAP_ADDR the address of the page aligned buffer and in
-.     MAP_LEN the size mapped (a page multiple).  Use unmap with MAP_ADDR and
-.     MAP_LEN to unmap.  *}
+.  {* Just like mmap: (void*)-1 on failure, mmapped address on success.  *}
 .  void *(*bmmap) (struct bfd *abfd, void *addr, bfd_size_type len,
-.                  int prot, int flags, file_ptr offset,
-.                  void **map_addr, bfd_size_type *map_len);
+.                  int prot, int flags, file_ptr offset);
 .};
 
 .extern const struct bfd_iovec _bfd_memory_iovec;
@@ -182,8 +179,7 @@ bfd_bread (void *ptr, bfd_size_type size, bfd *abfd)
      this element.  */
   if (abfd->arelt_data != NULL)
     {
-      bfd_size_type maxbytes = arelt_size (abfd);
-
+      size_t maxbytes = ((struct areltdata *) abfd->arelt_data)->parsed_size;
       if (abfd->where + size > maxbytes)
         {
           if (abfd->where >= maxbytes)
@@ -231,14 +227,10 @@ bfd_tell (bfd *abfd)
 
   if (abfd->iovec)
     {
-      bfd *parent_bfd = abfd;
       ptr = abfd->iovec->btell (abfd);
 
-      while (parent_bfd->my_archive != NULL)
-	{
-	  ptr -= parent_bfd->origin;
-	  parent_bfd = parent_bfd->my_archive;
-	}
+      if (abfd->my_archive)
+	ptr -= abfd->origin;
     }
   else
     ptr = 0;
@@ -310,16 +302,8 @@ bfd_seek (bfd *abfd, file_ptr position, int direction)
     }
 
   file_position = position;
-  if (direction == SEEK_SET)
-    {
-      bfd *parent_bfd = abfd;
-
-      while (parent_bfd->my_archive != NULL)
-        {
-          file_position += parent_bfd->origin;
-          parent_bfd = parent_bfd->my_archive;
-        }
-    }
+  if (direction == SEEK_SET && abfd->my_archive != NULL)
+    file_position += abfd->origin;
 
   if (abfd->iovec)
     result = abfd->iovec->bseek (abfd, file_position, direction);
@@ -439,28 +423,23 @@ FUNCTION
 
 SYNOPSIS
 	void *bfd_mmap (bfd *abfd, void *addr, bfd_size_type len,
-	                int prot, int flags, file_ptr offset,
-	                void **map_addr, bfd_size_type *map_len);
+	                int prot, int flags, file_ptr offset);
 
 DESCRIPTION
 	Return mmap()ed region of the file, if possible and implemented.
-        LEN and OFFSET do not need to be page aligned.  The page aligned
-        address and length are written to MAP_ADDR and MAP_LEN.
 
 */
 
 void *
 bfd_mmap (bfd *abfd, void *addr, bfd_size_type len,
-	  int prot, int flags, file_ptr offset,
-          void **map_addr, bfd_size_type *map_len)
+	  int prot, int flags, file_ptr offset)
 {
   void *ret = (void *)-1;
 
   if (abfd->iovec == NULL)
     return ret;
 
-  return abfd->iovec->bmmap (abfd, addr, len, prot, flags, offset,
-                             map_addr, map_len);
+  return abfd->iovec->bmmap (abfd, addr, len, prot, flags, offset);
 }
 
 /* Memory file I/O operations.  */
@@ -584,7 +563,7 @@ memory_bclose (struct bfd *abfd)
   free (bim);
   abfd->iostream = NULL;
 
-  return 0;
+  return TRUE;
 }
 
 static int
@@ -607,9 +586,7 @@ memory_bstat (bfd *abfd, struct stat *statbuf)
 static void *
 memory_bmmap (bfd *abfd ATTRIBUTE_UNUSED, void *addr ATTRIBUTE_UNUSED,
               bfd_size_type len ATTRIBUTE_UNUSED, int prot ATTRIBUTE_UNUSED,
-              int flags ATTRIBUTE_UNUSED, file_ptr offset ATTRIBUTE_UNUSED,
-              void **map_addr ATTRIBUTE_UNUSED,
-              bfd_size_type *map_len ATTRIBUTE_UNUSED)
+              int flags ATTRIBUTE_UNUSED, file_ptr offset ATTRIBUTE_UNUSED)
 {
   return (void *)-1;
 }

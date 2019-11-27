@@ -83,7 +83,7 @@ namespace adl {
     LinesType::size_type maxindex = src.npos;
     dst = gc_string();
     ForEach(lines,l) {
-      auto startindex = l->find_first_not_of(pfx);
+      Var(startindex,l->find_first_not_of(pfx));
       if (maxline == count) {
         maxindex = startindex;
       }
@@ -205,7 +205,7 @@ namespace adl {
   gc_string makeFriendlyName(const gc_string &o)
   {
     gc_string n = o;
-    auto i = n.begin();
+    Var(i,n.begin());
     for (; i != n.end(); ++i) {
       if (!((isalnum(*i)) || *i == '_')) {
         *i = '_';

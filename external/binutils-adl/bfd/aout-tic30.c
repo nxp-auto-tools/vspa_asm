@@ -1,5 +1,7 @@
 /* BFD back-end for TMS320C30 a.out binaries.
-   Copyright (C) 1998-2014 Free Software Foundation, Inc.
+   Copyright 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2007, 2009,
+   2010
+   Free Software Foundation, Inc.
    Contributed by Steven Haworth (steve@pm.cse.rmit.edu.au)
 
    This file is part of BFD, the Binary File Descriptor library.
@@ -187,7 +189,7 @@ tic30_aout_fix_16 (bfd *abfd,
   bfd_vma relocation;
 
   /* Make sure that the symbol's section is defined.  */
-  if (bfd_is_und_section (symbol->section) && (symbol->flags & BSF_WEAK) == 0)
+  if (symbol->section == &bfd_und_section && (symbol->flags & BSF_WEAK) == 0)
     return output_bfd ? bfd_reloc_ok : bfd_reloc_undefined;
   /* Get the size of the input section and turn it into the TMS320C30
      32-bit address format.  */
@@ -212,7 +214,7 @@ tic30_aout_fix_32 (bfd *abfd,
   bfd_vma relocation;
 
   /* Make sure that the symbol's section is defined.  */
-  if (bfd_is_und_section (symbol->section) && (symbol->flags & BSF_WEAK) == 0)
+  if (symbol->section == &bfd_und_section && (symbol->flags & BSF_WEAK) == 0)
     return output_bfd ? bfd_reloc_ok : bfd_reloc_undefined;
   /* Get the size of the input section and turn it into the TMS320C30
      32-bit address format.  */
@@ -699,7 +701,7 @@ MY_final_link_callback (bfd *abfd,
 
   *ptreloff = obj_datasec (abfd)->filepos + execp->a_data;
   *pdreloff = *ptreloff + execp->a_trsize;
-  *psymoff = *pdreloff + execp->a_drsize;
+  *psymoff = *pdreloff + execp->a_drsize;;
 }
 
 #endif
@@ -926,9 +928,6 @@ tic30_aout_set_arch_mach (bfd *abfd,
 #ifndef MY_find_nearest_line
 #define MY_find_nearest_line NAME (aout, find_nearest_line)
 #endif
-#ifndef MY_find_line
-#define MY_find_line _bfd_nosymbols_find_line
-#endif
 #ifndef MY_find_inliner_info
 #define MY_find_inliner_info _bfd_nosymbols_find_inliner_info
 #endif
@@ -944,9 +943,6 @@ tic30_aout_set_arch_mach (bfd *abfd,
 #endif
 #ifndef MY_bfd_gc_sections
 #define MY_bfd_gc_sections bfd_generic_gc_sections
-#endif
-#ifndef MY_bfd_lookup_section_flags
-#define MY_bfd_lookup_section_flags bfd_generic_lookup_section_flags
 #endif
 #ifndef MY_bfd_merge_sections
 #define MY_bfd_merge_sections bfd_generic_merge_sections
@@ -981,6 +977,9 @@ tic30_aout_set_arch_mach (bfd *abfd,
 #endif
 #ifndef MY_bfd_link_hash_table_create
 #define MY_bfd_link_hash_table_create NAME (aout, link_hash_table_create)
+#endif
+#ifndef MY_bfd_link_hash_table_free
+#define MY_bfd_link_hash_table_free _bfd_generic_link_hash_table_free
 #endif
 #ifndef MY_bfd_link_add_symbols
 #define MY_bfd_link_add_symbols NAME (aout, link_add_symbols)
@@ -1081,7 +1080,6 @@ const bfd_target tic30_aout_vec =
   MY_symbol_leading_char,
   AR_PAD_CHAR,			/* AR_pad_char.  */
   15,				/* AR_max_namelen.  */
-  0,				/* match priority.  */
   bfd_getb64, bfd_getb_signed_64, bfd_putb64,
   bfd_getb32, bfd_getb_signed_32, bfd_putb32,
   bfd_getb16, bfd_getb_signed_16, bfd_putb16,	/* Data.  */

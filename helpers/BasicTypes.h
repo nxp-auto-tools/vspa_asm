@@ -56,35 +56,27 @@
 // these.
 #ifndef _NO_INTTYPES_
 
-#if _MSC_VER < 1600
-/* Pre-Visual Studio 10.0 */
-    typedef __int64  int64_t;
-    typedef unsigned __int64 uint64_t;
+typedef __int64  int64_t;
+typedef unsigned __int64 uint64_t;
 
-    typedef __int32  int32_t;
-    typedef unsigned __int32 uint32_t;
+typedef __int32  int32_t;
+typedef unsigned __int32 uint32_t;
 
-    typedef __int16 int16_t;
-    typedef unsigned __int16 uint16_t;
+typedef __int16 int16_t;
+typedef unsigned __int16 uint16_t;
 
-    typedef __int8  int8_t;
-    typedef unsigned __int8 uint8_t;
-
-    typedef unsigned int u_int;
-
-    typedef unsigned char u_char;
-#else
-/* Visual Studio 10.0 */
-#include <stdint.h>
-#endif
-
-#endif
-
-// Visual C++ doesn't support branch predictor hints.  Lame!
-#define adl_likely(x)   (x)
-#define adl_unlikely(x) (x)
+typedef __int8  int8_t;
+typedef unsigned __int8 uint8_t;
 
 typedef unsigned int u_int;
+
+typedef unsigned char u_char;
+
+// Visual C++ doesn't support branch predictor hints.  Lame!
+#define likely(x)   (x)
+#define unlikely(x) (x)
+
+#endif
 
 #else
 # include <inttypes.h>
@@ -95,12 +87,7 @@ typedef unsigned int u_int;
 
 // Namespace in which STL extensions are stored.
 #ifndef _STDEXT_
-# define _STDEXT std::tr1::
-#endif
-
-// Makes porting between MSVC and modern gcc easier.
-#ifndef _WIN32
-#define hash_map unordered_map
+# define _STDEXT __gnu_cxx::
 #endif
 
 // For GNU, we specify this to avoid warnings about unused variables.
@@ -157,8 +144,8 @@ typedef unsigned int u_int;
 #endif
 
 // Branch prediction hints for gcc.
-#define adl_likely(x)       __builtin_expect((x),1)
-#define adl_unlikely(x)     __builtin_expect((x),0)
+#define likely(x)       __builtin_expect((x),1)
+#define unlikely(x)     __builtin_expect((x),0)
 
 #endif // _MSC_VER
 
@@ -171,12 +158,8 @@ typedef unsigned int u_int;
 
 #if __WORDSIZE == 64
 #  define IS_64BIT
-#  define Is64Bit(x) x
-#  define Is32Bit(x)
 #else
 #  define IS_32BIT
-#  define Is64Bit(x)
-#  define Is32Bit(x) x
 #endif
 
 
@@ -242,9 +225,9 @@ namespace adl {
 
   // Memory access type.
   enum CacheAccess {
-    CacheNoAccess, CacheIFetch, CacheIFetchTrans, CacheILogRead, CacheLogRead, CacheRead,
+    CacheNoAccess, CacheIFetch, CacheILogRead, CacheLogRead, CacheRead,
     CacheWrite, CacheFlush, CacheStore, CacheTouch, CacheAlloc, CacheInvalidate,
-    CacheLock, CacheLockAddr, CacheUnlock, MaxCacheAccess
+    CacheLock, CacheUnlock, MaxCacheAccess
   };
 
   // Actions performed by the cache.
@@ -264,17 +247,6 @@ namespace adl {
 
   // Max levels supported for CacheStatus object (used by transactional ISSs)
   enum { MaxCacheStatusLevels = 3 };
-
-  //
-  // This is used for the gdb server to determine
-  // what state the model is in, and so it can send
-  // packets back to the client accordingly.
-  //
-  enum ProgramStatus {
-    ACTIVE,
-    BREAK,
-    HALT
-  };
 
   // Describes the different simulation options that might be available for a
   // model.
@@ -308,11 +280,6 @@ namespace adl {
 # define DeclArray(type,name,size) type *name = (type*)alloca(sizeof(type)*(size))
 #else
 # define DeclArray(type,name,size) type name[size]
-#endif
-
-// Helper macro:  Define this if we have a newer version of Boost.
-#if ((BOOST_VERSION % 1000000) >= 1) && ((BOOST_VERSION % 1000) >= 53)
-#  define BOOST_1_53
 #endif
 
 #endif

@@ -182,9 +182,6 @@
 # ifndef __MINGW_IMPORT
 #  define __MINGW_IMPORT  __declspec(dllimport)
 # endif
-# ifndef _CRTIMP
-#  define _CRTIMP  __declspec(dllimport)
-# endif
 # define __DECLSPEC_SUPPORTED
 # define __attribute__(x) /* nothing */
 #endif

@@ -1,5 +1,0 @@
-     ../adl-support.c \
-     ../dis-buf.c \
-     ../dis-init.c \
-     ../disassemble.c \
-     ../sysdep.h

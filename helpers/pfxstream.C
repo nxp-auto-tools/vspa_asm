@@ -88,9 +88,4 @@ namespace adl {
   {
   }
 
-  opfxstream::~opfxstream()
-  {
-    delete rdbuf();
-  }
-
 }

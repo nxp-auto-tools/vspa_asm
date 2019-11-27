@@ -1,6 +1,5 @@
 /* Internal demangler interface for g++ V3 ABI.
-   Copyright (C) 2003, 2004, 2005, 2006, 2007, 2010
-   Free Software Foundation, Inc.
+   Copyright (C) 2003, 2004, 2005, 2006, 2007 Free Software Foundation, Inc.
    Written by Ian Lance Taylor <ian@wasabisystems.com>.
 
    This file is part of the libiberty library, which is part of GCC.
@@ -122,11 +121,6 @@ struct d_info
      mangled name to the demangled name, such as standard
      substitutions and builtin types.  */
   int expansion;
-  /* Non-zero if we are parsing an expression.  */
-  int is_expression;
-  /* Non-zero if we are parsing the type operand of a conversion
-     operator, but not when in an expression.  */
-  int is_conversion;
 };
 
 /* To avoid running past the ending '\0', don't:

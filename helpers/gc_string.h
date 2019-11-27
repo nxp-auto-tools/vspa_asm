@@ -28,22 +28,16 @@ inline gc_string to_gstr(const std::string &s) { return gc_string(s.c_str()); }
 
 #ifndef _MSC_VER 
 
-namespace std {
-  namespace tr1 {
+namespace __gnu_cxx {
 
-    // Hash/set support for gc'd strings.
-    template<> struct hash<gc_string>
-    {
-      size_t operator()(const gc_string &__str) const { 
-        const char *__s = __str.c_str();
-        unsigned long __h = 0;
-        for ( ; *__s; ++__s)
-          __h = 5 * __h + *__s;
-        return size_t(__h);
-      }
-    };
-    
-  }
+  // Hash/set support for gc'd strings.
+  template<> struct hash<gc_string>
+  {
+    size_t operator()(const gc_string &__s) const { 
+      return __stl_hash_string(__s.c_str()); 
+    }
+  };
+
 }
 
 #endif

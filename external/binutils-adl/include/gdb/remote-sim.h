@@ -1,6 +1,7 @@
 /* This file defines the interface between the simulator and gdb.
 
-   Copyright (C) 1993-2014 Free Software Foundation, Inc.
+   Copyright 1993, 1994, 1996, 1997, 1998, 2000, 2002, 2007, 2008, 2009, 2010
+   Free Software Foundation, Inc.
 
    This file is part of GDB.
 
@@ -140,7 +141,7 @@ void sim_close (SIM_DESC sd, int quitting);
    Such manipulation should probably (?) occure in
    sim_create_inferior. */
 
-SIM_RC sim_load (SIM_DESC sd, const char *prog, struct bfd *abfd, int from_tty);
+SIM_RC sim_load (SIM_DESC sd, char *prog, struct bfd *abfd, int from_tty);
 
 
 /* Prepare to run the simulated program.
@@ -190,15 +191,13 @@ int sim_fetch_register (SIM_DESC sd, int regno, unsigned char *buf, int length);
 
 
 /* Store register REGNO from the raw (target endian) value in BUF.
+   Return the actual size of the register or zero if REGNO is not
+   applicable.
 
-   Return the actual size of the register, any size not equal to
-   LENGTH indicates the register was not updated correctly.
+   Legacy implementations ignore LENGTH and always return -1.
 
-   Return a LENGTH of -1 to indicate the register was not updated
-   and an error has occurred.
-
-   Return a LENGTH of 0 to indicate the register was not updated
-   but no error has occurred. */
+   If LENGTH does not match the size of REGNO no data is transfered
+   (the actual register size is still returned). */
 
 int sim_store_register (SIM_DESC sd, int regno, unsigned char *buf, int length);
 
@@ -273,12 +272,7 @@ void sim_stop_reason (SIM_DESC sd, enum sim_stop *reason, int *sigrc);
    Simulators should be prepared to deal with any combination of NULL
    or empty CMD. */
 
-void sim_do_command (SIM_DESC sd, const char *cmd);
-
-/* Complete a command based on the available sim commands.  Returns an
-   array of possible matches.  */
-
-char **sim_complete_command (SIM_DESC sd, const char *text, const char *word);
+void sim_do_command (SIM_DESC sd, char *cmd);
 
 #ifdef __cplusplus
 }

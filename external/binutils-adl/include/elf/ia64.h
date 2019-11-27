@@ -1,5 +1,6 @@
 /* IA-64 ELF support for BFD.
-   Copyright (C) 1998-2014 Free Software Foundation, Inc.
+   Copyright 1998, 1999, 2000, 2001, 2002, 2003, 2008, 2009, 2010
+   Free Software Foundation, Inc.
    Contributed by David Mosberger-Tang <davidm@hpl.hp.com>
 
    This file is part of BFD, the Binary File Descriptor library.
@@ -208,10 +209,6 @@
 # define VMS_STL_STD	   2	  /* Standard linkage with return value.  */
 # define VMS_STL_LNK	   3	  /* Explicit represented in .vms_linkages.  */
 
-/* OpenVMS specific symbol binding values.  */
-#define STB_VMS_WEAK	11	/* VMS weak symbol.  */
-#define STB_VMS_SYSTEM	12	/* System symbol.  */
-
 /* OpenVMS specific fixup and relocation structures.  */
 
 typedef struct
@@ -234,42 +231,6 @@ typedef struct
   unsigned char sym_seg[4];
   unsigned char fill_1[4];
 } Elf64_External_VMS_IMAGE_RELA;
-
-/* Note segments.  VMS is special as it uses 64-bit entries.  */
-
-typedef struct {
-  unsigned char	namesz[8];		/* Size of entry's owner string */
-  unsigned char	descsz[8];		/* Size of the note descriptor */
-  unsigned char	type[8];		/* Interpretation of the descriptor */
-  char		name[1];		/* Start of the name+desc data */
-} Elf64_External_VMS_Note;
-
-#define NT_VMS_MHD         1 /* Object module name, version, and date/time.  */
-#define NT_VMS_LNM         2 /* Language processor name.  */
-#define NT_VMS_SRC         3 /* Source files.  */
-#define NT_VMS_TITLE       4 /* Title text.  */
-#define NT_VMS_EIDC        5 /* Entity ident consistency check.  */
-#define NT_VMS_FPMODE      6 /* Whole program floating-point mode.  */
-#define NT_VMS_LINKTIME  101 /* Date/time image was linked.  */
-#define NT_VMS_IMGNAM    102 /* Image name string.  */
-#define NT_VMS_IMGID     103 /* Image ident string.  */
-#define NT_VMS_LINKID    104 /* Linker ident string.  */
-#define NT_VMS_IMGBID    105 /* Image build ident string.  */
-#define NT_VMS_GSTNAM    106 /* Global Symbol Table Name.  */
-#define NT_VMS_ORIG_DYN  107 /* Original setting of dynamic data.  */
-#define NT_VMS_PATCHTIME 108 /* Date/time of last patch.  */
-
-/* Corresponding data for NT_VMS_ORIG_DYM.  */
-
-typedef struct  {
-  unsigned char major_id[4];		/* Should be 1.  */
-  unsigned char minor_id[4];		/* Should be 3.  */
-  unsigned char manipulation_date[8];	/* Original NT_VMS_LNKTIME.  */
-  unsigned char link_flags[8];		/* Original NT_VMS_LNKFLAGS.  */
-  unsigned char elf_flags[4];		/* Original ehdr flags.  */
-  unsigned char _pad[4];
-  unsigned char imgid[1];		/* Original NT_VMS_IMGID.  */
-} Elf64_External_VMS_ORIG_DYN_Note;
 
 /* IA64-specific relocation types: */
 

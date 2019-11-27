@@ -1,6 +1,6 @@
 /* Initialize "struct disassemble_info".
 
-   Copyright (C) 2003-2014 Free Software Foundation, Inc.
+   Copyright 2003, 2005, 2007, 2008, 2009 Free Software Foundation, Inc.
 
    This file is part of the GNU opcodes library.
 
@@ -19,6 +19,7 @@
    Foundation, Inc., 51 Franklin Street - Fifth Floor, Boston, MA
    02110-1301, USA.  */
 
+#include <string.h>
 #include "sysdep.h"
 #include "dis-asm.h"
 #include "bfd.h"

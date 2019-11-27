@@ -28,8 +28,8 @@
 /* The RS/6000 architecture is compatible with the PowerPC common
    architecture.  */
 
-/*static const bfd_arch_info_type *rs6000_compatible
-  PARAMS ((const bfd_arch_info_type *, const bfd_arch_info_type *));*/
+static const bfd_arch_info_type *rs6000_compatible
+  PARAMS ((const bfd_arch_info_type *, const bfd_arch_info_type *));
 
 static const bfd_arch_info_type *
 rs6000_compatible (a,b)

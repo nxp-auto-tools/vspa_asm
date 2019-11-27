@@ -1,4 +1,5 @@
-This is binutils.info, produced by makeinfo version 4.13 from binutils.texi.
+This is binutils.info, produced by makeinfo version 4.8 from
+binutils.texi.
 
 START-INFO-DIR-ENTRY
 * Binutils: (binutils).         The GNU binary utilities.
@@ -503,7 +504,7 @@ object files are listed as arguments, `nm' assumes the file `a.out'.
           same name.  If the symbol is defined anywhere, the common
           symbols are treated as undefined references.  For more
           details on common symbols, see the discussion of -warn-common
-          in *note Linker options: (ld.info)Options.
+          in *Note Linker options: (ld.info)Options.
 
     `D'
           The symbol is in the initialized data section.
@@ -557,7 +558,7 @@ object files are listed as arguments, `nm' assumes the file `a.out'.
           this case, the next values printed are the stabs other field,
           the stabs desc field, and the stab type.  Stabs symbols are
           used to hold debugging information.  For more information,
-          see *note Stabs: (stabs.info)Top.
+          see *Note Stabs: (stabs.info)Top.
 
     `?'
           The symbol type is unknown, or object file format specific.
@@ -1556,7 +1557,7 @@ equivalent.  At least one option from the list
      ELF section.  In most other file formats, debugging symbol-table
      entries are interleaved with linkage symbols, and are visible in
      the `--syms' output.  For more information on stabs symbols, see
-     *note Stabs: (stabs.info)Top.
+     *Note Stabs: (stabs.info)Top.
 
 `--start-address=ADDRESS'
      Start displaying data at the specified address.  This affects the
@@ -2171,7 +2172,7 @@ file language used in header files, see the `linkers' section,
 `NLMLINK' in particular, of the `NLM Development and Tools Overview',
 which is part of the NLM Software Developer's Kit ("NLM SDK"),
 available from Novell, Inc.  `nlmconv' uses the GNU Binary File
-Descriptor library to read INFILE; see *note BFD: (ld.info)BFD, for
+Descriptor library to read INFILE; see *Note BFD: (ld.info)BFD, for
 more information.
 
    `nlmconv' can perform a link step.  In other words, you can list
@@ -2306,7 +2307,7 @@ available to Windows.
      This is a BFD target name; you can use the `--help' option to see
      a list of supported targets.  Normally `windres' will use the
      default format, which is the first one listed by the `--help'
-     option.  *note Target Selection::.
+     option.  *Note Target Selection::.
 
 `--preprocessor PROGRAM'
      When `windres' reads an `rc' file, it runs it through the C
@@ -3359,19 +3360,20 @@ Appendix A GNU Free Documentation License
      H. Include an unaltered copy of this License.
      I. Preserve the section entitled "History", and its title, and add
      to    it an item stating at least the title, year, new authors, and
-       publisher of the Modified Version as given on the Title Page.  If
-       there is no section entitled "History" in the Document, create
-     one    stating the title, year, authors, and publisher of the
-     Document as    given on its Title Page, then add an item
+       publisher of the Modified Version as given on the Title Page.
+     If    there is no section entitled "History" in the Document,
+     create one    stating the title, year, authors, and publisher of
+     the Document as    given on its Title Page, then add an item
      describing the Modified    Version as stated in the previous
      sentence.
      J. Preserve the network location, if any, given in the Document for
-       public access to a Transparent copy of the Document, and likewise
-       the network locations given in the Document for previous versions
-       it was based on.  These may be placed in the "History" section.
-       You may omit a network location for a work that was published at
-       least four years before the Document itself, or if the original
-      publisher of the version it refers to gives permission.
+       public access to a Transparent copy of the Document, and
+     likewise    the network locations given in the Document for
+     previous versions    it was based on.  These may be placed in the
+     "History" section.     You may omit a network location for a work
+     that was published at    least four years before the Document
+     itself, or if the original    publisher of the version it refers
+     to gives permission.
      K. In any section entitled "Acknowledgements" or "Dedications",
      preserve the section's title, and preserve in the section all the
       substance and tone of each of the contributor acknowledgements
@@ -3690,32 +3692,32 @@ Index
 
 
 Tag Table:
-Node: Top1704
-Node: ar3190
-Node: ar cmdline5368
-Node: ar scripts13511
-Node: nm19199
-Node: objcopy27395
-Node: objdump50030
-Node: ranlib64749
-Node: size65504
-Node: strings68351
-Node: strip70701
-Node: c++filt75947
-Ref: c++filt-Footnote-179262
-Node: addr2line79368
-Node: nlmconv82382
-Node: windres84988
-Node: dlltool90721
-Node: def file format101147
-Node: readelf102885
-Node: Selecting The Target System107390
-Node: Target Selection108315
-Node: Architecture Selection110297
-Node: Reporting Bugs111125
-Node: Bug Criteria111904
-Node: Bug Reporting112457
-Node: GNU Free Documentation License119551
-Node: Index139271
+Node: Top1703
+Node: ar3189
+Node: ar cmdline5367
+Node: ar scripts13510
+Node: nm19198
+Node: objcopy27394
+Node: objdump50029
+Node: ranlib64748
+Node: size65503
+Node: strings68350
+Node: strip70700
+Node: c++filt75946
+Ref: c++filt-Footnote-179261
+Node: addr2line79367
+Node: nlmconv82381
+Node: windres84987
+Node: dlltool90720
+Node: def file format101146
+Node: readelf102884
+Node: Selecting The Target System107389
+Node: Target Selection108314
+Node: Architecture Selection110296
+Node: Reporting Bugs111124
+Node: Bug Criteria111903
+Node: Bug Reporting112456
+Node: GNU Free Documentation License119550
+Node: Index139282
 
 End Tag Table

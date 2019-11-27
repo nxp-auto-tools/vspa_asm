@@ -26,13 +26,9 @@ namespace rnumber {
 }
 #endif
 
-# define MAX(a,b) (((a) > (b)) ? (a) : (b) )
-# define MIN(a,b) (((a) < (b)) ? (a) : (b) )
-# define ROUND_TO_WORD(x) (((x + 32 - 1) / 32) * 32)
-
 namespace adl {
 
-  static inline void intbv_dummy(const uint32_t *x) {}
+  void intbv_dummy(const uint32_t *x);
 
   const size_t _INTBV_BITS_PER_WORD = 32;
   const size_t _INTBV_BYTES_PER_WORD = _INTBV_BITS_PER_WORD/8;
@@ -131,13 +127,8 @@ namespace adl {
   template<size_t _Nw>
   struct intbv_base 
   {
-    // This has to be 16-byte aligned for newer GCCs in order to use -O3, since
-    // it tries to vectorize some simple loops like operator&.  Oh, and for some
-    // reason, this alignment doesn't work on RHEL5 in 32-bit mode, so I'm just
-    // disabling it for 32-bit right now.  This can be removed once we move to
-    // RHEL6.
-    uint32_t NotMSVC(Is64Bit(__attribute__((aligned (16)))))  _w[_Nw];
-        
+    uint32_t             _w[_Nw];
+    
     intbv_base() { _reset(); }
 
     intbv_base(uint32_t val) 
@@ -217,16 +208,6 @@ namespace adl {
         _w[i] = x._getword(i+diff);
       }
     }
-    
-    template <size_t _Nw1>
-    void _construct_from_other_size (const intbv_base<_Nw1>&x)
-    {
-      if (_Nw1 > _Nw) {
-        _construct_from_larger_sized(x);
-      } else {
-        _construct_from_smaller_sized(x);
-      }
-    }
 
     static size_t _whichbit(size_t nb,size_t pos )
     {  return  ((nb - 1 - pos) % _INTBV_BITS_PER_WORD); }
@@ -261,9 +242,6 @@ namespace adl {
     uint32_t _getword(size_t nb,size_t pos) const
     { return _w[_whichword(nb,pos)]; }
 
-    void _setword(size_t i,uint32_t w)
-    { _w[i] = w; }
-    
     void _setword(size_t nb,size_t pos,uint32_t w)
     { _w[_whichword(nb,pos)] = w; }
 
@@ -454,91 +432,18 @@ namespace adl {
       _add(one);
     }
     
-    unsigned _roundUp(unsigned d,unsigned m) const
+    void _getField(size_t nb,size_t start, size_t stop, intbv_base<_Nw> &res) const
     {
-      return (d + m - 1) / m;
+      start = start % nb;
+      stop = stop % nb;
+      assert (stop >= start);
+      assert (stop >= start);
+      assert (start >= 0);
+      res._left_shift(_Nw * _INTBV_BITS_PER_WORD - nb + start);
+      res._right_shift((_Nw * _INTBV_BITS_PER_WORD - nb + start) + (nb -1 - stop));
     }
     
-    // Similarly to _setField, we handle two common cases, then fall back to the slow generic opereation.
-    //
-    // 1.  Word aligned source range, for some number of words.
-    // 2.  Sub-word access within a single word.
-    template <size_t _Nw2>
-    void _getField(size_t nb,size_t start, size_t stop, intbv_base<_Nw2> &res) const
-    {
-      if ((nb % _INTBV_BITS_PER_WORD == 0) && (start % _INTBV_BITS_PER_WORD == 0) && (stop % _INTBV_BITS_PER_WORD == (_INTBV_BITS_PER_WORD-1)) && ((stop-start) <= (_Nw2*_INTBV_BITS_PER_WORD-1))) {
-        unsigned src_start_word = start / _INTBV_BITS_PER_WORD;
-        unsigned num_words = _roundUp((stop-start),_INTBV_BITS_PER_WORD);
-        unsigned trg_start_word = _Nw2 - num_words;
-        for (unsigned i = 0; i != num_words; ++i) {
-          res._setword(trg_start_word+i,_w[src_start_word++]);
-        }
-      } else if (_whichword(nb,start) == _whichword(nb,stop)) {
-        uint32_t w = _w[_whichword(nb,start)];
-        start = _whichbit(nb,start);
-        stop  = _whichbit(nb,stop);
-        w <<= (_INTBV_BITS_PER_WORD-1-start);
-        w >>= (_INTBV_BITS_PER_WORD-1-start) + stop;
-        // Set the least significant word (last word).
-        res._setword(nb,nb-1,w);
-      } else {
-        assert (stop >= start);
-        intbv_base<_Nw> tmp(*this);
-        tmp._left_shift(_Nw * _INTBV_BITS_PER_WORD - nb + start);
-        tmp._right_shift((_Nw * _INTBV_BITS_PER_WORD - nb + start) + (nb -1 - stop));
-        res._construct_from_other_size(tmp);
-      }
-    }
-
-    void _mask_and_set(size_t trg_word,size_t nb,size_t start,size_t stop,uint32_t src)
-    {
-      start = _whichbit(nb,start);
-      stop  = _whichbit(nb,stop);
-
-      uint32_t m = 0xffffffff;
-      m <<= (_INTBV_BITS_PER_WORD-1-start);
-      m >>= (_INTBV_BITS_PER_WORD-1-start) + stop;
-      m <<= stop;
-
-      uint32_t r = (_w[trg_word] & ~m) | ((src << stop) & m);
-      
-      _w[trg_word] = r;
-    }
-    
-       // We try to look for two special cases:
-    //
-    // 1.  A word aligned target range with an equal-sized source.  In this case, we can just copy over words.
-    // 2.  A target range that's within a single word.  Then we can just do a simple shift-and-mask operation on a single word.
-    //
-    // Beyond that, we just fall back to the old, slow method.
-    template <size_t _Nw2>
-    void _setField(size_t nb,size_t start, size_t stop, const intbv_base<_Nw2>& x)
-    {
-      if ((nb % _INTBV_BITS_PER_WORD == 0) && (start % _INTBV_BITS_PER_WORD == 0) && (stop % _INTBV_BITS_PER_WORD == (_INTBV_BITS_PER_WORD-1)) && ((stop-start) <= (_Nw2*_INTBV_BITS_PER_WORD-1))) {
-        // If these sets are word aligned and the same size as the source, then
-        // it's easy- just copy over the words.  We've already expanded 'x' to
-        // be padded out to the nearest word.  This conditional should be folded
-        // away thanks to inlining in most cases.
-        unsigned trg_start_word = start / _INTBV_BITS_PER_WORD;
-        unsigned trg_num_words = _roundUp((stop-start),_INTBV_BITS_PER_WORD);
-        unsigned src_start_word = (_Nw2 > trg_num_words) ? (_Nw2 - trg_num_words) : 0;
-        for (; src_start_word != _Nw2; ++src_start_word) {
-          _w[trg_start_word++] = x._getword(src_start_word);
-        }
-      } else if (_whichword(nb,start) == _whichword(nb,stop)) {
-        // Another special case:  target range fits within a single word.
-        // Make sure to use the least significant word.
-        _mask_and_set(_whichword(nb,start),nb,start,stop,x._getword(nb,nb-1));
-      } else {
-        // If things don't line up, use this approach.
-        intbv_base<_Nw> tmp;
-        tmp._construct_from_other_size(x);
-        _setFieldSlow(nb,start,stop,tmp);
-      }
-    }
-
-    // The fallback- use a slow shift-and-mask process across the entire thing.
-    void _setFieldSlow(size_t nb,size_t start, size_t stop, const intbv_base<_Nw>& x)
+    void _setField(size_t nb,size_t start, size_t stop, const intbv_base<_Nw>& x)
     {
       // fix me: inefficient, figure out which words are affected and only
       //   shift those about.
@@ -556,10 +461,10 @@ namespace adl {
       mask._left_shift(nb -1 - stop);
       intbv_base<_Nw> mask_inv (mask);
       mask_inv._invert();
-
+            
       // zero out field in original value
       _and(mask_inv);
-
+            
       // or in the field
       x_copy._left_shift(nb-1-stop);
       x_copy._and(mask);
@@ -729,17 +634,6 @@ namespace adl {
       for (int i = _Nw-1; i >=0; i--)
         result += count_ones(_w[i]);
       return result;
-    }
-
-   size_t _count_leading_zeros(size_t nb) const
-    {
-      size_t result = 0;
-      for (int i = 0; i != _Nw; ++i) {
-        result += count_leading_zeros(_w[i]);
-        if (_w[i]) break;
-      }
-
-      return result - ( (_Nw*sizeof(uint32_t)*8) - nb );
     }
     
     uint32_t _to_ulong() const;
@@ -912,17 +806,15 @@ namespace adl {
     void _construct_from_smaller_sized (const intbv_base<_Nw1>& x) {}
     template <size_t _Nw1>
     void _construct_from_larger_sized (const intbv_base<_Nw1>& x) {}
-    template <size_t _Nw1>
-    void _construct_from_other_size (const intbv_base<_Nw1>&x) {}
     template <typename R> explicit intbv_base (unsigned,unsigned,const R &r){}
     static size_t _whichbit(size_t ) {  return  0;}
     static uint32_t _maskbit(size_t ) { return 0; }
     static uint32_t _maskwordbit(size_t ) { return 0; }
-    static uint32_t _maskwordbit(size_t,size_t) { return 0; };
+    static uint32_t _maskwordbit(size_t nb,size_t pos ) { return 0; };
     static size_t _whichword(size_t ) { return 0;}
     static size_t _whichbyte(size_t ) { return 0; }
     uint32_t _getword(size_t) const {return 0;}
-    uint32_t _getword(size_t,size_t) const { return 0; };
+    uint32_t _getword(size_t nb,size_t pos) const { return 0; };
     void _multiply (const intbv_base<0>&){}
     void _multiplySigned (const intbv_base<0>&){}
     void _multiplySigned (unsigned){}
@@ -939,13 +831,11 @@ namespace adl {
     void _left_shift(size_t) {}
     void _right_shift(size_t) {}
     void _swap_bytes(intbv_base<0> &)  const {}
-    void _swap_words(intbv_base<0> &,unsigned)  const {}
+    void _swap_words(intbv_base<0> &,unsigned adjust)  const {}
     void _invert() {}
     void _negate() {}
-    template <size_t _Nw2>
-    void _setField(size_t,size_t, size_t, const intbv_base<_Nw2>&) {}
-    template <size_t _Nw2>
-    void _getField(size_t,size_t, size_t, const intbv_base<_Nw2>&) const {}
+    void _setField(size_t,size_t, size_t, const intbv_base<0>&) {}
+    void _getField(size_t,size_t, size_t, const intbv_base<0>&) const {}
     void _set() {}
     void _reset() {}
     bool _less_than(const intbv_base<0>&) const { return true; }
@@ -960,7 +850,6 @@ namespace adl {
     bool _msb(size_t) const { return false;}
     bool _is_any() const { return false; }
     size_t _count_ones() const { return 0; }
-    size_t _count_leading_zeros(size_t) const { return 0; }
     uint32_t _to_ulong() const { return 0; }
     uint64_t _to_ulonglong() const { return 0; }
     size_t _find_first(size_t) const { return 0; }
@@ -1013,17 +902,10 @@ namespace adl {
     // general cases...
     template <size_t _Nw1>
     void _construct_from_larger_sized (const intbv_base<_Nw1>& x) { _w = x._getword(_Nw1-1);}  
-    template <size_t _Nw1>
-    void _construct_from_other_size (const intbv_base<_Nw1>&x) {
-      if (_Nw1 > 1) {
-        _construct_from_larger_sized(x);
-      } else {
-        _construct_from_smaller_sized(x);
-      }
-    }
+
 
     template <size_t _Nw1>
-    void _construct_from_smaller_sized (const intbv_base<_Nw1>& ) {assert(0);}
+    void _construct_from_smaller_sized (const intbv_base<_Nw1>& x) {assert(0);}
     
     static size_t _whichbit(size_t nb,size_t pos )
     {  return  ((nb - 1 - pos) % _INTBV_BITS_PER_WORD); }
@@ -1042,9 +924,7 @@ namespace adl {
         
     void _setword(size_t,size_t,uint32_t w)  { _w = w; }
 
-    void _setword(size_t,uint32_t w) { _w = w; }
-
-    uint32_t _getword(size_t) const { return _w; }
+    uint32_t _getword(size_t) { return _w; }
     
     uint32_t _getword(size_t,size_t) const { return _w; }
     
@@ -1102,7 +982,7 @@ namespace adl {
       x._w =swap_uint32(_w);
     }
 
-    void _swap_words(intbv_base<1> &x,unsigned) const 
+    void _swap_words(intbv_base<1> &x,unsigned adust) const 
     {
       x._w = _w;
     }
@@ -1111,27 +991,18 @@ namespace adl {
 
     void _negate() { _w = ~_w; _w += 1; }
     
-    template <size_t _Nw2>
-    void _getField(size_t nb,size_t start, size_t stop, intbv_base<_Nw2> &res) const
+    void _getField(size_t nb,size_t start, size_t stop, intbv_base<1> &res) const
     {
       assert (stop >= start);
-      intbv_base<1> tmp;
-      tmp._w = _w;
-      tmp._w  <<= _INTBV_BITS_PER_WORD - nb + start;
-      tmp._w >>= (_INTBV_BITS_PER_WORD - nb + start) + (nb -1 - stop);
-
-      res._construct_from_other_size(tmp);
+      res._w = _w;
+      res._w  <<= _INTBV_BITS_PER_WORD - nb + start;
+      res._w >>= (_INTBV_BITS_PER_WORD - nb + start) + (nb -1 - stop);
     }
-
-    // For a single word, do the typical mask/set thing.
-    template <size_t _Nw2>
-    void _setField(size_t nb,size_t start, size_t stop, const intbv_base<_Nw2>& x) 
+    
+    void _setField(size_t nb,size_t start, size_t stop, const intbv_base<1>& x) ATTRIBUTE_INLINE
     { 
       assert (stop >= start);
-
-      intbv_base<1> x_copy;
-      x_copy._construct_from_other_size(x);
-      
+      intbv_base<1> x_copy (x);
       uint32_t m = 0xffffffff;
       m <<= _INTBV_BITS_PER_WORD - nb + start;
       m >>= (_INTBV_BITS_PER_WORD - nb + start) + (nb -1 - stop);
@@ -1145,7 +1016,7 @@ namespace adl {
       x_copy._left_shift(nb-1-stop);
       x_copy._and(mask);
       _or(x_copy);
-    }
+    }                  
     
     void _set() { _w = ~static_cast<uint32_t>(0); }
     
@@ -1193,11 +1064,6 @@ namespace adl {
     bool _is_any() const { return _w != 0; }
     
     size_t _count_ones() const { return count_ones(_w); }
-
-    size_t _count_leading_zeros(size_t nb) const { 
-      size_t result = (_w == 0) ? (sizeof(_w)*8) : count_leading_zeros(_w);
-      return result - ( sizeof(_w)*8 - nb ); 
-    }
     
     uint32_t _to_ulong() const { return _w; }
     uint64_t _to_ulonglong() const { return _w; }
@@ -1295,15 +1161,8 @@ namespace adl {
     void _construct_from_larger_sized (const intbv_base<_Nw1>& x) {  
       _w =  x._w[_Nw1-2]; 
       _w = _w << _INTBV_BITS_PER_WORD | x._w[_Nw1-1];}
-    template <size_t _Nw1>
-    void _construct_from_other_size (const intbv_base<_Nw1>&x) {
-      if (_Nw1 > 2) {
-        _construct_from_larger_sized(x);
-      } else {
-        _construct_from_smaller_sized(x);
-      }
-    }
-    
+
+  
     static size_t _whichbit(size_t nb,size_t pos )
     {  return  ((nb - 1 - pos) % (_INTBV_BITS_PER_WORD*2)); }
 
@@ -1347,19 +1206,6 @@ namespace adl {
         t <<= _INTBV_BITS_PER_WORD;
         m >>= _INTBV_BITS_PER_WORD;
       }else {
-        m <<= _INTBV_BITS_PER_WORD;
-      }
-      _w = (_w & m) | t;
-    }
-    
-    void _setword(size_t i,uint32_t w) {
-      uint64_t t = w;
-      uint64_t m = (uint64_t)-1;
-
-      if (i == 0) {
-        t <<= _INTBV_BITS_PER_WORD;
-        m >>= _INTBV_BITS_PER_WORD;
-      } else {
         m <<= _INTBV_BITS_PER_WORD;
       }
       _w = (_w & m) | t;
@@ -1445,16 +1291,14 @@ namespace adl {
 
     void _negate() { _w = ~_w; _w += 1; }
   
-    template <size_t _Nw2>
-    void _getField(size_t nb,size_t start, size_t stop, intbv_base<_Nw2> &res) const
+    void _getField(size_t nb,size_t start, size_t stop, intbv_base<2> &res) const
     {
+      start = start % nb;
+      stop = stop % nb;
       assert (stop >= start);
-      intbv_base<2> tmp;      
-      tmp._w = _w;
-      tmp._w  <<= _INTBV_BITS_PER_WORD * 2 - nb + start;
-      tmp._w >>= (_INTBV_BITS_PER_WORD * 2 - nb + start) + (nb -1 - stop);
-
-      res._construct_from_other_size(tmp);
+      res._w = _w;
+      res._w  <<= _INTBV_BITS_PER_WORD * 2 - nb + start;
+      res._w >>= (_INTBV_BITS_PER_WORD * 2 - nb + start) + (nb -1 - stop);
     }
   
     union Words {
@@ -1465,15 +1309,42 @@ namespace adl {
       } w;
     };
 
-    // For same size, just use a direct 64-bit mask/set type of operation.
-    template <size_t _Nw2>
-    void _setField(size_t nb,size_t start, size_t stop, const intbv_base<_Nw2>& x)
+    void _setField(size_t nb,size_t start, size_t stop, const intbv_base<2>& x) ATTRIBUTE_INLINE
     {    
+      start = start % nb;
+      stop = stop % nb;
+
+#if 0
+      if ( (nb-1-stop) == 32 && (stop-start+1) == 32 ) {
+        Words t;
+        t.d= _w;
+#       ifdef WORDS_BIGENDIAN
+        t.w.h = x._w;
+#       else
+        t.w.l = x._w;
+#       endif
+        _w = t.d;
+        return;
+      } else if ( (nb-1-stop) == 0 && (stop-start+1) == 32  ) {
+        Words t;
+        t.d = _w;
+#       ifdef WORDS_BIGENDIAN
+        t.w.l = x._w;
+#       else
+        t.w.h = x._w;
+#       endif
+        _w = t.d;
+        return;
+      }
+#endif
+      _setFieldInternal(nb,start,stop,x);
+    }
+
+    void _setFieldInternal(size_t nb,size_t start, size_t stop, const intbv_base<2>& x) 
+    {
       assert (stop >= start);
   
-      intbv_base<2> x_copy;
-      x_copy._construct_from_other_size(x);
-      
+      intbv_base<2> x_copy (x);
       uint64_t m = ~0;
       m <<= _INTBV_BITS_PER_WORD *2 - nb + start;
       m >>= (_INTBV_BITS_PER_WORD *2 - nb + start) + (nb -1 - stop);
@@ -1566,11 +1437,6 @@ namespace adl {
     bool _is_any() const { return _w != 0; }
   
     size_t _count_ones() const { return count_ones(_w); }
-
-    size_t _count_leading_zeros(size_t nb) const { 
-      size_t result = (_w == 0) ? (sizeof(_w)*8) : count_leading_zeros(_w);
-      return result - ( sizeof(_w)*8 - nb ); 
-    }
   
     uint64_t _to_ulong() const { return _w; }
     uint64_t _to_ulonglong() const { return _w; }
@@ -1641,8 +1507,8 @@ namespace adl {
     }
 
     void _dummy () const {
-      uint32_t tmp = 0;
-      intbv_dummy((uint32_t*)&tmp);
+      uint32_t tmp = _w;
+      intbv_dummy((uint32_t*)tmp);
     }
 
 #ifndef __NO_RNUMBER__

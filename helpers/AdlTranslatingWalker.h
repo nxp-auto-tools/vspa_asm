@@ -24,8 +24,6 @@ namespace adl {
 
 class PtreeRegWrite;
 class PtreeRegRead;
-class PtreeMemWrite;
-class PtreeMemRead;
 class PtreeSubInstrCall;
 
 struct AdlTranslatingWalker : public Opencxx::Walker {
@@ -36,8 +34,6 @@ struct AdlTranslatingWalker : public Opencxx::Walker {
 
   virtual Opencxx::Ptree *TranslateRegWrite(PtreeRegWrite *) = 0;
   virtual Opencxx::Ptree *TranslateRegRead(PtreeRegRead *) = 0;
-  virtual Opencxx::Ptree *TranslateMemWrite(PtreeMemWrite *) = 0;
-  virtual Opencxx::Ptree *TranslateMemRead(PtreeMemRead *) = 0;
   virtual Opencxx::Ptree *TranslateSubInstrCall(PtreeSubInstrCall *) = 0;
   virtual Opencxx::Ptree* TranslateStmts(Opencxx::Ptree*) = 0;
 };

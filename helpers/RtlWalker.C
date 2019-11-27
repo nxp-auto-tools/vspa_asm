@@ -24,8 +24,6 @@
 #include "opencxx/BindVarName.h"
 #include "opencxx/PtreeIter.h"
 
-#include "fe/Helpers.h"
-
 #include "BasicTypes.h"
 #include "RtlWalker.h"
 #include "Macros.h"
@@ -399,6 +397,18 @@ namespace adl {
     return Second(TranslateArguments(args));
   }
 
+  // Tries to get an unsigned int- throws an exception if it can't using
+  // the message provided.
+  static uint32_t get_uint(Ptree *value,const char *msg)
+  {
+    unsigned val;
+    if (value->IsLeaf() && value->Reify(val)) {
+      return val;
+    } else {
+      PError(value,"Expected an integer value for " << msg);
+    }
+  }
+
   // This translates function calls on bits objects to templated gets so that the
   // return type is sized to the slice being made.
   Ptree *RtlWalker::TranslateFuncall(Ptree *exp)
@@ -416,21 +426,21 @@ namespace adl {
     } else if (Eq(fun,"zero")) {
       // Convert to the templated function form.
       Ptree *arg1 = First(translated_arglist(args));
-      return make_bitslice(Ptree::Make("zero<%p>()",arg1),get_uint(arg1,"zero-function return size",env));
+      return make_bitslice(Ptree::Make("zero<%p>()",arg1),get_uint(arg1,"zero-function return size"));
     }
     else if (Eq(fun,"signExtend")) {
       // Convert to the templated member form.
       Ptree *args2 = translated_arglist(args);
       Ptree *arg1 = First(args2);
       Ptree *arg2 = Third(args2);
-      return make_bitslice(Ptree::Make("%p.signExtend<%p>()",arg1,arg2),get_uint(arg2,"sign-extension return size",env));
+      return make_bitslice(Ptree::Make("%p.signExtend<%p>()",arg1,arg2),get_uint(arg2,"sign-extension return size"));
     }
     else if (Eq(fun,"zeroExtend")) {
       // Convert to a simple bits constructor call.
       Ptree *args2 = translated_arglist(args);
       Ptree *arg1 = First(args2);
       Ptree *arg2 = Third(args2);
-      return make_bitslice(Ptree::Make("bits<%p>(%p)",arg2,arg1),get_uint(arg2,"zero-extension return size",env));
+      return make_bitslice(Ptree::Make("bits<%p>(%p)",arg2,arg1),get_uint(arg2,"zero-extension return size"));
     }
 
     Ptree* args2 = TranslateArguments(args);
@@ -458,7 +468,7 @@ namespace adl {
         MkStr(off_str,"-" << offset);
       }
       if (arg1) {
-        if (get_uint(s,arg1,env) && arg2 && get_uint(e,arg2,env)) {
+        if (arg1->Reify(s) && arg2 && arg2->Reify(e)) {
           // Arguments are constant, so we want to return a properly sized slize.
           unsigned w = e > s?(e-s+1):(s-e+1);
           // If in library mode, use the .template disambiguator in order to
@@ -514,10 +524,10 @@ namespace adl {
         t.NthTemplateArgument(0,at0);
         t.NthTemplateArgument(1,at1);
         if (Ptree *p = at1.MakePtree()) {
-          get_uint(offset,p->Car(),env);
+          p->Car()->Reify(offset);
         }
         if (Ptree *p = at0.MakePtree()) {
-          get_uint(size,p->Car(),env);
+          p->Car()->Reify(size);
         }
         return true;
       }

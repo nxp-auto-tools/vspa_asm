@@ -17,11 +17,43 @@
 #ifdef _MSC_VER
 
 #include <hash_map>
-#include <hash_set>
 
 #else
 
-#include <tr1/unordered_map>
+#undef __DEPRECATED
+#include <ext/hash_map>
+
+namespace __gnu_cxx {
+
+  // Hash/set support for strings.
+  template<> struct hash<std::string>
+  {
+    size_t operator()(const std::string &__s) const { 
+      return __stl_hash_string(__s.c_str()); 
+    }
+  };
+
+  // Hash/set support for all pointers.
+  template<typename T> struct hash<T *>
+  {
+    size_t operator()(T *__x) const { 
+        std::size_t x = static_cast<std::size_t>(
+           reinterpret_cast<std::ptrdiff_t>(__x));
+        return x + (x >> 3);
+    }
+  };
+
+  // Hash/set support for unsigned long long.
+  template<> struct hash<unsigned long long>
+  {
+    size_t operator()(unsigned long long __x) const { 
+      return (__x ^ (__x >> 32));
+    }
+  };
+
+}
+
+#endif
 
 namespace adl {
 
@@ -31,17 +63,6 @@ namespace adl {
     }
   };
 
-  struct HashConstChar {
-    bool operator()(const char *__s) const {
-      unsigned long __h = 0;
-      for ( ; *__s; ++__s)
-        __h = 5 * __h + *__s;
-      return size_t(__h);   
-    }
-  };
-
 }
-
-#endif
 
 #endif

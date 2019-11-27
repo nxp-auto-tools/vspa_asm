@@ -1,5 +1,7 @@
 /* expr.c -operands, expressions-
-   Copyright (C) 1987-2014 Free Software Foundation, Inc.
+   Copyright 1987, 1990, 1991, 1992, 1993, 1994, 1995, 1996, 1997, 1998,
+   1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2009, 2010, 2011
+   Free Software Foundation, Inc.
 
    This file is part of GAS, the GNU Assembler.
 
@@ -27,6 +29,7 @@
 
 #include "as.h"
 #include "safe-ctype.h"
+#include "obstack.h"
 
 #ifdef HAVE_LIMITS_H
 #include <limits.h>
@@ -87,7 +90,6 @@ make_expr_symbol (expressionS *expressionP)
       zero.X_op = O_constant;
       zero.X_add_number = 0;
       zero.X_unsigned = 0;
-      zero.X_extrabit = 0;
       clean_up_expression (&zero);
       expressionP = &zero;
     }
@@ -159,7 +161,6 @@ expr_build_uconstant (offsetT value)
   e.X_op = O_constant;
   e.X_add_number = value;
   e.X_unsigned = 1;
-  e.X_extrabit = 0;
   return make_expr_symbol (&e);
 }
 
@@ -731,7 +732,6 @@ operand (expressionS *expressionP, enum expr_mode mode)
      something like ``.quad 0x80000000'' is not sign extended even
      though it appears negative if valueT is 32 bits.  */
   expressionP->X_unsigned = 1;
-  expressionP->X_extrabit = 0;
 
   /* Digits, assume it is a bignum.  */
 
@@ -1021,14 +1021,11 @@ operand (expressionS *expressionP, enum expr_mode mode)
 	    /* input_line_pointer -> char after operand.  */
 	    if (c == '-')
 	      {
-		expressionP->X_add_number
-		  = - (addressT) expressionP->X_add_number;
+		expressionP->X_add_number = - expressionP->X_add_number;
 		/* Notice: '-' may overflow: no warning is given.
 		   This is compatible with other people's
 		   assemblers.  Sigh.  */
 		expressionP->X_unsigned = 0;
-		if (expressionP->X_add_number)
-		  expressionP->X_extrabit ^= 1;
 	      }
 	    else if (c == '~' || c == '"')
 	      expressionP->X_add_number = ~ expressionP->X_add_number;
@@ -1081,7 +1078,6 @@ operand (expressionS *expressionP, enum expr_mode mode)
 		expressionP->X_add_number = i >= expressionP->X_add_number;
 		expressionP->X_op = O_constant;
 		expressionP->X_unsigned = 1;
-		expressionP->X_extrabit = 0;
 	      }
 	  }
 	else if (expressionP->X_op != O_illegal
@@ -1321,11 +1317,12 @@ operand (expressionS *expressionP, enum expr_mode mode)
 	    }
 #endif
 
-    // ADL: Check to make sure we have a non-null symbol, since we allow this
-    // routine to fail it stdoutput isn't defined, so that the DevTech assembler
-    // can still use our expression parser w/o requiring a symbol table to
-    // exist.
+    // Check to make sure we have a non-null symbol, since we allow this routine to fail
+    // it stdoutput isn't defined, so that the DevTech assembler can still use our expression
+    // parser w/o requiring a symbol table to exist.
 	  if ((symbolP = symbol_find_or_make (name))) {
+
+      symbolP = symbol_find_or_make (name);
 
       /* If we have an absolute symbol or a reg, then we know its
          value now.  */
@@ -1353,7 +1350,6 @@ operand (expressionS *expressionP, enum expr_mode mode)
       expressionP->X_add_symbol = 0;
       expressionP->X_add_number = 0;
     }
-
 	  *input_line_pointer = c;
 	}
       else
@@ -1731,42 +1727,6 @@ operatorf (int *num_chars)
   /* NOTREACHED  */
 }
 
-/* Implement "word-size + 1 bit" addition for
-   {resultP->X_extrabit:resultP->X_add_number} + {rhs_highbit:amount}.  This
-   is used so that the full range of unsigned word values and the full range of
-   signed word values can be represented in an O_constant expression, which is
-   useful e.g. for .sleb128 directives.  */
-
-void
-add_to_result (expressionS *resultP, offsetT amount, int rhs_highbit)
-{
-  valueT ures = resultP->X_add_number;
-  valueT uamount = amount;
-
-  resultP->X_add_number += amount;
-
-  resultP->X_extrabit ^= rhs_highbit;
-
-  if (ures + uamount < ures)
-    resultP->X_extrabit ^= 1;
-}
-
-/* Similarly, for subtraction.  */
-
-void
-subtract_from_result (expressionS *resultP, offsetT amount, int rhs_highbit)
-{
-  valueT ures = resultP->X_add_number;
-  valueT uamount = amount;
-
-  resultP->X_add_number -= amount;
-
-  resultP->X_extrabit ^= rhs_highbit;
-
-  if (ures < uamount)
-    resultP->X_extrabit ^= 1;
-}
-
 /* Parse an expression.  */
 
 segT
@@ -1785,10 +1745,7 @@ expr (int rankarg,		/* Larger # is higher rank.  */
 
   /* Save the value of dot for the fixup code.  */
   if (rank == 0)
-    {
-      dot_value = frag_now_fix ();
-      dot_frag = frag_now;
-    }
+    dot_value = frag_now_fix ();
 
   retval = operand (resultP, mode);
 
@@ -1799,7 +1756,7 @@ expr (int rankarg,		/* Larger # is higher rank.  */
   while (op_left != O_illegal && op_rank[(int) op_left] > rank)
     {
       segT rightseg;
-      offsetT frag_off;
+      bfd_vma frag_off;
 
       input_line_pointer += op_chars;	/* -> after operator.  */
 
@@ -1882,7 +1839,7 @@ expr (int rankarg,		/* Larger # is higher rank.  */
 	  && (md_register_arithmetic || resultP->X_op != O_register))
 	{
 	  /* X + constant.  */
-	  add_to_result (resultP, right.X_add_number, right.X_extrabit);
+	  resultP->X_add_number += right.X_add_number;
 	}
       /* This case comes up in PIC code.  */
       else if (op_left == O_subtract
@@ -1900,11 +1857,10 @@ expr (int rankarg,		/* Larger # is higher rank.  */
 				       symbol_get_frag (right.X_add_symbol),
 				       &frag_off))
 	{
-	  offsetT symval_diff = S_GET_VALUE (resultP->X_add_symbol)
-				- S_GET_VALUE (right.X_add_symbol);
-	  subtract_from_result (resultP, right.X_add_number, right.X_extrabit);
-	  subtract_from_result (resultP, frag_off / OCTETS_PER_BYTE, 0);
-	  add_to_result (resultP, symval_diff, symval_diff < 0);
+	  resultP->X_add_number -= right.X_add_number;
+	  resultP->X_add_number -= frag_off / OCTETS_PER_BYTE;
+	  resultP->X_add_number += (S_GET_VALUE (resultP->X_add_symbol)
+				    - S_GET_VALUE (right.X_add_symbol));
 	  resultP->X_op = O_constant;
 	  resultP->X_add_symbol = 0;
 	}
@@ -1912,7 +1868,7 @@ expr (int rankarg,		/* Larger # is higher rank.  */
 	       && (md_register_arithmetic || resultP->X_op != O_register))
 	{
 	  /* X - constant.  */
-	  subtract_from_result (resultP, right.X_add_number, right.X_extrabit);
+	  resultP->X_add_number -= right.X_add_number;
 	}
       else if (op_left == O_add && resultP->X_op == O_constant
 	       && (md_register_arithmetic || right.X_op != O_register))
@@ -1921,7 +1877,7 @@ expr (int rankarg,		/* Larger # is higher rank.  */
 	  resultP->X_op = right.X_op;
 	  resultP->X_add_symbol = right.X_add_symbol;
 	  resultP->X_op_symbol = right.X_op_symbol;
-	  add_to_result (resultP, right.X_add_number, right.X_extrabit);
+	  resultP->X_add_number += right.X_add_number;
 	  retval = rightseg;
 	}
       else if (resultP->X_op == O_constant && right.X_op == O_constant)
@@ -1961,9 +1917,7 @@ expr (int rankarg,		/* Larger # is higher rank.  */
 	      /* Constant + constant (O_add) is handled by the
 		 previous if statement for constant + X, so is omitted
 		 here.  */
-	    case O_subtract:
-	      subtract_from_result (resultP, v, 0);
-	      break;
+	    case O_subtract:		resultP->X_add_number -= v; break;
 	    case O_eq:
 	      resultP->X_add_number =
 		resultP->X_add_number == v ? ~ (offsetT) 0 : 0;
@@ -2007,11 +1961,10 @@ expr (int rankarg,		/* Larger # is higher rank.  */
 	  resultP->X_op = op_left;
 	  resultP->X_op_symbol = right.X_add_symbol;
 	  if (op_left == O_add)
-	    add_to_result (resultP, right.X_add_number, right.X_extrabit);
+	    resultP->X_add_number += right.X_add_number;
 	  else if (op_left == O_subtract)
 	    {
-	      subtract_from_result (resultP, right.X_add_number,
-				    right.X_extrabit);
+	      resultP->X_add_number -= right.X_add_number;
 	      if (retval == rightseg
 		  && SEG_NORMAL (retval)
 		  && !S_FORCE_RELOC (resultP->X_add_symbol, 0)
@@ -2031,7 +1984,6 @@ expr (int rankarg,		/* Larger # is higher rank.  */
 	  resultP->X_op = op_left;
 	  resultP->X_add_number = 0;
 	  resultP->X_unsigned = 1;
-	  resultP->X_extrabit = 0;
 	}
 
       if (retval != rightseg)
@@ -2088,7 +2040,7 @@ resolve_expression (expressionS *expressionP)
   valueT left, right;
   segT seg_left, seg_right;
   fragS *frag_left, *frag_right;
-  offsetT frag_off;
+  bfd_vma frag_off;
 
   switch (op)
     {

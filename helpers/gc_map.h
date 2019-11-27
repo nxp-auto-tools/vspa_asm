@@ -58,26 +58,5 @@ public:
          const _Compare &__comp,const allocator_type &__a) : Base(__f,__l,__comp,__a) {};
 };
 
-template <typename Key, typename _Tp, typename _Compare = std::less<Key> >
-class tr_map : public gc, public std::map<Key,_Tp,_Compare,traceable_allocator<std::pair<const Key, _Tp> > >
-{  
-public:
-  typedef typename std::map<Key,_Tp,_Compare,traceable_allocator<std::pair<const Key, _Tp> > > Base;
-  typedef typename Base::key_type                            key_type;
-  typedef typename Base::value_type                          value_type;
-  typedef typename Base::mapped_type                         mapped_type;
-  typedef typename Base::key_compare                         key_compare;
-  typedef typename Base::allocator_type                      allocator_type;
-
-  tr_map() {};
-  explicit tr_map(const _Compare& __comp,const allocator_type &__a = allocator_type()) : Base(__comp,__a) {};
-  template <class _InputIterator>
-  tr_map(_InputIterator __f, _InputIterator __l) : Base(__f,__l) {};
-  template <class _InputIterator>
-  tr_map(_InputIterator __f, _InputIterator __l,
-         const _Compare &__comp,const allocator_type &__a) : Base(__f,__l,__comp,__a) {};
-};
-
-
 #endif
 

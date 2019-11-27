@@ -74,6 +74,7 @@ typedef struct
   DWORDLONG ullAvailExtendedVirtual;
 } lMEMORYSTATUSEX;
 typedef WINBOOL (WINAPI *PFN_MS_EX) (lMEMORYSTATUSEX*);
+
 #endif
 
 #include "libiberty.h"

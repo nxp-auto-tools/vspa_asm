@@ -1,5 +1,6 @@
 /* BFD backend for Extended Tektronix Hex Format  objects.
-   Copyright (C) 1992-2014 Free Software Foundation, Inc.
+   Copyright 1992, 1993, 1994, 1995, 1996, 1998, 1999, 2000, 2001, 2002,
+   2003, 2004, 2005, 2006, 2007, 2009 Free Software Foundation, Inc.
    Written by Steve Chamberlain of Cygnus Support <sac@cygnus.com>.
 
    This file is part of BFD, the Binary File Descriptor library.
@@ -246,12 +247,11 @@ struct tekhex_data_list_struct
 typedef struct tekhex_data_list_struct tekhex_data_list_type;
 
 #define CHUNK_MASK 0x1fff
-#define CHUNK_SPAN 32
 
 struct data_struct
 {
-  unsigned char chunk_data[CHUNK_MASK + 1];
-  unsigned char chunk_init[(CHUNK_MASK + 1 + CHUNK_SPAN - 1) / CHUNK_SPAN];
+  char chunk_data[CHUNK_MASK + 1];
+  char chunk_init[CHUNK_MASK + 1];
   bfd_vma vma;
   struct data_struct *next;
 };
@@ -297,7 +297,7 @@ getsym (char *dstp, char **srcp, unsigned int *lenp)
   char *src = *srcp;
   unsigned int i;
   unsigned int len;
-
+  
   if (!ISHEX (*src))
     return FALSE;
 
@@ -313,7 +313,7 @@ getsym (char *dstp, char **srcp, unsigned int *lenp)
 }
 
 static struct data_struct *
-find_chunk (bfd *abfd, bfd_vma vma, bfd_boolean create)
+find_chunk (bfd *abfd, bfd_vma vma)
 {
   struct data_struct *d = abfd->tdata.tekhex_data->data;
 
@@ -321,7 +321,7 @@ find_chunk (bfd *abfd, bfd_vma vma, bfd_boolean create)
   while (d && (d->vma) != vma)
     d = d->next;
 
-  if (!d && create)
+  if (!d)
     {
       /* No chunk for this address, so make one up.  */
       d = (struct data_struct *)
@@ -340,14 +340,11 @@ find_chunk (bfd *abfd, bfd_vma vma, bfd_boolean create)
 static void
 insert_byte (bfd *abfd, int value, bfd_vma addr)
 {
-  if (value != 0)
-    {
-      /* Find the chunk that this byte needs and put it in.  */
-      struct data_struct *d = find_chunk (abfd, addr, TRUE);
+  /* Find the chunk that this byte needs and put it in.  */
+  struct data_struct *d = find_chunk (abfd, addr);
 
-      d->chunk_data[addr & CHUNK_MASK] = value;
-      d->chunk_init[(addr & CHUNK_MASK) / CHUNK_SPAN] = 1;
-    }
+  d->chunk_data[addr & CHUNK_MASK] = value;
+  d->chunk_init[addr & CHUNK_MASK] = 1;
 }
 
 /* The first pass is to find the names of all the sections, and see
@@ -356,7 +353,7 @@ insert_byte (bfd *abfd, int value, bfd_vma addr)
 static bfd_boolean
 first_phase (bfd *abfd, int type, char *src)
 {
-  asection *section, *alt_section;
+  asection *section = bfd_abs_section_ptr;
   unsigned int len;
   bfd_vma val;
   char sym[17];			/* A symbol can only be 16chars long.  */
@@ -396,7 +393,6 @@ first_phase (bfd *abfd, int type, char *src)
 	  if (section == NULL)
 	    return FALSE;
 	}
-      alt_section = NULL;
       while (*src)
 	{
 	  switch (*src)
@@ -444,42 +440,6 @@ first_phase (bfd *abfd, int type, char *src)
 		  new_symbol->symbol.flags = (BSF_GLOBAL | BSF_EXPORT);
 		else
 		  new_symbol->symbol.flags = BSF_LOCAL;
-		if (stype == '2' || stype == '6')
-		  new_symbol->symbol.section = bfd_abs_section_ptr;
-		else if (stype == '3' || stype == '7')
-		  {
-		    if ((section->flags & SEC_DATA) == 0)
-		      section->flags |= SEC_CODE;
-		    else
-		      {
-			if (alt_section == NULL)
-			  alt_section = bfd_get_next_section_by_name (section);
-			if (alt_section == NULL)
-			  alt_section = bfd_make_section_anyway_with_flags
-			    (abfd, section->name,
-			     (section->flags & ~SEC_DATA) | SEC_CODE);
-			if (alt_section == NULL)
-			  return FALSE;
-			new_symbol->symbol.section = alt_section;
-		      }
-		  }
-		else if (stype == '4' || stype == '8')
-		  {
-		    if ((section->flags & SEC_CODE) == 0)
-		      section->flags |= SEC_DATA;
-		    else
-		      {
-			if (alt_section == NULL)
-			  alt_section = bfd_get_next_section_by_name (section);
-			if (alt_section == NULL)
-			  alt_section = bfd_make_section_anyway_with_flags
-			    (abfd, section->name,
-			     (section->flags & ~SEC_CODE) | SEC_DATA);
-			if (alt_section == NULL)
-			  return FALSE;
-			new_symbol->symbol.section = alt_section;
-		      }
-		  }
 		if (!getvalue (&src, &val))
 		  return FALSE;
 		new_symbol->symbol.value = val - section->vma;
@@ -630,26 +590,22 @@ move_section_contents (bfd *abfd,
       /* Get high bits of address.  */
       bfd_vma chunk_number = addr & ~(bfd_vma) CHUNK_MASK;
       bfd_vma low_bits = addr & CHUNK_MASK;
-      bfd_boolean must_write = !get && *location != 0;
 
-      if (chunk_number != prev_number || (!d && must_write))
-	{
-	  /* Different chunk, so move pointer. */
-	  d = find_chunk (abfd, chunk_number, must_write);
-	  prev_number = chunk_number;
-	}
+      if (chunk_number != prev_number)
+	/* Different chunk, so move pointer. */
+	d = find_chunk (abfd, chunk_number);
 
       if (get)
 	{
-	  if (d)
+	  if (d->chunk_init[low_bits])
 	    *location = d->chunk_data[low_bits];
 	  else
 	    *location = 0;
 	}
-      else if (must_write)
+      else
 	{
 	  d->chunk_data[low_bits] = *location;
-	  d->chunk_init[low_bits / CHUNK_SPAN] = 1;
+	  d->chunk_init[low_bits] = (*location != 0);
 	}
 
       location++;
@@ -677,9 +633,7 @@ tekhex_set_arch_mach (bfd *abfd,
 		      enum bfd_architecture arch,
 		      unsigned long machine)
 {
-  /* Ignore errors about unknown architecture.  */
-  return (bfd_default_set_arch_mach (abfd, arch, machine)
-	  || arch == bfd_arch_unknown);
+  return bfd_default_set_arch_mach (abfd, arch, machine);
 }
 
 /* We have to save up all the Tekhexords for a splurge before output.  */
@@ -691,6 +645,24 @@ tekhex_set_section_contents (bfd *abfd,
 			     file_ptr offset,
 			     bfd_size_type bytes_to_do)
 {
+  if (! abfd->output_has_begun)
+    {
+      /* The first time around, allocate enough sections to hold all the chunks.  */
+      asection *s = abfd->sections;
+      bfd_vma vma;
+
+      for (s = abfd->sections; s; s = s->next)
+	{
+	  if (s->flags & SEC_LOAD)
+	    {
+	      for (vma = s->vma & ~(bfd_vma) CHUNK_MASK;
+		   vma < s->vma + s->size;
+		   vma += CHUNK_MASK)
+		find_chunk (abfd, vma);
+	    }
+	}
+    }
+
   if (section->flags & (SEC_LOAD | SEC_ALLOC))
     {
       move_section_contents (abfd, section, locationp, offset, bytes_to_do,
@@ -801,17 +773,26 @@ tekhex_write_object_contents (bfd *abfd)
        d = d->next)
     {
       int low;
+
+      const int span = 32;
       int addr;
 
       /* Write it in blocks of 32 bytes.  */
-      for (addr = 0; addr < CHUNK_MASK + 1; addr += CHUNK_SPAN)
+      for (addr = 0; addr < CHUNK_MASK + 1; addr += span)
 	{
-	  if (d->chunk_init[addr / CHUNK_SPAN])
+	  int need = 0;
+
+	  /* Check to see if necessary.  */
+	  for (low = 0; !need && low < span; low++)
+	    if (d->chunk_init[addr + low])
+	      need = 1;
+
+	  if (need)
 	    {
 	      char *dst = buffer;
 
 	      writevalue (&dst, addr + d->vma);
-	      for (low = 0; low < CHUNK_SPAN; low++)
+	      for (low = 0; low < span; low++)
 		{
 		  TOHEX (dst, d->chunk_data[addr + low]);
 		  dst += 2;
@@ -955,7 +936,6 @@ tekhex_print_symbol (bfd *abfd,
 #define tekhex_bfd_is_local_label_name               bfd_generic_is_local_label_name
 #define tekhex_get_lineno                           _bfd_nosymbols_get_lineno
 #define tekhex_find_nearest_line                    _bfd_nosymbols_find_nearest_line
-#define tekhex_find_line                            _bfd_nosymbols_find_line
 #define tekhex_find_inliner_info                    _bfd_nosymbols_find_inliner_info
 #define tekhex_bfd_make_debug_symbol                _bfd_nosymbols_bfd_make_debug_symbol
 #define tekhex_read_minisymbols                     _bfd_generic_read_minisymbols
@@ -963,13 +943,13 @@ tekhex_print_symbol (bfd *abfd,
 #define tekhex_bfd_get_relocated_section_contents   bfd_generic_get_relocated_section_contents
 #define tekhex_bfd_relax_section                    bfd_generic_relax_section
 #define tekhex_bfd_gc_sections                      bfd_generic_gc_sections
-#define tekhex_bfd_lookup_section_flags		    bfd_generic_lookup_section_flags
 #define tekhex_bfd_merge_sections                   bfd_generic_merge_sections
 #define tekhex_bfd_is_group_section                 bfd_generic_is_group_section
 #define tekhex_bfd_discard_group                    bfd_generic_discard_group
 #define tekhex_section_already_linked               _bfd_generic_section_already_linked
 #define tekhex_bfd_define_common_symbol             bfd_generic_define_common_symbol
 #define tekhex_bfd_link_hash_table_create           _bfd_generic_link_hash_table_create
+#define tekhex_bfd_link_hash_table_free             _bfd_generic_link_hash_table_free
 #define tekhex_bfd_link_add_symbols                 _bfd_generic_link_add_symbols
 #define tekhex_bfd_link_just_syms                   _bfd_generic_link_just_syms
 #define tekhex_bfd_copy_link_hash_symbol_type \
@@ -992,7 +972,6 @@ const bfd_target tekhex_vec =
   0,				/* Leading underscore.  */
   ' ',				/* AR_pad_char.  */
   16,				/* AR_max_namelen.  */
-  0,				/* match priority.  */
   bfd_getb64, bfd_getb_signed_64, bfd_putb64,
   bfd_getb32, bfd_getb_signed_32, bfd_putb32,
   bfd_getb16, bfd_getb_signed_16, bfd_putb16,	/* Data.  */

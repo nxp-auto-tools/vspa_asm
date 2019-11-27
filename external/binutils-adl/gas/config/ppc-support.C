@@ -3,27 +3,21 @@
 // so a different architecture may need to change things in here.
 //
 
-#ifndef _MSC_VER
-extern "C" {
-# include "as.h"
-}
-#endif
-
 #include <stdio.h>
 #include <assert.h>
 #include <sys/types.h>
 #include <string>
 
 extern "C" {
-# include "as.h"
-# include "elf/ppc.h"
-# include "safe-ctype.h"
-#include "dw2gencfi.h"
+#include "elf/ppc.h"
+
+#include "as.h"
+#include "safe-ctype.h"
+
 }
 
 #include "adl-asm-impl.h"
 
-using namespace std;
 using namespace adl;
 
 /* What type of shared library support to use.  */
@@ -63,96 +57,117 @@ static enum { SHLIB_NONE, SHLIB_PIC, SHLIB_MRELOCATABLE } shlib = SHLIB_NONE;
    at 32 for now. */
 static unsigned int adl_obj64 = 0;
 
-// Default option parsing.  Calls acb_parse_option as an optional
-// extension-library hook.  Also calls acb_march_parse_option for optional
-// micro-architecture option processing (-m option stuff).
-int adl_parse_option(int c, char *arg)
+int ppc_parse_option(int c, char *arg)
 {
-  switch (c) {
-	case OPTION_IGNORE_LOWBITS:
-	  adl_set_check_low_bits(false);
-	  break;
-    case 'a':
-      if (strcmp (arg, "64") == 0) {
-        adl_obj64 = 1;
-      }
-      else if (strcmp (arg, "32") == 0) {
-        adl_obj64 = 0;
-      } else {
-        return 0;
-      }
-      break;
-  case 'u':
-    /* -u means that any undefined symbols should be treated as
-       external, which is the default for gas anyhow.  */
-    break;
-  case 'K':
-    /* Recognize -K PIC.  */
-    if (strcmp (arg, "PIC") == 0 || strcmp (arg, "pic") == 0)
-      {
-        shlib = SHLIB_PIC;
-      }
-    else
-      return 0;
-  case 'm':
-    // We'll ignore an -mregnames option for compatibility.  We just always
-    // allow this functionality.
-    if (!strcmp(arg,"regnames")) {
-      return 1;
-    }
-    else if (strcmp (arg, "little") == 0 || strcmp (arg, "little-endian") == 0) {
-      target_big_endian = 0;
-    }
-    else if (strcmp (arg, "big") == 0 || strcmp (arg, "big-endian") == 0) {
-      target_big_endian = 1;
-    }
-    else if (strcmp (arg, "no-rules") == 0) {
-      adl_set_check_asm_rules(0);
-    }
-	else if (acb_march_parse_option(arg)) {
-		// Return an error if the optional hook returns an error.
+	return 0;
+}
+
+int ppc_parse_opt(int c, char *arg)
+{
+	if (vspa_parse_option(c, arg))
+	{
 		return 1;
 	}
-    break;
-  case 'l':
-    /* Solaris as takes -le (presumably for little endian).  For completeness
-       sake, recognize -be also.  */
-    if (strcmp (arg, "e") == 0)
-      {
-        target_big_endian = 0;
-      }
-    else
-      return 0;
-    break;
-  case 'b':
-    if (strcmp (arg, "e") == 0)
-      {
-        target_big_endian = 1;
-      }
-    else
-      return 0;
-    break;
 
-  default:
-    return acb_parse_option(c, arg);
-  }
+	switch (c)
+	{
+	case 'a':
+		if (strcmp (arg, "64") == 0)
+		{
+			adl_obj64 = 1;
+		}
+		else if (strcmp (arg, "32") == 0)
+		{
+			adl_obj64 = 0;
+		}
+		else
+		{
+			return 0;
+		}
+		break;
 
-  return 1;
+	case 'u':
+		/*
+		* -u means that any undefined symbols should be treated as
+		* external, which is the default for gas anyhow
+		*/
+		break;
+
+	case 'K':
+		/* recognize -K PIC */
+		if (strcmp (arg, "PIC") == 0 || strcmp (arg, "pic") == 0)
+		{
+			shlib = SHLIB_PIC;
+		}
+		else
+		{
+			return 0;
+		}
+
+	case 'm':
+		/* we'll ignore an -mregnames option for compatibility; we just always
+		* allow this functionality
+		*/
+		if (!strcmp(arg, "regnames"))
+		{
+			return 1;
+		}
+		else if (strcmp (arg, "little") == 0
+						|| strcmp (arg, "little-endian") == 0)
+		{
+			target_big_endian = 0;
+		}
+		else if (strcmp (arg, "big") == 0
+						|| strcmp (arg, "big-endian") == 0)
+		{
+			target_big_endian = 1;
+		}
+		else if (strcmp (arg, "no-rules") == 0)
+		{
+			adl_set_check_asm_rules(0);
+		}
+		else
+		{
+			return 0;
+		}
+		break;
+
+	case 'l':
+		/*
+		* Solaris as takes -le (presumably for little endian); for completeness
+		* sake, recognize -be also
+		*/
+		if (strcmp (arg, "e") == 0)
+		{
+			target_big_endian = 0;
+		}
+		else
+		{
+			return 0;
+		}
+		break;
+
+	case 'b':
+		if (strcmp (arg, "e") == 0)
+		{
+			target_big_endian = 1;
+		}
+		else
+		{
+			return 0;
+		}
+		break;
+
+	default:
+		return 0;
+	}
+
+	return 1;
 }
 
-// Do any processing immediately after handling the options.
-void adl_after_parse_args()
-{
-	acb_after_parse_args();
-}
-
-extern "C" const bfd_arch_info_type bfd_adl_arch;
-
-// We grab the machine from the architecture definition we have in the created
-// disassembler.
 unsigned long default_adl_mach()
 {
-  return bfd_adl_arch.mach;
+  return (adl_obj64) ? bfd_mach_ppc64 : bfd_mach_ppc;
 }
 
 extern char *default_adl_target_format ()
@@ -162,14 +177,18 @@ extern char *default_adl_target_format ()
 	  : (adl_obj64 ? "elf64-powerpcle" : "elf32-powerpcle"));
 }
 
-void acb_show_usage(FILE *);
+void ppc_show_usage (FILE *stream ATTRIBUTE_UNUSED);
 
-extern string adl_asm_version;
+extern std::string adl_asm_version;
 
-void adl_show_usage (FILE *stream ATTRIBUTE_UNUSED)
+void ppc_show_usage(FILE *stream ATTRIBUTE_UNUSED)
 {
+}
+
+void ppc_show_usg(FILE *stream ATTRIBUTE_UNUSED)
+{
+  vspa_show_usage(stream);
   fprintf (stream, "\
---ignore-low-bits		Ignore low bits in operands even is they should be zero.\n\
 -a32			Generate ELF32\n\
 -a64			Generate ELF64\n\
 -mno-rules			Turn off assembly rule checking\n\
@@ -177,9 +196,6 @@ void adl_show_usage (FILE *stream ATTRIBUTE_UNUSED)
 			Generate code for a little endian machine\n\
 -mbig, -mbig-endian, -be\n\
 			Generate code for a big endian machine\n");
-
-  // Add on any extension library option help.
-  acb_show_usage(stream);
   if (!adl_asm_version.empty()) {
     fprintf(stream,"\nADL generated assembler version %s\n",adl_asm_version.c_str());
   }
@@ -429,10 +445,8 @@ void acb_const_hook(char *str,expressionS *ex,const adl_operand *operand)
   }
 }
 
-pair<bfd_reloc_code_real_type,bool> acb_reloc_hook(const string &arg,expressionS *ex,const struct adl_operand *operand)
+bfd_reloc_code_real_type acb_reloc_hook(char *str,expressionS *ex,const struct adl_operand *operand)
 {
-  char *str = (char*)arg.c_str();
-  
   bfd_reloc_code_real_type reloc = BFD_RELOC_UNUSED; 
 
   if ((reloc = ppc_elf_suffix (&str, ex)) != BFD_RELOC_UNUSED) {
@@ -472,7 +486,7 @@ pair<bfd_reloc_code_real_type,bool> acb_reloc_hook(const string &arg,expressionS
     }
 
   }
-  return make_pair(reloc,false);
+  return reloc;
 }
 
 /* Validate any relocations emitted for -mrelocatable, possibly adding
@@ -519,9 +533,9 @@ static void ppc_elf_validate_fix (fixS *fixp, segT seg)
     }
 }
 
-bool acb_fixup_operand(fixS *fixP,const struct adl_operand *operand)
+void acb_fixup_operand(fixS *fixP,const struct adl_operand *operand)
 {
-  assert (fixP->fx_addsy != NULL || fixP->fx_subsy != NULL);
+  assert (fixP->fx_addsy != NULL);
 
   /* Determine a BFD reloc value based on the operand information.
      We are only prepared to turn a few of the operands into
@@ -541,6 +555,7 @@ bool acb_fixup_operand(fixS *fixP,const struct adl_operand *operand)
            && operand->leftshift == 2)
     fixP->fx_r_type = BFD_RELOC_PPC_BA26;
   else if ((operand->flags & ADL_ABSOLUTE)
+           && operand->ptr->width == 16
            && operand->leftshift == 0)
     {
       fixP->fx_r_type = BFD_RELOC_PPC_BA16;
@@ -549,28 +564,25 @@ bool acb_fixup_operand(fixS *fixP,const struct adl_operand *operand)
     {
       char *sfile;
       unsigned int sline;
-	  symbolS *sym = (fixP->fx_addsy != NULL) ? fixP->fx_addsy : fixP->fx_subsy;
 
       /* Use expr_symbol_where to see if this is an expression
          symbol.  */
-      if (expr_symbol_where (sym, &sfile, &sline))
-        as_bad_where (fixP->fx_file, fixP->fx_line,
+      if (expr_symbol_where (fixP->fx_addsy, &sfile, &sline))
+        as_warn_where (fixP->fx_file, fixP->fx_line,
                       _("unresolved expression that must be resolved"));
       else
-        as_bad_where (fixP->fx_file, fixP->fx_line,
+        as_warn_where (fixP->fx_file, fixP->fx_line,
                       _("unsupported relocation against %s"),
-                      S_GET_NAME (sym));
-      
-		     fixP->fx_done = 1;
-      return false;
+                      S_GET_NAME (fixP->fx_addsy));
+     
+		fixP->fx_done = 1;
+      return;
     }
-  return true;
 }
 
-bool acb_fixup_instr(fixS *fixP,valueT *valP,segT seg)
+void acb_fixup_instr(fixS *fixP,valueT *valP,segT seg)
 {
   valueT value = * valP;
-
   ppc_elf_validate_fix (fixP, seg);
   switch (fixP->fx_r_type)
     {
@@ -631,7 +643,6 @@ bool acb_fixup_instr(fixS *fixP,valueT *valP,segT seg)
             as_bad_where (fixP->fx_file, fixP->fx_line,
                           _("cannot emit PC relative %s relocation"),
                           bfd_get_reloc_code_name (fixP->fx_r_type));
-		  return false;
         }
 
       md_number_to_chars (fixP->fx_frag->fr_literal + fixP->fx_where,
@@ -874,18 +885,6 @@ bool acb_fixup_instr(fixS *fixP,valueT *valP,segT seg)
                _("Gas failure, reloc value %d\n"), fixP->fx_r_type);
       fflush (stderr);
       abort ();
-	  return false;
     }
-	return true;
 }
 
-// Just call to an externally supplied handler.
-long adl_relax_frag (segT segment, fragS *fragP, long stretch)
-{
-  return acb_relax_frag(segment,fragP,stretch);
-}
-
-void adl_cfi_frame_initial_instructions (void)
-{
-  cfi_add_CFA_def_cfa (1, 0);
-}

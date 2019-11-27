@@ -194,6 +194,14 @@ higher_prime_index (unsigned long n)
   return low;
 }
 
+/* Returns a hash code for P.  */
+
+static hashval_t
+hash_pointer (const PTR p)
+{
+  return (hashval_t) ((intptr_t)p >> 3);
+}
+
 /* Returns non-zero if P1 and P2 are equal.  */
 
 static int
@@ -325,9 +333,9 @@ htab_create_alloc_ex (size_t size, htab_hash hash_f, htab_eq eq_f,
 
 /*
 
-@deftypefn Supplemental htab_t htab_create_typed_alloc (size_t @var{size}, @
-htab_hash @var{hash_f}, htab_eq @var{eq_f}, htab_del @var{del_f}, @
-htab_alloc @var{alloc_tab_f}, htab_alloc @var{alloc_f}, @
+@deftypefn Supplemental htab_t htab_create_typed_alloc (size_t @var{size},
+htab_hash @var{hash_f}, htab_eq @var{eq_f}, htab_del @var{del_f},
+htab_alloc @var{alloc_tab_f}, htab_alloc @var{alloc_f},
 htab_free @var{free_f})
 
 This function creates a hash table that uses two different allocators
@@ -978,21 +986,5 @@ iterative_hash (const PTR k_in /* the key */,
     }
   mix(a,b,c);
   /*-------------------------------------------- report the result */
-  return c;
-}
-
-/* Returns a hash code for pointer P. Simplified version of evahash */
-
-static hashval_t
-hash_pointer (const PTR p)
-{
-  intptr_t v = (intptr_t) p;
-  unsigned a, b, c;
-
-  a = b = 0x9e3779b9;
-  a += v >> (sizeof (intptr_t) * CHAR_BIT / 2);
-  b += v & (((intptr_t) 1 << (sizeof (intptr_t) * CHAR_BIT / 2)) - 1);
-  c = 0x42135234;
-  mix (a, b, c);
   return c;
 }

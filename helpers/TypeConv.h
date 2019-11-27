@@ -17,12 +17,7 @@ namespace adl {
     return x.uint32();
   }
 
-  template <size_t Nb>
-  inline uint32_t to_uint32(const ns_sbits<Nb> &x) {
-    return x.uint32();
-  }  
-
-  static inline uint32_t to_uint32(uint32_t x) {
+  inline uint32_t to_uint32(uint32_t x) {
     return x;
   }
 
@@ -32,34 +27,8 @@ namespace adl {
     return x.uint64();
   }
 
-  template <size_t Nb>
-  inline uint64_t to_uint64(const ns_sbits<Nb> &x) {
-    return x.uint64();
-  }
-
-  static inline uint64_t to_uint64(uint64_t x) {
+  inline uint64_t to_uint64(uint64_t x) {
     return x;
-  }
-
-  // Conversions for converting a number thing into a bits object.
-  template <template<size_t> class number_type,size_t Nb>
-  inline number_type<Nb> to_bits(const number_type<Nb> &x) {
-    return x;
-  }
-
-  template <template<size_t> class number_type>  
-  inline number_type<32> to_bits(uint32_t x) {
-    return number_type<32>(x);
-  }
-
-  template <template<size_t> class number_type>  
-  inline number_type<64> to_bits(uint64_t x) {
-    return number_type<64>(x);
-  }
-
-  template <template<size_t> class number_type>  
-  inline number_type<sizeof(int)*8> to_bits(int x) {
-    return number_type<sizeof(int)*8>(x);
   }
 
 }

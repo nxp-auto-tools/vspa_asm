@@ -243,7 +243,3 @@
 
 /* Define to `unsigned int' if <sys/types.h> does not define. */
 /* #undef size_t */
-
-/* Define to 1 if you have the declaration of `strnlen', and to 0 if you
-   don't. */
-#define HAVE_DECL_STRNLEN 1

@@ -46,12 +46,10 @@ Boston, MA 02110-1301, USA.  */
 #else /* __cplusplus */
 
 /* Supporting <stdbool.h> in C++ is a GCC extension.  */
-#ifndef _MSC_VER
 #define _Bool	bool
 #define bool	bool
 #define false	false
 #define true	true
-#endif
 
 #endif /* __cplusplus */
 

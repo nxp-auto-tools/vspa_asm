@@ -13,33 +13,22 @@ unsigned long vcpu_ppc_mach();
 extern "C" void vcpu_md_apply_fix(fixS *fixP, valueT *valP, segT seg);
 extern "C" void ippu_md_apply_fix(fixS *fixP, valueT *valP, segT seg);
 
-extern "C" void ippu_md_assemble(char *str);
-extern "C" void vcpu_md_assemble(char *str);
-
+extern "C" void vcpu_md_assemble(char *str, unsigned line_number);
+extern "C" void ippu_md_assemble(char *str, unsigned line_number);
 
 extern "C" int vcpu_md_parse_option(int c, char *arg);
 extern "C" int ippu_md_parse_option(int c, char *arg);
-int adl_parse_option(int c, char *arg);
+int ppc_parse_opt(int c, char *arg);
 
 extern "C" void vcpu_md_show_usage(FILE *stream ATTRIBUTE_UNUSED);
 extern "C" void ippu_md_show_usage(FILE *stream ATTRIBUTE_UNUSED);
-
-void adl_show_usage(FILE *stream ATTRIBUTE_UNUSED);
+void ppc_show_usg(FILE *stream ATTRIBUTE_UNUSED);
 
 void vcpu_md_begin();
 void ippu_md_begin();
 
-enum bfd_architecture ippu_adl_arch();
-enum bfd_architecture vcpu_adl_arch();
-
-unsigned long ippu_adl_mach();
-unsigned long vcpu_adl_mach();
-
-extern char* ippu_adl_target_format();
-extern char* vcpu_adl_target_format();
-
-
 // The default core is VCPU.
+int core = CORE_VCPU;
 int init_core;
 
 //  Do initializations.
@@ -79,43 +68,26 @@ int md_parse_option(int c, char *arg)
 		return 1;
 	}
 
-	return adl_parse_option(c, arg);
+	return ppc_parse_opt(c, arg);
 }
 
-void md_assemble(char *str)
+void md_assemble(char *str, unsigned line_number)
 {
 	if (core == CORE_VCPU)
 	{
-		vcpu_md_assemble(str);
+		vcpu_md_assemble(str, line_number);
 	}
 	else
 	{
-		ippu_md_assemble(str);
+		ippu_md_assemble(str, line_number);
 	}
 }
-
-enum bfd_architecture adl_arch()
-{
-	return vcpu_adl_arch();
-}
-
-unsigned long adl_mach()
-{
-	return vcpu_adl_mach();
-}
-
-extern char*
-adl_target_format()
-{
-	return vcpu_adl_target_format();
-}
-
 
 void md_show_usage(FILE *stream ATTRIBUTE_UNUSED)
 {
 	vcpu_md_show_usage(stream);
 	ippu_md_show_usage(stream);
-	adl_show_usage(stream);
+	ppc_show_usg(stream);
 }
 
 void md_apply_fix(fixS *fixP, valueT *valP, segT seg)
@@ -130,4 +102,17 @@ void md_apply_fix(fixS *fixP, valueT *valP, segT seg)
 	}
 }
 
+enum bfd_architecture ppc_arch()
+{
+	return vcpu_ppc_arch();
+}
 
+char *ppc_target_format()
+{
+	return vcpu_ppc_target_format();
+}
+
+unsigned long ppc_mach()
+{
+	return vcpu_ppc_mach();
+}

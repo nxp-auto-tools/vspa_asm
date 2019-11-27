@@ -26,16 +26,15 @@ CFILES = \
 	dis-buf.c \
 	dis-init.c \
 	disassemble.c \
-	adl-support.c
+	ppc-support.c
 
 OFILES = @BFD_MACHINES@
 
 # We should reconfigure whenever bfd/configure.in changes, because
 # that's where the version number in Makefile comes from.
-CONFIG_STATUS_DEPENDENCIES = $(BFDDIR)/configure.ac
+CONFIG_STATUS_DEPENDENCIES = $(BFDDIR)/configure.in
 
-AM_CPPFLAGS = -D_GNU_SOURCE -I. -I$(srcdir) -I../bfd -I$(INCDIR) -I$(BFDDIR) @HDEFINES@ @INCINTL@ @archdefs@
-
+INCLUDES = -D_GNU_SOURCE -I. -I$(srcdir) -I../bfd -I$(INCDIR) -I$(BFDDIR) @HDEFINES@ -I$(srcdir)/../intl -I../intl @archdefs@
 
 POTFILES = $(HFILES) $(CFILES)
 po/POTFILES.in: @MAINT@ Makefile

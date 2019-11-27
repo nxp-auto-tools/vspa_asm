@@ -133,7 +133,6 @@ gdb-taz: gdb-tar $(DEVO_SUPPORT) $(SUPPORT_FILES) texinfo/texinfo.tex
 .PHONY: do-proto-toplev
 do-proto-toplev: $(DEVO_SUPPORT) $(SUPPORT_FILES) texinfo/texinfo.tex
 	echo "==> Making $(PACKAGE)-$(VER)/"
-	echo "Support files are:  $(SUPPORT_FILES)"
   # Take out texinfo from a few places.
 	sed -e '/^all\.normal: /s/\all-texinfo //' \
 	    -e '/^	install-texinfo /d' \
@@ -215,14 +214,13 @@ do-proto-toplev: $(DEVO_SUPPORT) $(SUPPORT_FILES) texinfo/texinfo.tex
 	     msgfmt -o `echo $$f | sed -e 's/\.po$$/.gmo/'` $$f ; \
 	done
   #
-  # Remove any Subversion, autoconf cache files, automake, .gmo files, and backup files that
+  # Remove any Subversion, autoconf cache files, automake, and backup files that
   # shouldn't have been copied over.
 	find proto-toplev -name ".deps" -print0 | xargs -0 rm -rf
 	find proto-toplev -name ".libs" -print0 | xargs -0 rm -rf
 	find proto-toplev -name ".svn" -print0 | xargs -0 rm -rf
 	find proto-toplev -name "*.cache" -print0 | xargs -0 rm -rf
 	find proto-toplev -name "*~" -print0 | xargs -0 rm -rf
-	find proto-toplev -name "*.gmo" -print0 | xargs -0 rm -rf
   # Now move everything over to the desired directory.
 	-rm -f $(PACKAGE)-$(VER)
 	cp -lpR proto-toplev $(PACKAGE)-$(VER)
@@ -280,9 +278,8 @@ binutils.tar.bz2: $(DIST_SUPPORT) $(BINUTILS_SUPPORT_DIRS) binutils
 		SUPPORT_FILES="$(BINUTILS_SUPPORT_DIRS)"
 
 .PHONY: binutils-adl
-GASB_SUPPORT_DIRS= $(GAS_SUPPORT_DIRS) binutils ld
+GASB_SUPPORT_DIRS= $(GAS_SUPPORT_DIRS) binutils
 binutils-adl: $(DIST_SUPPORT) $(GASB_SUPPORT_DIRS) gas
-	echo "gas support files are $(GASB_SUPPORT_DIRS)"
 	$(MAKE) -f $(SELF) do-proto-toplev TOOL=gas \
 		MD5PROG="$(MD5PROG)" \
 		SUPPORT_FILES="$(GASB_SUPPORT_DIRS)"
@@ -301,7 +298,7 @@ move-file:
 	mv $(PACKAGE)-$(VER).tar.bz2 $(DEST)
 
 .PHONY: binutils-adl.tar.bz2
-GASB_SUPPORT_DIRS= $(GAS_SUPPORT_DIRS) binutils ld
+GASB_SUPPORT_DIRS= $(GAS_SUPPORT_DIRS) binutils
 binutils-adl.tar.bz2: $(DIST_SUPPORT) $(GASB_SUPPORT_DIRS) gas
 	$(MAKE) -f $(SELF) taz TOOL=gas \
 		MD5PROG="$(MD5PROG)" \
@@ -310,7 +307,7 @@ binutils-adl.tar.bz2: $(DIST_SUPPORT) $(GASB_SUPPORT_DIRS) gas
 	$(MAKE) -f $(SELF) binutils-cleanup TOOL=gas
 
 .PHONY: gas+binutils.tar.bz2
-GASB_SUPPORT_DIRS= $(GAS_SUPPORT_DIRS) binutils ld
+GASB_SUPPORT_DIRS= $(GAS_SUPPORT_DIRS) binutils
 gas+binutils.tar.bz2: $(DIST_SUPPORT) $(GASB_SUPPORT_DIRS) gas
 	$(MAKE) -f $(SELF) taz TOOL=gas \
 		MD5PROG="$(MD5PROG)" \

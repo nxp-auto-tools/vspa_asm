@@ -381,7 +381,3 @@
 
 /* Define to 1 if you need to in order for `stat' and other things to work. */
 /* #undef _POSIX_SOURCE */
-
-/* Define to 1 if you have the declaration of `strnlen', and to 0 if you
-   don't. */
-#define HAVE_DECL_STRNLEN 1

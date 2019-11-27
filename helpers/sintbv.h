@@ -36,10 +36,9 @@ namespace adl {
     sintbv(int64_t val)  : Base(val) {}
 #ifdef IS_64BIT
     sintbv(unsigned long long val) : Base((uint64_t)val) {};
-    sintbv(long long int val) : Base((int64_t)val) {};
+    sintbv( long long int val) : Base((int64_t)val) {};
 #else
     sintbv(unsigned long val) : Base((uint32_t)val) {};
-    sintbv(long val) : Base((int32_t)val) {};
 #endif
     sintbv( const char* s) : Base(s) {
       if (is_negative(s)) {
@@ -97,11 +96,7 @@ namespace adl {
         if(x.get(0)) {
 	  tmp.negate() ;
 	  os << '-';
-	  }
-	  else if (flags & std::ios_base::showpos) {
-		  os << '+';
-	  }
-
+	}
 	os << static_cast<Base>(tmp);
       } else {
         os << static_cast<Base>(x);
@@ -242,23 +237,23 @@ namespace adl {
       return *this;    
     }  
   
-    const intbv<1> operator[](size_t position) const 
+    const sintbv<1> operator[](size_t position) const 
     { 
       return Base::operator[](position); 
     }
     template <size_t _Nb2>
-    const intbv<1> operator[](const sintbv<_Nb2>& position) const 
+    const sintbv<1> operator[](const sintbv<_Nb2>& position) const 
     { 
       return Base::operator[](position);  
     }
 
-    const intbv<1> operator()(size_t position) const 
+    const sintbv<1> operator()(size_t position) const 
     { 
       return Base::operator()(position); 
     }
 
     template <size_t _Nb2>
-    const intbv<1> operator()(const sintbv<_Nb2>& position) const 
+    const sintbv<1> operator()(const sintbv<_Nb2>& position) const 
     { 
       return Base::operator()(position); 
     }
@@ -607,7 +602,7 @@ namespace adl {
     }    
     // <=
     bool operator<=(const sintbv<_Nb>& rhs) const {
-      return this->signedLE(rhs);
+      return signedLE(rhs);
     }
 
     template <size_t _Nb2>
@@ -632,7 +627,7 @@ namespace adl {
     // >=
     bool operator>=(const sintbv<_Nb>& rhs) const
     { 
-      return this->signedGE(rhs);
+      return signedGE(rhs);
     }
 
     template <size_t _Nb2>
@@ -1338,9 +1333,34 @@ namespace adl {
     bool is_negative(const char* s) {
       const char* p = s;
       bool negative = false;
-      while (!(negative = (*p == '-')) && !isalnum(*p) && (*p++ != '\0')) {;};
+      while (!(negative = (*p == '-')) && !isalnum(*p) && (p++ != '\0')) {;};
       return negative;
     }
+
+
+    friend sintbv<_Nb> signedMod(const sintbv<_Nb>& x, const sintbv<_Nb>& y)
+    {
+      intbv<_Nb> tmp_x(x);
+      intbv<_Nb> tmp_y(y);
+      bool neg = false;
+
+      if (tmp_x.get(0)) {
+        tmp_x.negate();
+        neg = true;
+      }
+
+      if (tmp_y.get(0)) {
+        tmp_y.negate();
+      }
+
+      tmp_x = tmp_x % tmp_y;
+      if (neg) {
+        tmp_x.negate();
+      }
+
+      return tmp_x;
+    }
+
 
   };//sintbv
 
@@ -1448,69 +1468,6 @@ namespace adl {
   {
     return signedDivide(x,y);
   }
-
-  //
-  // Signed modulo
-  //
-
-  /////////////////////////////////
-  //
-  // Signed division.  These takes two unsigned bit vectors and returns a
-  // signed bit vector as a result.
-  //
-    
-  // Same size
-  template<size_t _Nb>
-  inline sintbv<_Nb> sbitsSignedMod(const intbv<_Nb>& x, const intbv<_Nb>& y)
-  {
-    return signedMod(x,y);
-  }
-  
-  // Different size
-  template<size_t _Nb1, size_t _Nb2>
-  inline sintbv<MAX(_Nb1,_Nb2)> sbitsSignedMod(const intbv<_Nb1>& x, const intbv<_Nb2>& y)
-  {
-    return signedMod(x,y);
-  }
-  
-  // uint64_t
-  template<size_t _Nb>
-  inline sintbv<MAX(_Nb,64)> sbitsSignedMod(const intbv<_Nb>& x, uint64_t y)
-  {
-    return signedMod(x,y);
-  }
-
-  template<size_t _Nb>
-  inline sintbv<MAX(_Nb,64)> sbitsSignedMod(uint64_t x,const intbv<_Nb>& y)
-  {
-    return signedMod(x,y);
-  }
-
-  // uint32_t
-  template<size_t _Nb>
-  inline sintbv<MAX(_Nb,32)> sbitsSignedMod(const intbv<_Nb>& x, uint32_t y)
-  {
-    return signedMod(x,y);
-  }
-
-  template<size_t _Nb>
-  inline sintbv<MAX(_Nb,32)> sbitsSignedMod(uint32_t x,const intbv<_Nb>& y)
-  {
-    return signedMod(x,y);
-  }  
-  
-  // int32_t
-  template<size_t _Nb>
-  inline sintbv<MAX(_Nb,32)> sbitsSignedMod(const intbv<_Nb>& x, int32_t y)
-  {
-    return signedMod(x,y);
-  }
-
-  template<size_t _Nb>
-  inline sintbv<MAX(_Nb,32)> sbitsSignedMod(int32_t x,const intbv<_Nb>& y)
-  {
-    return signedMod(x,y);
-  }  
 
 }; //adl  
 

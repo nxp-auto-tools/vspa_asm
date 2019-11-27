@@ -1,5 +1,7 @@
-$vcpu3 = "assembler/as-vcpu3_spec.cc";
-$ippu3 = "assembler/as-ippu3_spec.cc";
+$vcpu1 = "assembler/as-vcpu1_spec.cc";
+$vcpu2 = "assembler/as-vcpu2_spec.cc";
+$ippu1 = "assembler/as-ippu1_spec.cc";
+$ippu2 = "assembler/as-ippu2_spec.cc";
 
 my %index_map;
 my %modifier_map;
@@ -16,7 +18,7 @@ sub check_modifier_definition
 sub process_modifier
 {
 	my $line = shift;
-	my ($name, $body) = $line =~ /.*(_sym\d+_modifier).* \{(.*)\}/;
+	my ($name, $body) = $line =~ /.*(_sym\d+_modifier).* {(.*)}/;
 
 	my @indexes = $body =~ /operands\[(\d+)\]\.X_add_number/g;
 
@@ -104,23 +106,20 @@ sub transform_file
 			"dt_debug",
 			"adl_get_instr_ops",
 			"adl_get_instr_names",
-      "adl_size_lookup",
 			"md_begin",
 			"md_show_usage",
 			"md_parse_option",
 			"md_apply_fix",
 			"md_assemble",
-			"adl_target_format",
-			"adl_arch",
-			"adl_mach"
+			"ppc_target_format",
+			"ppc_arch",
+			"ppc_mach"
 		);
 
 	# add the namespace since the "using namespace adl;" is removed to avoid the conflicts related to multiple 
 	my %replace_map = (
 			"InstrBundle" => "adl::InstrBundle",
-			"InstrInfo" => "adl::InstrInfo",
-      "le_intbv" => "adl::le_intbv",
-      "le_sintbv" => "adl::le_sintbv"
+			"InstrInfo" => "adl::InstrInfo"
 		);
 
 	print "// Pre-processed\n";	
@@ -143,9 +142,8 @@ sub transform_file
 		# skip some lines that are not needed by the assembler
 		if (($ippu 
 			and ($line =~ m/std::string\sadl_asm_version/
-				or $line =~ m/\s*const\s+char\s+(adl_parallel_separator_chars|adl_symbol_chars|comment_chars|line_comment_chars|line_separator_chars)/
-				or $line =~ m/#include\s+"helpers/))
-			or $line =~ m/using\s+namespace\s+adl/)
+				or $line =~ m/\s*const\s+char\s+(adl_parallel_separator_chars|adl_symbol_chars|comment_chars|line_comment_chars|line_separator_chars)/))
+				or ($line =~ m/using\s+namespace\s+adl|#include\s+"helpers/))
 		{
 			next;
 		}
@@ -179,5 +177,7 @@ sub transform_file
 	close STDOUT;
 }
 
-transform_file($vcpu3, 'vcpu');
-transform_file($ippu3, 'ippu');
+transform_file($vcpu1, 'vcpu');
+transform_file($vcpu2, 'vcpu');
+transform_file($ippu1, 'ippu');
+transform_file($ippu2, 'ippu');

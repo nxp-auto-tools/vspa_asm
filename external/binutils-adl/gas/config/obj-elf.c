@@ -1,5 +1,7 @@
 /* ELF object file format
-   Copyright (C) 1992-2014 Free Software Foundation, Inc.
+   Copyright 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000,
+   2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
+   Free Software Foundation, Inc.
 
    This file is part of GAS, the GNU Assembler.
 
@@ -60,10 +62,6 @@
 #include "elf/mep.h"
 #endif
 
-#ifdef TC_NIOS2
-#include "elf/nios2.h"
-#endif
-
 static void obj_elf_line (int);
 static void obj_elf_size (int);
 static void obj_elf_type (int);
@@ -74,11 +72,9 @@ static void obj_elf_visibility (int);
 static void obj_elf_symver (int);
 static void obj_elf_subsection (int);
 static void obj_elf_popsection (int);
-static void obj_elf_gnu_attribute (int);
 static void obj_elf_tls_common (int);
 static void obj_elf_lcomm (int);
 static void obj_elf_struct (int);
-static void obj_elf_option (int);
 
 static const pseudo_typeS elf_pseudo_table[] =
 {
@@ -117,9 +113,6 @@ static const pseudo_typeS elf_pseudo_table[] =
   {"vtable_inherit", (void (*) (int)) &obj_elf_vtable_inherit, 0},
   {"vtable_entry", (void (*) (int)) &obj_elf_vtable_entry, 0},
 
-  /* A GNU extension for object attributes.  */
-  {"gnu_attribute", obj_elf_gnu_attribute, 0},
-
   /* These are used for dwarf.  */
   {"2byte", cons, 2},
   {"4byte", cons, 4},
@@ -137,15 +130,6 @@ static const pseudo_typeS elf_pseudo_table[] =
 
   {"tls_common", obj_elf_tls_common, 0},
 
-  /* HACK:  Ignore any .option statements, but don't cause an error. */
-  {"option", obj_elf_option,0},
-
-  /* Additional pseudo options for setting half-words, words, and
-     double-words. */
-  {"half", cons,2},
-  {"word", cons,4},
-  {"dword", cons,8},
-  
   /* End sentinel.  */
   {NULL, NULL, 0},
 };
@@ -276,7 +260,7 @@ elf_file_symbol (const char *s, int appfile)
       || (symbol_rootP->bsym->flags & BSF_FILE) == 0)
     {
       symbolS *sym;
-      size_t name_length;
+      unsigned int name_length;
 
       sym = symbol_new (s, absolute_section, 0, NULL);
       symbol_set_frag (sym, &zero_address_frag);
@@ -400,12 +384,6 @@ obj_elf_tls_common (int ignore ATTRIBUTE_UNUSED)
     symbol_get_bfdsym (symbolP)->flags |= BSF_THREAD_LOCAL;
 }
 
-static void obj_elf_option(int ignore ATTRIBUTE_UNUSED)
-{
-  char *c = find_end_of_line(input_line_pointer,0);
-  input_line_pointer = c;
-}
-
 static void
 obj_elf_lcomm (int ignore ATTRIBUTE_UNUSED)
 {
@@ -469,6 +447,7 @@ obj_elf_weak (int ignore ATTRIBUTE_UNUSED)
       symbolP = get_sym_from_input_line_and_check ();
       c = *input_line_pointer;
       S_SET_WEAK (symbolP);
+      symbol_get_obj (symbolP)->local = 1;
       if (c == ',')
 	{
 	  input_line_pointer++;
@@ -680,14 +659,6 @@ obj_elf_change_section (const char *name,
 	  else if ((attr & ~ssect->attr) == SHF_ALPHA_GPREL)
 	    override = TRUE;
 #endif
-#ifdef TC_RX
-	  else if (attr == (SHF_EXECINSTR | SHF_WRITE | SHF_ALLOC)
-		   && (ssect->type == SHT_INIT_ARRAY
-		       || ssect->type == SHT_FINI_ARRAY
-		       || ssect->type == SHT_PREINIT_ARRAY))
-	    /* RX init/fini arrays can and should have the "awx" attributes set.  */
-	    ;
-#endif
 	  else
 	    {
 	      if (group_name == NULL)
@@ -770,10 +741,10 @@ obj_elf_change_section (const char *name,
 }
 
 static bfd_vma
-obj_elf_parse_section_letters (char *str, size_t len, bfd_boolean *is_clone)
+obj_elf_parse_section_letters (char *str, size_t len, bfd_boolean *clone)
 {
   bfd_vma attr = 0;
-  *is_clone = FALSE;
+  *clone = FALSE;
 
   while (len > 0)
     {
@@ -804,7 +775,7 @@ obj_elf_parse_section_letters (char *str, size_t len, bfd_boolean *is_clone)
 	  attr |= SHF_TLS;
 	  break;
 	case '?':
-	  *is_clone = TRUE;
+	  *clone = TRUE;
 	  break;
 	/* Compatibility.  */
 	case 'm':
@@ -1007,7 +978,7 @@ obj_elf_section (int push)
 
       if (*input_line_pointer == '"')
 	{
-	  bfd_boolean is_clone;
+	  bfd_boolean clone;
 
 	  beg = demand_copy_C_string (&dummy);
 	  if (beg == NULL)
@@ -1015,7 +986,7 @@ obj_elf_section (int push)
 	      ignore_rest_of_line ();
 	      return;
 	    }
-	  attr |= obj_elf_parse_section_letters (beg, strlen (beg), &is_clone);
+	  attr |= obj_elf_parse_section_letters (beg, strlen (beg), &clone);
 
 	  SKIP_WHITESPACE ();
 	  if (*input_line_pointer == ',')
@@ -1067,10 +1038,10 @@ obj_elf_section (int push)
 	      attr &= ~SHF_MERGE;
 	    }
 
-	  if ((attr & SHF_GROUP) != 0 && is_clone)
+	  if ((attr & SHF_GROUP) != 0 && clone)
 	    {
 	      as_warn (_("? section flag ignored with G present"));
-	      is_clone = FALSE;
+	      clone = FALSE;
 	    }
 	  if ((attr & SHF_GROUP) != 0 && *input_line_pointer == ',')
 	    {
@@ -1078,15 +1049,10 @@ obj_elf_section (int push)
 	      group_name = obj_elf_section_name ();
 	      if (group_name == NULL)
 		attr &= ~SHF_GROUP;
-	      else if (*input_line_pointer == ',')
+	      else if (strncmp (input_line_pointer, ",comdat", 7) == 0)
 		{
-		  ++input_line_pointer;
-		  SKIP_WHITESPACE ();
-		  if (strncmp (input_line_pointer, "comdat", 6) == 0)
-		    {
-		      input_line_pointer += 6;
-		      linkonce = 1;
-		    }
+		  input_line_pointer += 7;
+		  linkonce = 1;
 		}
 	      else if (strncmp (name, ".gnu.linkonce", 13) == 0)
 		linkonce = 1;
@@ -1097,7 +1063,7 @@ obj_elf_section (int push)
 	      attr &= ~SHF_GROUP;
 	    }
 
-	  if (is_clone)
+	  if (clone)
 	    {
 	      const char *now_group = elf_group_name (now_seg);
 	      if (now_group != NULL)
@@ -1459,195 +1425,6 @@ obj_elf_vtable_entry (int ignore ATTRIBUTE_UNUSED)
 		  BFD_RELOC_VTABLE_ENTRY);
 }
 
-#define skip_whitespace(str)  do { if (*(str) == ' ') ++(str); } while (0)
-
-static inline int
-skip_past_char (char ** str, char c)
-{
-  if (**str == c)
-    {
-      (*str)++;
-      return 0;
-    }
-  else
-    return -1;
-}
-#define skip_past_comma(str) skip_past_char (str, ',')
-
-/* A list of attributes that have been explicitly set by the assembly code.
-   VENDOR is the vendor id, BASE is the tag shifted right by the number
-   of bits in MASK, and bit N of MASK is set if tag BASE+N has been set.  */
-struct recorded_attribute_info {
-  struct recorded_attribute_info *next;
-  int vendor;
-  unsigned int base;
-  unsigned long mask;
-};
-static struct recorded_attribute_info *recorded_attributes;
-
-/* Record that we have seen an explicit specification of attribute TAG
-   for vendor VENDOR.  */
-
-static void
-record_attribute (int vendor, unsigned int tag)
-{
-  unsigned int base;
-  unsigned long mask;
-  struct recorded_attribute_info *rai;
-
-  base = tag / (8 * sizeof (rai->mask));
-  mask = 1UL << (tag % (8 * sizeof (rai->mask)));
-  for (rai = recorded_attributes; rai; rai = rai->next)
-    if (rai->vendor == vendor && rai->base == base)
-      {
-	rai->mask |= mask;
-	return;
-      }
-
-  rai = XNEW (struct recorded_attribute_info);
-  rai->next = recorded_attributes;
-  rai->vendor = vendor;
-  rai->base = base;
-  rai->mask = mask;
-  recorded_attributes = rai;
-}
-
-/* Return true if we have seen an explicit specification of attribute TAG
-   for vendor VENDOR.  */
-
-bfd_boolean
-obj_elf_seen_attribute (int vendor, unsigned int tag)
-{
-  unsigned int base;
-  unsigned long mask;
-  struct recorded_attribute_info *rai;
-
-  base = tag / (8 * sizeof (rai->mask));
-  mask = 1UL << (tag % (8 * sizeof (rai->mask)));
-  for (rai = recorded_attributes; rai; rai = rai->next)
-    if (rai->vendor == vendor && rai->base == base)
-      return (rai->mask & mask) != 0;
-  return FALSE;
-}
-
-/* Parse an attribute directive for VENDOR.
-   Returns the attribute number read, or zero on error.  */
-
-int
-obj_elf_vendor_attribute (int vendor)
-{
-  expressionS exp;
-  int type;
-  int tag;
-  unsigned int i = 0;
-  char *s = NULL;
-
-  /* Read the first number or name.  */
-  skip_whitespace (input_line_pointer);
-  s = input_line_pointer;
-  if (ISDIGIT (*input_line_pointer))
-    {
-      expression (& exp);
-      if (exp.X_op != O_constant)
-	goto bad;
-      tag = exp.X_add_number;
-    }
-  else
-    {
-      char *name;
-
-      /* A name may contain '_', but no other punctuation.  */
-      for (; ISALNUM (*input_line_pointer) || *input_line_pointer == '_';
-	   ++input_line_pointer)
-	i++;
-      if (i == 0)
-	goto bad;
-
-      name = (char *) alloca (i + 1);
-      memcpy (name, s, i);
-      name[i] = '\0';
-
-#ifndef CONVERT_SYMBOLIC_ATTRIBUTE
-#define CONVERT_SYMBOLIC_ATTRIBUTE(a) -1
-#endif
-
-      tag = CONVERT_SYMBOLIC_ATTRIBUTE (name);
-      if (tag == -1)
-	{
-	  as_bad (_("Attribute name not recognised: %s"), name);
-	  ignore_rest_of_line ();
-	  return 0;
-	}
-    }
-
-  type = _bfd_elf_obj_attrs_arg_type (stdoutput, vendor, tag);
-
-  if (skip_past_comma (&input_line_pointer) == -1)
-    goto bad;
-  if (type & 1)
-    {
-      expression (& exp);
-      if (exp.X_op != O_constant)
-	{
-	  as_bad (_("expected numeric constant"));
-	  ignore_rest_of_line ();
-	  return 0;
-	}
-      i = exp.X_add_number;
-    }
-  if ((type & 3) == 3
-      && skip_past_comma (&input_line_pointer) == -1)
-    {
-      as_bad (_("expected comma"));
-      ignore_rest_of_line ();
-      return 0;
-    }
-  if (type & 2)
-    {
-      int len;
-
-      skip_whitespace (input_line_pointer);
-      if (*input_line_pointer != '"')
-	goto bad_string;
-      s = demand_copy_C_string (&len);
-    }
-
-  record_attribute (vendor, tag);
-  switch (type & 3)
-    {
-    case 3:
-      bfd_elf_add_obj_attr_int_string (stdoutput, vendor, tag, i, s);
-      break;
-    case 2:
-      bfd_elf_add_obj_attr_string (stdoutput, vendor, tag, s);
-      break;
-    case 1:
-      bfd_elf_add_obj_attr_int (stdoutput, vendor, tag, i);
-      break;
-    default:
-      abort ();
-    }
-
-  demand_empty_rest_of_line ();
-  return tag;
-bad_string:
-  as_bad (_("bad string constant"));
-  ignore_rest_of_line ();
-  return 0;
-bad:
-  as_bad (_("expected <tag> , <value>"));
-  ignore_rest_of_line ();
-  return 0;
-}
-
-/* Parse a .gnu_attribute directive.  */
-
-static void
-obj_elf_gnu_attribute (int ignored ATTRIBUTE_UNUSED)
-{
-  obj_elf_vendor_attribute (OBJ_ATTR_GNU);
-}
-
 void
 elf_obj_read_begin_hook (void)
 {
@@ -1924,11 +1701,10 @@ obj_elf_type (int ignore ATTRIBUTE_UNUSED)
       const struct elf_backend_data *bed;
 
       bed = get_elf_backend_data (stdoutput);
-      if (!(bed->elf_osabi == ELFOSABI_GNU
-	    || bed->elf_osabi == ELFOSABI_FREEBSD
-	    /* GNU is still using the default value 0.  */
+      if (!(bed->elf_osabi == ELFOSABI_LINUX
+	    /* GNU/Linux is still using the default value 0.  */
 	    || bed->elf_osabi == ELFOSABI_NONE))
-	as_bad (_("symbol type \"%s\" is supported only by GNU and FreeBSD targets"),
+	as_bad (_("symbol type \"%s\" is supported only by GNU targets"),
 		type_name);
       type = BSF_FUNCTION | BSF_GNU_INDIRECT_FUNCTION;
     }
@@ -1937,14 +1713,14 @@ obj_elf_type (int ignore ATTRIBUTE_UNUSED)
       struct elf_backend_data *bed;
 
       bed = (struct elf_backend_data *) get_elf_backend_data (stdoutput);
-      if (!(bed->elf_osabi == ELFOSABI_GNU
-	    /* GNU is still using the default value 0.  */
+      if (!(bed->elf_osabi == ELFOSABI_LINUX
+	    /* GNU/Linux is still using the default value 0.  */
 	    || bed->elf_osabi == ELFOSABI_NONE))
 	as_bad (_("symbol type \"%s\" is supported only by GNU targets"),
 		type_name);
       type = BSF_OBJECT | BSF_GNU_UNIQUE;
-      /* PR 10549: Always set OSABI field to GNU for objects containing unique symbols.  */
-      bed->elf_osabi = ELFOSABI_GNU;
+      /* PR 10549: Always set OSABI field to LINUX for objects containing unique symbols.  */
+      bed->elf_osabi = ELFOSABI_LINUX;
     }
 #ifdef md_elf_symbol_type
   else if ((type = md_elf_symbol_type (type_name, sym, elfsym)) != -1)
@@ -2113,27 +1889,18 @@ elf_frob_symbol (symbolS *symp, int *puntp)
 
   if (sy_obj->size != NULL)
     {
-      switch (sy_obj->size->X_op)
-        {
-        case O_subtract:
-          S_SET_SIZE (symp,
-                      (S_GET_VALUE (sy_obj->size->X_add_symbol)
-                       + sy_obj->size->X_add_number
-                       - S_GET_VALUE (sy_obj->size->X_op_symbol)));
-          break;
-		case O_add:
-			S_SET_SIZE(symp,
-				(S_GET_VALUE(sy_obj->size->X_add_symbol)
-				+ sy_obj->size->X_add_number
-				+ S_GET_VALUE(sy_obj->size->X_op_symbol)));
-			break;
-		case O_constant:
-			S_SET_SIZE(symp, sy_obj->size->X_add_number);
-			break;
-        default:
-          as_bad (_(".size expression too complicated to fix up"));
-          break;
-        }
+      if (resolve_expression (sy_obj->size)
+	  && sy_obj->size->X_op == O_constant)
+	S_SET_SIZE (symp, sy_obj->size->X_add_number);
+      else
+	{
+	  if (flag_size_check == size_check_error)
+	    as_bad (_(".size expression for %s "
+		      "does not evaluate to a constant"), S_GET_NAME (symp));
+	  else
+	    as_warn (_(".size expression for %s "
+		       "does not evaluate to a constant"), S_GET_NAME (symp));
+	}
       free (sy_obj->size);
       sy_obj->size = NULL;
     }
@@ -2143,9 +1910,7 @@ elf_frob_symbol (symbolS *symp, int *puntp)
       char *p;
 
       p = strchr (sy_obj->versioned_name, ELF_VER_CHR);
-      if (p == NULL)
-	/* We will have already reported an error about a missing version.  */
-	*puntp = TRUE;
+      know (p != NULL);
 
       /* This symbol was given a new name with the .symver directive.
 
@@ -2158,15 +1923,14 @@ elf_frob_symbol (symbolS *symp, int *puntp)
 	 symbol.  However, it's not clear whether it is the best
 	 approach.  */
 
-      else if (! S_IS_DEFINED (symp))
+      if (! S_IS_DEFINED (symp))
 	{
 	  /* Verify that the name isn't using the @@ syntax--this is
 	     reserved for definitions of the default version to link
 	     against.  */
 	  if (p[1] == ELF_VER_CHR)
 	    {
-	      as_bad (_("invalid attempt to declare external version name"
-			" as default in symbol `%s'"),
+	      as_bad (_("invalid attempt to declare external version name as default in symbol `%s'"),
 		      sy_obj->versioned_name);
 	      *puntp = TRUE;
 	    }
@@ -2429,7 +2193,8 @@ elf_frob_file_before_adjust (void)
 
 		p = strchr (symbol_get_obj (symp)->versioned_name,
 			    ELF_VER_CHR);
-		if (p != NULL && p[1] == ELF_VER_CHR && p[2] == ELF_VER_CHR)
+		know (p != NULL);
+		if (p[1] == ELF_VER_CHR && p[2] == ELF_VER_CHR)
 		  {
 		    size_t l = strlen (&p[3]) + 1;
 		    memmove (&p[1], &p[3], l);

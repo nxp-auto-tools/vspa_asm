@@ -1,5 +1,6 @@
 /* dllwrap.c -- wrapper for DLLTOOL and GCC to generate PE style DLLs
-   Copyright (C) 1998-2014 Free Software Foundation, Inc.
+   Copyright 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2007, 2009
+   Free Software Foundation, Inc.
    Contributed by Mumit Khan (khan@xraylith.wisc.edu).
 
    This file is part of GNU Binutils.
@@ -19,6 +20,13 @@
    Foundation, Inc., 51 Franklin Street - Fifth Floor, Boston, MA
    02110-1301, USA.  */
 
+/* AIX requires this to be the first thing in the file.  */
+#ifndef __GNUC__
+# ifdef _AIX
+ #pragma alloca
+#endif
+#endif
+
 #include "sysdep.h"
 #include "bfd.h"
 #include "libiberty.h"
@@ -27,6 +35,7 @@
 #include "bucomm.h"
 
 #include <time.h>
+#include <sys/stat.h>
 
 #ifdef HAVE_SYS_WAIT_H
 #include <sys/wait.h>
@@ -143,30 +152,28 @@ display (const char * message, va_list args)
 
 
 static void
-inform (const char *message, ...)
+inform VPARAMS ((const char *message, ...))
 {
-  va_list args;
-
-  va_start (args, message);
+  VA_OPEN (args, message);
+  VA_FIXEDARG (args, const char *, message);
 
   if (!verbose)
     return;
 
   display (message, args);
 
-  va_end (args);
+  VA_CLOSE (args);
 }
 
 static void
-warn (const char *format, ...)
+warn VPARAMS ((const char *format, ...))
 {
-  va_list args;
-
-  va_start (args, format);
+  VA_OPEN (args, format);
+  VA_FIXEDARG (args, const char *, format);
 
   display (format, args);
 
-  va_end (args);
+  VA_CLOSE (args);
 }
 
 /* Look for the program formed by concatenating PROG_NAME and the
@@ -407,7 +414,7 @@ run (const char *what, char *args)
   pid = pwait (pid, &wait_status, 0);
   if (pid == -1)
     {
-      warn (_("pwait returns: %s"), strerror (errno));
+      warn ("wait: %s", strerror (errno));
       retcode = 1;
     }
   else if (WIFSIGNALED (wait_status))

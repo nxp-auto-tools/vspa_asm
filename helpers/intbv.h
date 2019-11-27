@@ -13,9 +13,9 @@
 #ifndef _INTBV
 #define _INTBV 
 
-#include "static_assert.h"
-
 #include "intbv_base.h"
+
+#include "static_assert.h"
 
 // IO enums.
 namespace intbv_io {
@@ -166,13 +166,12 @@ namespace adl {
             // the user to specify a ULL numerical constant and have it work w/o
             // compile errors.
             intbv(unsigned long long val) : _Base((uint64_t)val) { _sanitize(); };
-            intbv(long long int val) : _Base((int64_t)val) { _sanitize(); };
+              intbv(long long int val) : _Base((int64_t)val) { _sanitize(); };
 #elif !defined(__CYGWIN__)
                 // This constructor is only necessary for 32-bit builds, due to
                 // differences in how these integer types are defined.  This allows
                 // the user to specify an unsigned value and have it treated correctly.
                 intbv(unsigned long val) : _Base((uint32_t)val) { _sanitize(); };
-                intbv(long val) : _Base((int32_t)val) { _sanitize(); };
 #endif
                   // Construct from string.  Where format is explicitly set, the input should
                   // contain a prefix, e.g. 0x...
@@ -214,11 +213,7 @@ namespace adl {
   public:
 
                     // to set a field
-                    intbv<_Nb> &set (size_t start, size_t stop, int32_t x);    
-                    intbv<_Nb> &set (size_t start, size_t stop, uint32_t x);
-                    intbv<_Nb> &set (size_t start, size_t stop, int64_t x);    
-                    intbv<_Nb> &set (size_t start, size_t stop, uint64_t x);
-                    intbv<_Nb> &set (size_t start, size_t stop, const intbv<_Nb>& x) __attribute__((always_inline)) ;
+                    intbv<_Nb> &set (size_t start, size_t stop, const intbv<_Nb>& x);
                     template <size_t _Nb2>
                       intbv<_Nb> &set (size_t start, size_t stop, const intbv<_Nb2>& x);
                     template <size_t _Nb1,size_t _Nb2,size_t _Nb3>
@@ -405,8 +400,6 @@ namespace adl {
 
                     // Returns the number of bits which are set.
                     size_t count_ones() const { return _Base::_count_ones(); }
-                    // Returns the number of leading zeros.
-                    size_t count_leading_zeros() const { return _Base::_count_leading_zeros(_Nb); }
                     // Returns the total number of bits.
                     size_t size() const { return _Nb; }
     

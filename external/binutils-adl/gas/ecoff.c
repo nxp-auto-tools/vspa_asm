@@ -1,5 +1,7 @@
 /* ECOFF debugging support.
-   Copyright (C) 1993-2014 Free Software Foundation, Inc.
+   Copyright 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002,
+   2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010
+   Free Software Foundation, Inc.
    Contributed by Cygnus Support.
    This file was put together by Ian Lance Taylor <ian@cygnus.com>.  A
    good deal of it comes directly from mips-tfile.c, by Michael
@@ -25,7 +27,8 @@
 #include "as.h"
 
 /* This file is compiled conditionally for those targets which use
-   ECOFF debugging information (e.g., MIPS ELF, Alpha ECOFF).  */
+   ECOFF debugging information (e.g., MIPS ECOFF, MIPS ELF, Alpha
+   ECOFF).  */
 
 #include "ecoff.h"
 
@@ -34,7 +37,7 @@
 #include "coff/internal.h"
 #include "coff/symconst.h"
 #include "aout/stab_gnu.h"
-#include "filenames.h"
+
 #include "safe-ctype.h"
 
 /* Why isn't this in coff/sym.h?  */
@@ -2254,7 +2257,7 @@ add_file (const char *file_name, int indx ATTRIBUTE_UNUSED, int fake)
        fil_ptr = fil_ptr->next_file)
     {
       if (first_ch == fil_ptr->name[0]
-	  && filename_cmp (file_name, fil_ptr->name) == 0
+	  && strcmp (file_name, fil_ptr->name) == 0
 	  && fil_ptr->fdr.fMerge)
 	{
 	  cur_file_ptr = fil_ptr;
@@ -2322,7 +2325,7 @@ add_file (const char *file_name, int indx ATTRIBUTE_UNUSED, int fake)
 void
 ecoff_new_file (const char *name, int appfile ATTRIBUTE_UNUSED)
 {
-  if (cur_file_ptr != NULL && filename_cmp (cur_file_ptr->name, name) == 0)
+  if (cur_file_ptr != NULL && strcmp (cur_file_ptr->name, name) == 0)
     return;
   add_file (name, 0, 0);
 
@@ -2532,7 +2535,7 @@ ecoff_directive_def (int ignore ATTRIBUTE_UNUSED)
 	free (coff_sym_name);
       if (coff_tag != (char *) NULL)
 	free (coff_tag);
-
+      
       coff_sym_name = xstrdup (name);
       coff_type = type_info_init;
       coff_storage_class = sc_Nil;
@@ -3586,12 +3589,12 @@ ecoff_frob_symbol (symbolS *sym)
          but with the name .scommon.  */
       if (scom_section.name == NULL)
 	{
-	  scom_section = *bfd_com_section_ptr;
+	  scom_section = bfd_com_section;
 	  scom_section.name = ".scommon";
 	  scom_section.output_section = &scom_section;
 	  scom_section.symbol = &scom_symbol;
 	  scom_section.symbol_ptr_ptr = &scom_section.symbol;
-	  scom_symbol = *bfd_com_section_ptr->symbol;
+	  scom_symbol = *bfd_com_section.symbol;
 	  scom_symbol.name = ".scommon";
 	  scom_symbol.section = &scom_section;
 	}
@@ -4073,7 +4076,7 @@ ecoff_build_symbols (const struct ecoff_debug_swap *backend,
 			    sc = sc_Bss;
 			  else if (strcmp (segname, ".sbss") == 0)
 			    sc = sc_SBss;
-			  else if (seg == bfd_abs_section_ptr)
+			  else if (seg == &bfd_abs_section)
 			    sc = sc_Abs;
 			  else
 			    {
@@ -5197,7 +5200,7 @@ ecoff_generate_asm_lineno (void)
   as_where (&filename, &lineno);
 
   if (current_stabs_filename == (char *) NULL
-      || filename_cmp (current_stabs_filename, filename))
+      || strcmp (current_stabs_filename, filename))
     add_file (filename, 0, 1);
 
   list = allocate_lineno_list ();

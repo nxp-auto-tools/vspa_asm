@@ -1,5 +1,6 @@
 /* atof_ieee.c - turn a Flonum into an IEEE floating point number
-   Copyright (C) 1987-2014 Free Software Foundation, Inc.
+   Copyright 1987, 1992, 1994, 1996, 1997, 1998, 1999, 2000, 2001, 2005,
+   2007, 2009  Free Software Foundation, Inc.
 
    This file is part of GAS, the GNU Assembler.
 
@@ -197,6 +198,7 @@ atof_ieee (char *str,			/* Text to convert to binary.  */
       precision = H_PRECISION;
       exponent_bits = 5;
       break;
+
     case 'f':
     case 'F':
     case 's':
@@ -424,7 +426,7 @@ gen_to_words (LITTLENUM_TYPE *words, int precision, long exponent_bits)
 		     - generic_floating_point_number.low);
 
   /* Seek (and forget) 1st significant bit.  */
-  for (exponent_skippage = 0; !next_bits (1); ++exponent_skippage);
+  for (exponent_skippage = 0; !next_bits (1); ++exponent_skippage);;
   exponent_1 = (generic_floating_point_number.exponent
 		+ generic_floating_point_number.leader
 		+ 1
@@ -703,6 +705,7 @@ print_gen (gen)
 #endif
 
 extern const char FLT_CHARS[];
+#define MAX_LITTLENUMS 6
 
 /* This is a utility function called from various tc-*.c files.  It
    is here in order to reduce code duplication.

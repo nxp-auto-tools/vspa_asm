@@ -1,5 +1,7 @@
 /* BFD back-end for oasys objects.
-   Copyright (C) 1990-2014 Free Software Foundation, Inc.
+   Copyright 1990, 1991, 1992, 1993, 1994, 1995, 1996, 1998, 1999, 2001,
+   2002, 2003, 2004, 2005, 2006, 2007, 2009, 2010
+   Free Software Foundation, Inc.
    Written by Steve Chamberlain of Cygnus Support, <sac@cygnus.com>.
 
    This file is part of BFD, the Binary File Descriptor library.
@@ -26,7 +28,6 @@
 #include "libbfd.h"
 #include "oasys.h"
 #include "liboasys.h"
-#include "libiberty.h"
 
 /* Read in all the section data and relocation stuff too.  */
 
@@ -905,11 +906,9 @@ oasys_write_header (bfd *abfd)
 
   if (length > (size_t) sizeof (r.module_name))
     length = sizeof (r.module_name);
-  else if (length < (size_t) sizeof (r.module_name))
-    (void) memset (r.module_name + length, ' ',
-		   sizeof (r.module_name) - length);
 
   (void) memcpy (r.module_name, abfd->filename, length);
+  (void) memset (r.module_name + length, ' ', sizeof (r.module_name) - length);
 
   r.version_number = OASYS_VERSION_NUMBER;
   r.rev_number = OASYS_REV_NUMBER;
@@ -1117,7 +1116,7 @@ oasys_openr_next_archived_file (bfd *arch, bfd *prev)
 	{
 	  p->abfd = _bfd_create_empty_archive_element_shell (arch);
 	  p->abfd->origin = p->pos;
-	  p->abfd->filename = xstrdup (p->name);
+	  p->abfd->filename = p->name;
 
 	  /* Fixup a pointer to this element for the member.  */
 	  p->abfd->arelt_data = (void *) p;
@@ -1129,9 +1128,26 @@ oasys_openr_next_archived_file (bfd *arch, bfd *prev)
   return NULL;
 }
 
-#define oasys_find_nearest_line _bfd_nosymbols_find_nearest_line
-#define oasys_find_line         _bfd_nosymbols_find_line
-#define oasys_find_inliner_info _bfd_nosymbols_find_inliner_info
+static bfd_boolean
+oasys_find_nearest_line (bfd *abfd ATTRIBUTE_UNUSED,
+			 asection *section ATTRIBUTE_UNUSED,
+			 asymbol **symbols ATTRIBUTE_UNUSED,
+			 bfd_vma offset ATTRIBUTE_UNUSED,
+			 const char **filename_ptr ATTRIBUTE_UNUSED,
+			 const char **functionname_ptr ATTRIBUTE_UNUSED,
+			 unsigned int *line_ptr ATTRIBUTE_UNUSED)
+{
+  return FALSE;
+}
+
+static bfd_boolean
+oasys_find_inliner_info (bfd *abfd ATTRIBUTE_UNUSED,
+			 const char **filename_ptr ATTRIBUTE_UNUSED,
+			 const char **functionname_ptr ATTRIBUTE_UNUSED,
+			 unsigned int *line_ptr ATTRIBUTE_UNUSED)
+{
+  return FALSE;
+}
 
 static int
 oasys_generic_stat_arch_elt (bfd *abfd, struct stat *buf)
@@ -1180,13 +1196,13 @@ oasys_sizeof_headers (bfd *abfd ATTRIBUTE_UNUSED,
 #define oasys_bfd_get_relocated_section_contents   bfd_generic_get_relocated_section_contents
 #define oasys_bfd_relax_section                    bfd_generic_relax_section
 #define oasys_bfd_gc_sections                      bfd_generic_gc_sections
-#define oasys_bfd_lookup_section_flags             bfd_generic_lookup_section_flags
 #define oasys_bfd_merge_sections                   bfd_generic_merge_sections
 #define oasys_bfd_is_group_section                 bfd_generic_is_group_section
 #define oasys_bfd_discard_group                    bfd_generic_discard_group
 #define oasys_section_already_linked               _bfd_generic_section_already_linked
 #define oasys_bfd_define_common_symbol             bfd_generic_define_common_symbol
 #define oasys_bfd_link_hash_table_create           _bfd_generic_link_hash_table_create
+#define oasys_bfd_link_hash_table_free             _bfd_generic_link_hash_table_free
 #define oasys_bfd_link_add_symbols                 _bfd_generic_link_add_symbols
 #define oasys_bfd_link_just_syms                   _bfd_generic_link_just_syms
 #define oasys_bfd_copy_link_hash_symbol_type \
@@ -1208,7 +1224,6 @@ const bfd_target oasys_vec =
   0,				/* Leading underscore.  */
   ' ',				/* AR_pad_char.  */
   16,				/* AR_max_namelen.  */
-  0,				/* match priority.  */
   bfd_getb64, bfd_getb_signed_64, bfd_putb64,
   bfd_getb32, bfd_getb_signed_32, bfd_putb32,
   bfd_getb16, bfd_getb_signed_16, bfd_putb16,	/* Data.  */

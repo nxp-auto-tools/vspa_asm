@@ -1,5 +1,7 @@
 /* bfd back-end for HP PA-RISC SOM objects.
-   Copyright (C) 1990-2014 Free Software Foundation, Inc.
+   Copyright 1990, 1991, 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999,
+   2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011
+   Free Software Foundation, Inc.
 
    Contributed by the Center for Software Science at the
    University of Utah.
@@ -21,8 +23,8 @@
    Foundation, Inc., 51 Franklin Street - Fifth Floor, Boston, MA
    02110-1301, USA.  */
 
-#include "sysdep.h"
 #include "alloca-conf.h"
+#include "sysdep.h"
 #include "bfd.h"
 
 #include "libbfd.h"
@@ -2494,7 +2496,7 @@ som_object_p (bfd *abfd)
     {
       struct som_external_exec_auxhdr ext_exec_auxhdr;
 
-      aux_hdr_ptr = bfd_zalloc (abfd,
+      aux_hdr_ptr = bfd_zalloc (abfd, 
 				(bfd_size_type) sizeof (*aux_hdr_ptr));
       if (aux_hdr_ptr == NULL)
 	return NULL;
@@ -4570,7 +4572,7 @@ som_get_symtab_upper_bound (bfd *abfd)
 
 /* Convert from a SOM subspace index to a BFD section.  */
 
-asection *
+static asection *
 bfd_section_from_som_symbol
   (bfd *abfd, struct som_external_symbol_dictionary_record *symbol)
 {
@@ -5349,7 +5351,7 @@ som_canonicalize_reloc (bfd *abfd,
   return section->reloc_count;
 }
 
-extern const bfd_target hppa_som_vec;
+extern const bfd_target som_vec;
 
 /* A hook to set up object file dependent section information.  */
 
@@ -5715,21 +5717,17 @@ som_set_arch_mach (bfd *abfd,
 
 static bfd_boolean
 som_find_nearest_line (bfd *abfd,
-		       asymbol **symbols,
 		       asection *section,
+		       asymbol **symbols,
 		       bfd_vma offset,
 		       const char **filename_ptr,
 		       const char **functionname_ptr,
-		       unsigned int *line_ptr,
-		       unsigned int *discriminator_ptr)
+		       unsigned int *line_ptr)
 {
   bfd_boolean found;
   asymbol *func;
   bfd_vma low_func;
   asymbol **p;
-
-  if (discriminator_ptr)
-    *discriminator_ptr = 0;
 
   if (! _bfd_stab_section_find_nearest_line (abfd, symbols, section, offset,
                                              & found, filename_ptr,
@@ -5748,9 +5746,9 @@ som_find_nearest_line (bfd *abfd,
   low_func = 0;
 
   for (p = symbols; *p != NULL; p++)
-    {
+    { 
       som_symbol_type *q = (som_symbol_type *) *p;
-
+  
       if (q->som_type == SYMBOL_TYPE_ENTRY
 	  && q->symbol.section == section
 	  && q->symbol.value >= low_func
@@ -6717,7 +6715,6 @@ som_bfd_link_split_section (bfd *abfd ATTRIBUTE_UNUSED, asection *sec)
   return som_is_subspace (sec) && sec->size > 240000;
 }
 
-#define som_find_line			        _bfd_nosymbols_find_line
 #define	som_close_and_cleanup		        som_bfd_free_cached_info
 #define som_read_ar_hdr			        _bfd_generic_read_ar_hdr
 #define som_write_ar_hdr		        _bfd_generic_write_ar_hdr
@@ -6737,13 +6734,13 @@ som_bfd_link_split_section (bfd *abfd ATTRIBUTE_UNUSED, asection *sec)
 #define som_bfd_get_relocated_section_contents  bfd_generic_get_relocated_section_contents
 #define som_bfd_relax_section                   bfd_generic_relax_section
 #define som_bfd_link_hash_table_create          _bfd_generic_link_hash_table_create
+#define som_bfd_link_hash_table_free            _bfd_generic_link_hash_table_free
 #define som_bfd_link_add_symbols                _bfd_generic_link_add_symbols
 #define som_bfd_link_just_syms                  _bfd_generic_link_just_syms
 #define som_bfd_copy_link_hash_symbol_type \
   _bfd_generic_copy_link_hash_symbol_type
 #define som_bfd_final_link                      _bfd_generic_final_link
 #define som_bfd_gc_sections		        bfd_generic_gc_sections
-#define som_bfd_lookup_section_flags            bfd_generic_lookup_section_flags
 #define som_bfd_merge_sections		        bfd_generic_merge_sections
 #define som_bfd_is_group_section	        bfd_generic_is_group_section
 #define som_bfd_discard_group		        bfd_generic_discard_group
@@ -6754,7 +6751,7 @@ som_bfd_link_split_section (bfd *abfd ATTRIBUTE_UNUSED, asection *sec)
 #define som_bfd_set_private_flags		_bfd_generic_bfd_set_private_flags
 #define som_find_inliner_info			_bfd_nosymbols_find_inliner_info
 
-const bfd_target hppa_som_vec =
+const bfd_target som_vec =
 {
   "som",			/* Name.  */
   bfd_target_som_flavour,
@@ -6771,7 +6768,6 @@ const bfd_target hppa_som_vec =
   0,
   '/',				/* AR_pad_char.  */
   14,				/* AR_max_namelen.  */
-  0,				/* match priority.  */
   bfd_getb64, bfd_getb_signed_64, bfd_putb64,
   bfd_getb32, bfd_getb_signed_32, bfd_putb32,
   bfd_getb16, bfd_getb_signed_16, bfd_putb16,	/* Data.  */

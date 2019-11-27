@@ -1,5 +1,5 @@
 /* SPARC ELF specific backend routines.
-   Copyright (C) 2005-2014 Free Software Foundation, Inc.
+   Copyright 2005, 2006, 2007, 2009, 2010 Free Software Foundation, Inc.
 
    This file is part of BFD, the Binary File Descriptor library.
 
@@ -106,6 +106,8 @@ extern bfd_boolean _bfd_sparc_elf_mkobject
   (bfd *);
 extern struct bfd_link_hash_table *_bfd_sparc_elf_link_hash_table_create
   (bfd *);
+extern void _bfd_sparc_elf_link_hash_table_free
+  (struct bfd_link_hash_table *);
 extern bfd_boolean _bfd_sparc_elf_create_dynamic_sections
   (bfd *, struct bfd_link_info *);
 extern void _bfd_sparc_elf_copy_indirect_symbol
@@ -144,5 +146,3 @@ extern bfd_boolean _bfd_sparc_elf_object_p
   (bfd *);
 extern bfd_vma _bfd_sparc_elf_plt_sym_val
   (bfd_vma, const asection *, const arelent *);
-extern bfd_boolean _bfd_sparc_elf_merge_private_bfd_data
-  (bfd *, bfd *);

@@ -11,10 +11,10 @@ bit_fix.h
 compress-debug.c
 compress-debug.h
 cond.c
-config/adl-support.C
 config/atof-ieee.c
 config/obj-elf.c
 config/obj-elf.h
+config/ppc-support.C
 depend.c
 dw2gencfi.c
 dw2gencfi.h

@@ -3,6 +3,7 @@
  * in the 10-bit field of the opcode
  */
 #define MAX_LOOP_SIZE ((1 << 10) - 1)
+#define DMA_XFER_CTRL 0x2f
 
 /*
  *  Check if an instruction bundle contains an instruction with a certain
@@ -39,7 +40,7 @@ bool check_set_loop_labels(adl::InstrInfo &instr)
 }
 
 //  Check if an opcode corresponds to a "set.loop" with labels.
-bool check_set_loop_labels(const struct adl_opcode *opcode)
+bool check_set_loop_labels(struct adl_opcode *opcode)
 {
 	return opcode && opcode_has_attr(opcode, instr_loop_label);
 }
@@ -59,6 +60,13 @@ bool check_compactable(adl::InstrBundle &instr_bundle,
 	{
 		adl::InstrInfo instr = instr_bundle[i];
 
+#if !defined(_VSPA2_)
+		if (instr.instrHasAttr(instr_no_comp))
+		{
+			return false;
+		}
+#endif
+
 		if(instr.instrHasAttr(instr_opS))
 		{
 			posS = i;
@@ -67,10 +75,13 @@ bool check_compactable(adl::InstrBundle &instr_bundle,
 		{
 			posX = i;
 		}
+#if defined(_VSPA2_)
 		else if((instr.instrHasAttr(instr_nop)
 				&& !instr.instrHasAttr(instr_fnop))
-			|| (instr.instrHasAttr(instr_opBS)
-				&& !notCompactableBS(instr)))
+			|| instr.instrHasAttr(instr_opBS))
+#else
+		else if (instr.instrHasAttr(instr_opBS))
+#endif
 		{
 			posS = i;
 			gen = true;
@@ -110,17 +121,20 @@ bool check_null_instr(adl::InstrInfo &instr)
 // or not.
 static struct jmp_jsr_info extract_jmp_jsr_info(const adl::InstrInfo &instr)
 {
-	char *mnemonic = (char*)malloc(strlen(instr.opcode->name) + 1);
-	strcpy(mnemonic,instr.opcode->name);
-	char* underscore = strchr(mnemonic, '_');
-	if (underscore)
+	const auto space_pos = instr.str.find_first_of(' ');
+	const auto &mnemonic = (space_pos == std::string::npos) ? instr.str
+		: instr.str.substr(0, space_pos);
+	const auto dot_pos = mnemonic.find_first_of('.');
+
+	if (dot_pos == std::string::npos)
 	{
-		*underscore = '\0';
+		return { mnemonic == "jmp", false };
 	}
-	bool is_jmp = !strcmp(mnemonic,"jmp");
-	free(mnemonic);
-	return {is_jmp, instr.args[0]!=""
-		&& instr.args[0] != "al" && instr.args[0] != "nv"};
+
+	const auto &cond = mnemonic.substr(dot_pos + 1);
+	// .al (always) and .nv (never) are not actual conditions.
+	return { !mnemonic.compare(0, dot_pos, "jmp"),
+		(cond != "al") && (cond != "nv") };
 }
 
 //  Check if an instruction bundle contains "loop_begin", "loop_end",
@@ -154,18 +168,45 @@ void check_control_dmem_instrs(adl::InstrBundle &instr_bundle,
 			jmp_jsr = i;
 			jmp_jsr_info = extract_jmp_jsr_info(instr);
 		}
+#if !defined(_VSPA2_)
+		// Check for a "set.loop" instruction.
+		else if (instr.instrHasAttr(instr_loop)
+			&& instr.instrHasAttr(instr_ctrl))
+		{
+			set_loop = i;
+		}
+		// Check for instructions that generate a DMEM access.
+		else if (instr.instrHasAttr(instr_store)
+			|| (!instr.instrHasAttr(instr_opVr)
+				&& instr.instrHasAttr(instr_load)))
+		{
+			dmem = true;
+		}
+		//check if instruction is mvip
+		else if (strncmp(instr.instrName(), "mvip", 4)==0)
+		{
+			//only return true for DMA_XFER_CTRL
+			if (instr.operand_values[0].X_op == O_constant 
+				&& instr.operand_values[0].X_add_number == DMA_XFER_CTRL)
+			{
+				mvip = true;
+			}
+		}
+#endif
 	} 
 }
 
 //  Get the opcode name for the alternative instance of a generic instruction.
 bool get_instance_name(const adl::InstrInfo &instr, std::string &opcode)
 {
+#if defined(_VSPA2_)
 	if (instr.instrHasAttr(instr_nop)
 		&& !instr.instrHasAttr(instr_fnop))
 	{
 		opcode = "nop_s";
 		return true;
 	}
+#endif
 
 	std::string value("");
 	if (instr.instrGetAttrVal(instr_inst, value))
@@ -184,6 +225,50 @@ bool get_instance_name(const adl::InstrInfo &instr, std::string &opcode)
  */
 void check_generic_instrs(adl::InstrBundle &instr_bundle)
 {
+#ifndef _VSPA2_
+  int extB, posAB;
+  extB = 0;
+  posAB = -1;
+
+  /* gather information from the bundle */
+  for (unsigned int i = 0; i < instr_bundle.group_size(); i++)
+  {
+    adl::InstrInfo &instr = instr_bundle.get_instr(i);
+    if (!instr.instrHasAttr(instr_opB))
+    {
+      continue;
+    }
+
+    extB++;
+
+    assert(instr.opcode);
+    if (instr.instrHasAttr(instr_opAB))
+    {
+      posAB = i;
+    }
+    else if (!instr.instrHasAttr(instr_opBS))
+    {
+      continue;
+    }
+
+    instr = replaceInstr(instr, instr.opcode->name);
+  }
+
+  if (extB != 2 || posAB == -1)
+  {
+    return;
+  }
+
+  adl::InstrInfo &instrAB = instr_bundle.get_instr(posAB);
+  std::string opcode_name;
+  if (!get_instance_name(instrAB, opcode_name))
+  {
+    as_fatal("Cannot instantiate generic instruction");
+    return;
+  }
+
+  instrAB = replaceInstr(instrAB, opcode_name.c_str());
+#endif
 }
 
 static bfd_uint64_t _set_loop_modifier(const expressionS *operands, unsigned __cia)
@@ -202,17 +287,19 @@ static bfd_uint64_t _set_loop_modifier(const expressionS *operands, unsigned __c
 //  Check if an instruction is not supported by the simulator.
 bool check_unimplemented(const adl::InstrInfo &instr)
 {
-	if (!instr.instrHasAttr(instr_vcpu1) && !instr.instrHasAttr(instr_vcpu2) && !instr.instrHasAttr(instr_vcpu3))
+#if defined(_VSPA2_)
+	if (!instr.instrHasAttr(instr_vcpu1) && !instr.instrHasAttr(instr_vcpu2))
 	{
 		return true;
 	}
+#endif
 	return false;
 }
 
 //  Check if an instruction is not supported by the simulator.
 bool check_invalid(const adl::InstrInfo &instr)
 {
-	return false;
+	return instr.instrHasAttr(instr_illegal);
 }
 
 //  Check if an opcode allows a wide immediate.
@@ -224,7 +311,11 @@ bool check_wide_imm(const struct adl_opcode *opcode)
 //  Check if an opcode is disabled in the current core configuration.
 bool check_disabled(const struct adl_opcode *opcode)
 {
+#if defined(_VSPA2_)
 	return false;
+#else
+	return AU_NUM == 64 && opcode_has_attr(opcode, instr_dis_64au);
+#endif
 }
 
 //  Check if an instruction has a variable number of arguments. If this is the
@@ -309,22 +400,19 @@ void reorder_opcodes(struct adl_instr *instr)
 	}
 
 	// Reorder opcodes: the opcodes with the lowest precedence must be first.
-	bool c = true;
-	while (c)
+	for (long i = 0; i < instr->num_opcodes - 1; i++)
 	{
-		c = false;
-		for (long i = 0; i < instr->num_opcodes - 1; i++)
+		for (long j = i + 1; j < instr->num_opcodes; j++)
 		{
-			if (info[i].precedence > info[i + 1].precedence)
+			if (info[i].precedence > info[j].precedence)
 			{
-				struct opcode_info aux_info = info[i+1];
-				info[i + 1] = info[i];
-				info[i] =  aux_info;
-				struct adl_opcode aux_opcode = instr->opcodes[i + 1];
-				instr->opcodes[i + 1] = instr->opcodes[i];
-				instr->opcodes[i] = aux_opcode;
+				struct opcode_info aux_info = info[i];
+				info[i] = info[j];
+				info[j] = aux_info;
+				struct adl_opcode aux_opcode = instr->opcodes[i];
+				instr->opcodes[i] = instr->opcodes[j];
+				instr->opcodes[j] = aux_opcode;
 				change = true;
-				c = true;
 			}
 		}
 	}
@@ -345,10 +433,7 @@ void reorder_opcodes(struct adl_instr *instr)
 	// Update opcode links.
 	for (long i = 0; i < instr->num_opcodes; i++)
 	{
-		if (instr->opcodes[i].longest >= 0)
-		{
-			instr->opcodes[i].longest = pos_rev[instr->opcodes[i].longest];
-		}
+		instr->opcodes[i].longest = pos_rev[instr->opcodes[i].longest];
 	}
 
 	delete[] info;
@@ -394,12 +479,41 @@ void check_mv_load_restriction(const adl::InstrBundle &instr_bundle)
 	int pos_load = -1;
 	int pos_mv = -1;
 	size_t bundle_size = instr_bundle.group_size();
-	char *name1 = NULL;
-	char * name2 = NULL;
-
-	//ERR011386 / VSPA A-011386
-	if (!restriction_checked_on_isa(&check_mv_load_restriction, isa_id)) return;
-
+	//case 1 (ERR011359 / VSPA A-011359)
+	//this restriction doesn't allow st/ld instructions with an a register >=a4 in the same vles
+	//as a move between to a registers
+	for (size_t i = 0; i < bundle_size; i++)
+	{
+		const adl::InstrInfo &instr = instr_bundle.get_instr(i);
+		if (strncmp(instr.instrName(), "ld", 2) == 0 
+			|| strncmp(instr.instrName(), "st", 2) == 0)
+		{
+			std::string str = instr.opcode->regex;
+			std::string str2 = instr.str;
+			if (str.find(",") == std::string::npos && strstr(instr.instrName(),"Rx") == NULL 
+			//axg field codes g registers with values 0-11 and a registers with values >=12; a4 is 16
+			&& strstr(instr.opcode->operands[0].ptr->name,"AXG") != NULL && instr.operand_values[0].X_add_number >= 16)
+			{
+				pos_load = i;
+			}
+		}
+		if (strncmp(instr.instrName(), "mvB_aX_aY", 9) == 0
+			&& instr.instrHasAttr(instr_opB))
+		{
+			pos_mv = i;
+		}
+	}
+	if (pos_load >= 0 && pos_mv >= 0)
+	{
+		as_bad("Instructions \"%s\" and \"%s\" are not allowed to be in the "
+			"same packet",
+			instr_bundle.get_instr(pos_load).str.c_str(),
+			instr_bundle.get_instr(pos_mv).str.c_str(),
+			AU_NUM, core_type == core_type_sp ? "SP" : "DP");
+	}
+	pos_load = -1;
+	pos_mv = -1;
+	//case 2 (ERR011386 / VSPA A-011386)
 	for (size_t i = 0; i < bundle_size; i++)
 	{
 		const adl::InstrInfo &instr = instr_bundle.get_instr(i);
@@ -409,41 +523,11 @@ void check_mv_load_restriction(const adl::InstrBundle &instr_bundle)
 			if (str.find(",") == std::string::npos)
 			{
 				pos_load = i;
-				name1 = (char*)malloc(strlen(instr.instrName())+1);
-				strcpy(name1,instr.instrName());
-				char* p=strchr(name1,'_');
-				if (p)
-				{
-					*p='\0';
-				}
-			}
-		}
-		if (strncmp(instr.instrName(), "stld", 4) == 0)
-		{
-			std::string str = instr.opcode->regex;
-			size_t pos = str.find(",");
-			if (pos != std::string::npos && str.find(",", pos) == std::string::npos)
-			{
-				pos_load = i;
-				name1 = (char*)malloc(strlen(instr.instrName())+1);
-				strcpy(name1,instr.instrName());
-				char* p=strchr(name1,'_');
-				if (p)
-				{
-					*p='\0';
-				}
 			}
 		}
 		if (strncmp(instr.instrName(), "ldB_Rx", 6) == 0)
 		{
 			pos_mv = i;
-			name2=(char*)malloc(strlen(instr.instrName())+1);
-			strcpy(name2,instr.instrName());
-			char *p=strchr(name2,'_');
-			if (p)
-			{
-				*p='\0';
-			}
 		}
 		if (strncmp(instr.instrName(), "mv", 2) == 0
 			|| strncmp(instr.instrName(), "fill", 4) == 0
@@ -453,13 +537,6 @@ void check_mv_load_restriction(const adl::InstrBundle &instr_bundle)
 			if (str.find("[rV") != std::string::npos)
 			{
 				pos_mv = i;
-				name2=(char*)malloc(strlen(instr.instrName())+1);
-				strcpy(name2,instr.instrName());
-				char *p=strchr(name2,'_');
-				if (p)
-				{
-					*p='\0';
-				}
 			}
 		}
 		if (strncmp(instr.instrName(), "mv", 2) == 0) 
@@ -468,199 +545,167 @@ void check_mv_load_restriction(const adl::InstrBundle &instr_bundle)
 			if (str.find("[rs0") != std::string::npos)
 			{
 				pos_mv = i;
-				name2 = (char*)malloc(strlen(instr.instrName())+1);
-				strcpy(name2,instr.instrName());
-				char *p=strchr(name2,'_');
-				if (p)
-				{
-					*p='\0';
-				}
 			}
 		}
 	}
 	if (pos_load >= 0 && pos_mv >= 0)
 	{
-		as_bad("Instructions \"%s%s\" and \"%s%s\" are not allowed to be in the "
+		as_bad("Instructions \"%s\" and \"%s\" are not allowed to be in the "
 			"same packet",
-			name1,
 			instr_bundle.get_instr(pos_load).str.c_str(),
-			name2,
 			instr_bundle.get_instr(pos_mv).str.c_str(),
 			AU_NUM, core_type == core_type_sp ? "SP" : "DP");
 	}
 }
 
-void check_mv_loadstore_restriction2(const adl::InstrBundle &instr_bundle)
+#if !defined(_VSPA2_)
+//  Check configuration specific instruction bundle restrictions
+void check_bundle_restrictions(const adl::InstrBundle &instr_bundle)
 {
-	int pos_load = -1;
-	int pos_mv = -1;
-	size_t bundle_size = instr_bundle.group_size();
-	char *name1 = NULL;
-	char * name2 = NULL;
+	size_t pos_set_range, num_set_vra_ptr, bundle_size
+		= instr_bundle.group_size();
+	const size_t num_opV = 4;
+	size_t pos_V[num_opV];
+	size_t pos_set_vra_ptr[2];
+	pos_V[0] = pos_V[1] = pos_V[2] = pos_V[3] = pos_set_range = bundle_size;
+	num_set_vra_ptr = 0;
 
 	for (size_t i = 0; i < bundle_size; i++)
 	{
 		const adl::InstrInfo &instr = instr_bundle.get_instr(i);
-		if (strncmp(instr.instrName(), "st", 2) == 0)
+		if (instr.instrHasAttr(instr_set_vra_ptr) && num_set_vra_ptr < 2)
 		{
-			std::string str = instr.opcode->regex;
-			if (str.find(",") == std::string::npos)
-			{
-				pos_load = i;
-				name1 = (char*)malloc(strlen(instr.instrName())+1);
-				strcpy(name1,instr.instrName());
-				char* p=strchr(name1,'_');
-				if (p)
-				{
-					*p='\0';
-				}
-			}
+			pos_set_vra_ptr[num_set_vra_ptr++] = i;
 		}
-		if (strncmp(instr.instrName(), "stld", 4) == 0)
+		else if (instr.instrHasAttr(instr_set_range))
 		{
-			std::string str = instr.opcode->regex;
-			size_t pos = str.find(",");
-			if (pos != std::string::npos && str.find(",", pos) == std::string::npos)
-			{
-				pos_load = i;
-				name1 = (char*)malloc(strlen(instr.instrName())+1);
-				strcpy(name1,instr.instrName());
-				char* p=strchr(name1,'_');
-				if (p)
-				{
-					*p='\0';
-				}
-			}
+			pos_set_range = i;
 		}
-		if (strncmp(instr.instrName(), "ld", 2) == 0)
+		else if (instr.instrHasAttr(instr_opVs0))
 		{
-			std::string str = instr.opcode->regex;
-			size_t pos = str.find(",");
-			if (pos != std::string::npos && str.find(",", pos) == std::string::npos)
-			{
-				pos_load = i;
-				name1 = (char*)malloc(strlen(instr.instrName())+1);
-				strcpy(name1,instr.instrName());
-				char* p=strchr(name1,'_');
-				if (p)
-				{
-					*p='\0';
-				}
-			}
+			pos_V[0] = i;
 		}
-		if (strcmp(instr.instrName(), "mv_Rx_Ry") == 0)
+		else if (instr.instrHasAttr(instr_opVs1))
 		{
-			pos_mv=i;
-			name2=(char*)malloc(strlen(instr.instrName())+1);
-			strcpy(name2,instr.instrName());
-			char *p=strchr(name2,'_');
-			if (p)
-			{
-				*p='\0';
-			}
+			pos_V[1] = i;
+		}
+		else if (instr.instrHasAttr(instr_opVs2))
+		{
+			pos_V[2] = i;
+		}
+		else if (instr.instrHasAttr(instr_opVrot))
+		{
+			pos_V[3] = i;
 		}
 	}
-	if (pos_load >= 0 && pos_mv >= 0)
+
+	if (num_set_vra_ptr == 2)
 	{
-		as_bad("Instructions \"%s%s\" and \"%s%s\" are not allowed to be in the "
-			"same packet",
-			name1,
-			instr_bundle.get_instr(pos_load).str.c_str(),
-			name2,
-			instr_bundle.get_instr(pos_mv).str.c_str(),
+		as_bad("Instructions \"%s\" and \"%s\" are not allowed to be in the "
+			"same packet in this core configuration (%uAU %s)",
+			instr_bundle.get_instr(pos_set_vra_ptr[0]).str.c_str(),
+			instr_bundle.get_instr(pos_set_vra_ptr[1]).str.c_str(),
 			AU_NUM, core_type == core_type_sp ? "SP" : "DP");
 	}
-}
 
-void check_ld_Vldb_restriction(const adl::InstrBundle &instr_bundle)
-{
-	int pos_Vld1 = -1;
-	int pos_Vld2 = -1;
-	size_t bundle_size = instr_bundle.group_size();
-	for (size_t i = 0; i < bundle_size; i++)
+	if (pos_set_range < bundle_size)
 	{
-		const adl::InstrInfo &instr = instr_bundle.get_instr(i);
-		if (instr. instrHasAttr ( instr_opVld ))
+		for (size_t i = 0; i < num_opV; i++)
 		{
-			if (pos_Vld1 == -1)
+			if (pos_V[i] == bundle_size)
 			{
-				pos_Vld1 = i;
+				continue;
 			}
-			else if (pos_Vld2 == -1)
-			{
-				pos_Vld2 = i;
-			}
-		}
-	}
-	if (pos_Vld1 >=0 && pos_Vld2 >=0 )
-	{
-		const adl::InstrInfo &instr1 = instr_bundle.get_instr(pos_Vld1);
-		const adl::InstrInfo &instr2 = instr_bundle.get_instr(pos_Vld2);
-		if (instr1. instrHasAttr ( instr_opVldB ) && instr1 . instrHasAttrVal ( instr_inst , "ldB_Rx_opB" ))
-		{
-			if (strncmp(instr2.instrName(), "ld", 2) != 0)
-			{
-				char* name1=(char*)malloc(strlen(instr1.instrName())+1);
-				strcpy(name1,instr1.instrName());
-				char* p=strchr(name1,'_');
-				if (p)
-				{
-					*p='\0';
-				}
-				char* name2=(char*)malloc(strlen(instr2.instrName())+1);
-				strcpy(name2,instr2.instrName());
-				p=strchr(name2,'_');
-				if (p)
-				{
-					*p='\0';
-				}
-				as_bad("Instruction \"%s%s\" can only be grouped with a ld(.x) opVld instruction, "
-					"not with \"%s%s\"",
-					name1,
-					instr1.str.c_str(),
-					name2,
-					instr2.str.c_str());
-			}
-		}
-		else if (instr2. instrHasAttr ( instr_opVldB ) && instr2 . instrHasAttrVal ( instr_inst , "ldB_Rx_opB" ))
-		{
-			if (strncmp(instr1.instrName(), "ld", 2) != 0)
-			{
-				char* name1=(char*)malloc(strlen(instr1.instrName())+1);
-				strcpy(name1,instr1.instrName());
-				char* p=strchr(name1,'_');
-				if (p)
-				{
-					*p='\0';
-				}
-				char* name2=(char*)malloc(strlen(instr2.instrName())+1);
-				strcpy(name2,instr2.instrName());
-				p=strchr(name2,'_');
-				if (p)
-				{
-					*p='\0';
-				}
-				as_bad("Instruction \"%s%s\" can only be grouped with a ld(.x) opVld instruction, "
-					"not with \"%s%s\"",
-					name2,
-					instr2.str.c_str(),
-					name1,
-					instr1.str.c_str());
-			}
+
+			as_bad("Instructions \"%s\" and \"%s\" are not allowed to be in "
+				"the same packet in this core configuration (%uAU %s)",
+				instr_bundle.get_instr(pos_set_range).str.c_str(),
+				instr_bundle.get_instr(pos_V[i]).str.c_str(),
+				AU_NUM, core_type == core_type_sp ? "SP" : "DP");
 		}
 	}
 }
 
-//  Check VSPA2 and VSPA3 configuration specific instruction restrictions.
+//  Check VSPA1 configuration specific instruction restrictions.
 void check_instr_restrictions(const adl::InstrInfo &instr)
 {
-	if (!instr_present_on_isa(instr,isa_id))
+	if (AU_NUM != 4 && (instr.instrHasAttr(instr_en_4au))
+		|| (AU_NUM == 64
+			&& core_type == core_type_sp
+			&& instr.instrHasAttr(instr_dis_64au_sp))
+		|| (AU_NUM == 64 && instr.instrHasAttr(instr_dis_64au))
+		|| (core_type == core_type_dp && instr.instrHasAttr(instr_dis_all_dp)))
 	{
-		as_bad("%s instruction is not supported in this %s architecture"
-					" in this core configuration (%uAU %s)",
-					instr.opcode->name, isa_name, AU_NUM,
-					core_type == core_type_sp ? "SP" : "DP");
+		as_bad("\"%s\" is not supported in this core configuration (%uAU %s)",
+			instr.str.c_str(), AU_NUM, core_type == core_type_sp ? "SP"
+			: "DP");
 	}
+
+	if (AU_NUM == 64 && instr.instrHasAttr(instr_cmp_aX_Iu17))
+	{
+		as_warn("\"%s\" does not modify C condition carry flag and clears the "
+			"V flag; unsigned conditional instructions (.hi, .lo, .hs, .ls, "
+			".cs, .cc, .vs, .vc) can't be used in conjunction with this "
+			"instruction", instr.str.c_str());
+	}
+
+	if (instr.instrHasAttr(instr_set_prec)
+		&& (AU_NUM == 64 || core_type == core_type_sp))
+	{
+		int (*compare)(const char *str1, const char *str2) = ignore_case
+			? strcasecmp : strcmp;
+
+		const std::vector<std::string> &args = instr.args;
+		static const char *precs[] = { "S0prec", "S1prec", "S2prec", "AUprec",
+			"Vprec" };
+		if (AU_NUM == 64)
+		{
+			for (size_t i = 0; i < 3; i++)
+			{
+				if (!compare(args[i].c_str(), "half"))
+				{
+					as_bad("\"%s\" precision mode is not supported for %s"
+						" in this core configuration (%uAU %s)",
+						args[i].c_str(), precs[i], AU_NUM,
+						core_type == core_type_sp ? "SP" : "DP");
+				}
+			}
+
+			if (!compare(args[4].c_str(), "half"))
+			{
+				as_bad("\"%s\" precision mode is not supported for %s"
+					" in this core configuration (%uAU %s)",
+					args[4].c_str(), precs[4], AU_NUM,
+					core_type == core_type_sp ? "SP" : "DP");
+			}
+		}
+
+		if (core_type == core_type_sp)
+		{
+			for (size_t i = 0; i < 5; i++)
+			{
+				if (!compare(args[i].c_str(), "double"))
+				{
+					as_bad("\"%s\" precision mode is not supported for %s"
+						" in this core configuration (%uAU %s)",
+						args[i].c_str(), precs[i], AU_NUM,
+						core_type == core_type_sp ? "SP" : "DP");
+				}
+			}
+		}
+	}
+}
+
+//  Check if an instruction opcode corresponds to the "st Iu17, I32"
+// pseudoinstruction.
+bool check_is_pseudo(const struct adl_opcode *opcode)
+{
+	return opcode_has_attr(opcode, instr_pseudo);
+}
+#else
+//  Check VSPA2 configuration specific instruction restrictions.
+void check_instr_restrictions(const adl::InstrInfo &instr)
+{
 	if (instr.instrHasAttr(instr_set_prec)
 		&& (core_type == core_type_sp || core_type == core_type_spl))
 	{
@@ -689,6 +734,23 @@ void check_instr_restrictions(const adl::InstrInfo &instr)
 				"(%uAU %s)", instr.str.c_str(), AU_NUM,
 				core_type == core_type_sp ? "SP" : "DP");
 		}
+		else if (instr.instrHasAttr(instr_set_smode))
+		{
+			int (*compare)(const char *str1, const char *str2) = ignore_case
+				? strcasecmp : strcmp;
+			const std::vector<std::string> &args = instr.args;
+			static const char *s1qline = "S1qline";
+			for (std::vector<std::string>::const_iterator ita = args.begin(),
+				ita_end = args.end(); ita != ita_end; ++ita)
+			{
+				if (!compare(ita->c_str(), s1qline))
+				{
+					as_bad("\"%s\" is not supported for S1mode in this core "
+						"configuration (%uAU %s)", ita->c_str(), AU_NUM,
+						core_type == core_type_sp ? "SP" : "DP");
+				}
+			}
+		}
 	}
 }
 
@@ -699,3 +761,4 @@ bool check_is_pseudo(const struct adl_opcode *opcode)
 	// On VSPA2 this is an actual instruction, not a pseudoinstruction.
 	return false;
 }
+#endif

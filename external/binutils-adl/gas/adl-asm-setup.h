@@ -21,26 +21,30 @@
 #endif
 #define LABELS_WITHOUT_COLONS 1
 
-#include <stdbool.h>    // For bool type support
+// For bool type support.
+#include <stdbool.h>
 
 // Fixups get this additional item.
 struct adl_fixup_data {
-  const struct adl_operand *operand;        // The operand needing the fixup.
-  const struct adl_opcode  *opcode;         // Data about the entire instruction. // Mutable for macro instruction
-  struct shared_expr       *operand_values; // Operand values, if required to setup dependent operands (may be 0).
-  int                       operand_arg;    // Index of operand_values element
-                                            // that needs the new value, for
-                                            // when modifier functions are used.
-  struct adl_operand_macro *operand_macro;  // The related operand in the macro instruction 
-  bool                      is_macro;       //
-  int                       right_shift;    // Amount to shift final relocation by (drops unwanted low-order bits).
-  int                       bit_mask;       // Mask for dropping unwanted higher-order bits from a relocation value.
-  unsigned                  instr_size;     // Instruction size, in bytes.
+	// The operand needing the fixup.
+	const struct adl_operand *operand;
+	// Data about the entire instruction. Mutable for macro instruction.
+	struct adl_opcode *opcode;
+	// Operand values, if required to setup dependent operands (may be 0).
+	expressionS *operand_values;
+	// The PC, essentially.
+	int line_number;
+	// The related operand in the macro instruction.
+	struct adl_operand_macro *operand_macro;
+	// The fix-up corresponds to a macroinstruction.
+	bool is_macro;
 };
+
 #define TC_FIX_TYPE struct adl_fixup_data
 
 // Allow complex relocations.
 #define OBJ_COMPLEX_RELC
+
 // Additional symbol information.
 struct adl_sy
 {
@@ -63,7 +67,7 @@ struct adl_sy
 #define TC_SYMFIELD_TYPE struct adl_sy
 
 // Called by the fixup function for initialization of user data.
-#define TC_INIT_FIX_DATA(fixP) { memset(&fixP->tc_fix_data,0,sizeof(struct adl_fixup_data)); }
+#define TC_INIT_FIX_DATA(fixP) { memset(&fixP->tc_fix_data, 0, sizeof(struct adl_fixup_data)); }
 
 #ifndef TC_ALIGN_LIMIT
 # define TC_ALIGN_LIMIT (stdoutput->arch_info->bits_per_address - 1)
@@ -71,7 +75,7 @@ struct adl_sy
 
 /* Set the endianness we are using.  Default to big endian.  */
 #ifndef TARGET_BYTES_BIG_ENDIAN
-#define TARGET_BYTES_BIG_ENDIAN 1
+# define TARGET_BYTES_BIG_ENDIAN 1
 #endif
 
 /* $ is used to refer to the current location.  */
@@ -91,6 +95,7 @@ struct adl_sy
 /* Square and curly brackets are permitted in symbol names.  */
 #define LEX_BR 3
 
+#define DWARF2_LINE_MIN_INSN_LENGTH 4
 /* Use 32-bit address to represent a symbol address */
 #define DWARF2_ADDR_SIZE(bfd) 4
 
@@ -103,17 +108,19 @@ extern const char comment_chars[];
 #define tc_symbol_chars adl_symbol_chars
 extern const char adl_symbol_chars[];
 
-
 #define tc_parallel_separator_chars adl_parallel_separator_chars
 extern const char adl_parallel_separator_chars[];
 
-extern void md_cleanup (void);
+extern void md_cleanup PARAMS((void));
 
 /* call md_pcrel_from_section, not md_pcrel_from */
 #define MD_PCREL_FROM_SECTION(FIX, SEC) md_pcrel_from_section(FIX, SEC)
-extern long md_pcrel_from_section (struct fix *, segT);
+extern long md_pcrel_from_section(struct fix *, segT);
 
 #define md_operand(x)
+
+#define md_operator vspa_operator
+extern operatorT vspa_operator(char *, int, char *);
 
 /* Values passed to md_apply_fix don't include symbol values.  */
 #define MD_APPLY_SYM_VALUE(FIX) 0
@@ -121,7 +128,7 @@ extern long md_pcrel_from_section (struct fix *, segT);
 #define DWARF2_FORMAT(SEC) dwarf2_format_32bit
 
 #define TC_CONS_FIX_NEW adl_cons_fix_new
-extern void adl_cons_fix_new(fragS *, int, unsigned int, expressionS *, bfd_reloc_code_real_type);
+extern void adl_cons_fix_new(fragS *, int, unsigned int, expressionS *);
 
 #define tc_fix_adjustable adl_fix_adjustable
 extern bfd_boolean adl_fix_adjustable(struct fix *);
@@ -181,6 +188,7 @@ extern bfd_boolean adl_backend_section_from_bfd_section(bfd *abfd,
 #define md_elf_section_change_hook adl_elf_section_change
 extern void adl_elf_section_change();
 
+#define md_flush_pending_output adl_flush_pending_output
 extern void adl_flush_pending_output();
 
 #define md_end adl_end

@@ -4,7 +4,7 @@
    internationalization features.)
 
    Copyright (C) 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001,
-   2002, 2005, 2010, 2013 Free Software Foundation, Inc.
+   2002, 2005, 2010 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -46,11 +46,9 @@
 
 # if defined STDC_HEADERS && !defined emacs
 #  include <stddef.h>
-#  define PTR_INT_TYPE ptrdiff_t
 # else
 /* We need this for `regex.h', and perhaps for the Emacs include files.  */
 #  include <sys/types.h>
-#  define PTR_INT_TYPE long
 # endif
 
 # define WIDE_CHAR_SUPPORT (HAVE_WCTYPE_H && HAVE_WCHAR_H && HAVE_BTOWC)
@@ -151,7 +149,7 @@ char *realloc ();
 #    include <string.h>
 #    ifndef bzero
 #     ifndef _LIBC
-#      define bzero(s, n)	((void) memset (s, '\0', n))
+#      define bzero(s, n)	(memset (s, '\0', n), (s))
 #     else
 #      define bzero(s, n)	__bzero (s, n)
 #     endif
@@ -2050,7 +2048,7 @@ static reg_errcode_t byte_compile_range (unsigned int range_start,
     /* How many characters the new buffer can have?  */			\
     wchar_count = bufp->allocated / sizeof(UCHAR_T);			\
     if (wchar_count == 0) wchar_count = 1;				\
-    /* Truncate the buffer to CHAR_T align.  */				\
+    /* Truncate the buffer to CHAR_T align.  */			\
     bufp->allocated = wchar_count * sizeof(UCHAR_T);			\
     RETALLOC (COMPILED_BUFFER_VAR, wchar_count, UCHAR_T);		\
     bufp->buffer = (char*)COMPILED_BUFFER_VAR;				\
@@ -2059,7 +2057,7 @@ static reg_errcode_t byte_compile_range (unsigned int range_start,
     /* If the buffer moved, move all the pointers into it.  */		\
     if (old_buffer != COMPILED_BUFFER_VAR)				\
       {									\
-	PTR_INT_TYPE incr = COMPILED_BUFFER_VAR - old_buffer;		\
+	int incr = COMPILED_BUFFER_VAR - old_buffer;			\
 	MOVE_BUFFER_POINTER (b);					\
 	MOVE_BUFFER_POINTER (begalt);					\
 	if (fixup_alt_jump)						\
@@ -2087,7 +2085,7 @@ static reg_errcode_t byte_compile_range (unsigned int range_start,
     /* If the buffer moved, move all the pointers into it.  */		\
     if (old_buffer != COMPILED_BUFFER_VAR)				\
       {									\
-	PTR_INT_TYPE incr = COMPILED_BUFFER_VAR - old_buffer;		\
+	int incr = COMPILED_BUFFER_VAR - old_buffer;			\
 	MOVE_BUFFER_POINTER (b);					\
 	MOVE_BUFFER_POINTER (begalt);					\
 	if (fixup_alt_jump)						\
@@ -3399,7 +3397,7 @@ PREFIX(regex_compile) (const char *ARG_PREFIX(pattern),
 			       class.  */
 			    PATFETCH (c);
 
-			    /* Now we have to go through the whole table
+			    /* Now we have to go throught the whole table
 			       and find all characters which have the same
 			       first level weight.
 
@@ -4975,7 +4973,7 @@ weak_alias (__re_search_2, re_search_2)
 #ifdef MATCH_MAY_ALLOCATE
 # define FREE_VAR(var) if (var) REGEX_FREE (var); var = NULL
 #else
-# define FREE_VAR(var) free (var); var = NULL
+# define FREE_VAR(var) if (var) free (var); var = NULL
 #endif
 
 #ifdef WCHAR
@@ -8096,12 +8094,12 @@ regerror (int errcode, const regex_t *preg ATTRIBUTE_UNUSED,
 #if defined HAVE_MEMPCPY || defined _LIBC
 	  *((char *) mempcpy (errbuf, msg, errbuf_size - 1)) = '\0';
 #else
-          (void) memcpy (errbuf, msg, errbuf_size - 1);
+          memcpy (errbuf, msg, errbuf_size - 1);
           errbuf[errbuf_size - 1] = 0;
 #endif
         }
       else
-        (void) memcpy (errbuf, msg, msg_size);
+        memcpy (errbuf, msg, msg_size);
     }
 
   return msg_size;
@@ -8116,17 +8114,20 @@ weak_alias (__regerror, regerror)
 void
 regfree (regex_t *preg)
 {
-  free (preg->buffer);
+  if (preg->buffer != NULL)
+    free (preg->buffer);
   preg->buffer = NULL;
 
   preg->allocated = 0;
   preg->used = 0;
 
-  free (preg->fastmap);
+  if (preg->fastmap != NULL)
+    free (preg->fastmap);
   preg->fastmap = NULL;
   preg->fastmap_accurate = 0;
 
-  free (preg->translate);
+  if (preg->translate != NULL)
+    free (preg->translate);
   preg->translate = NULL;
 }
 #ifdef _LIBC

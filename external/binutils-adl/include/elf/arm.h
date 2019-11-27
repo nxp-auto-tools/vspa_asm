@@ -1,5 +1,6 @@
 /* ARM ELF support for BFD.
-   Copyright (C) 1998-2014 Free Software Foundation, Inc.
+   Copyright 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2009, 2010
+   Free Software Foundation, Inc.
 
    This file is part of BFD, the Binary File Descriptor library.
 
@@ -44,11 +45,6 @@
 #define EF_ARM_DYNSYMSUSESEGIDX 0x08	/* NB conflicts with EF_APCS26.  */
 #define EF_ARM_MAPSYMSFIRST 0x10	/* NB conflicts with EF_APCS_FLOAT.  */
 #define EF_ARM_EABIMASK      0xFF000000
-
-/* New constants defined in the ARM ELF spec. version XXX.
-   Only valid in conjunction with EF_ARM_EABI_VER5. */
-#define EF_ARM_ABI_FLOAT_SOFT 0x200	/* NB conflicts with EF_ARM_SOFT_FLOAT.  */
-#define EF_ARM_ABI_FLOAT_HARD 0x400	/* NB conflicts with EF_ARM_VFP_FLOAT.  */
 
 /* Constants defined in AAELF.  */
 #define EF_ARM_BE8	    0x00800000
@@ -105,8 +101,7 @@
 #define TAG_CPU_ARCH_V6_M	11
 #define TAG_CPU_ARCH_V6S_M	12
 #define TAG_CPU_ARCH_V7E_M	13
-#define TAG_CPU_ARCH_V8		14
-#define MAX_TAG_CPU_ARCH	14
+#define MAX_TAG_CPU_ARCH	13
 /* Pseudo-architecture to allow objects to be compatible with the subset of
    armv4t and armv6-m.  This value should never be stored in object files.  */
 #define TAG_CPU_ARCH_V4T_PLUS_V6_M (MAX_TAG_CPU_ARCH + 1)
@@ -128,7 +123,7 @@ START_RELOC_NUMBERS (elf_arm_reloc_type)
   RELOC_NUMBER (R_ARM_THM_CALL,        	 10)
   RELOC_NUMBER (R_ARM_THM_PC8,         	 11)
   RELOC_NUMBER (R_ARM_BREL_ADJ,	       	 12)
-  RELOC_NUMBER (R_ARM_TLS_DESC,          13)
+  RELOC_NUMBER (R_ARM_SWI24,           	 13)   /* obsolete */
   RELOC_NUMBER (R_ARM_THM_SWI8,        	 14)   /* obsolete */
   RELOC_NUMBER (R_ARM_XPC25,           	 15)   /* obsolete */
   RELOC_NUMBER (R_ARM_THM_XPC22,       	 16)   /* obsolete */
@@ -205,10 +200,7 @@ START_RELOC_NUMBERS (elf_arm_reloc_type)
   RELOC_NUMBER (R_ARM_THM_MOVW_BREL_NC,	 87)
   RELOC_NUMBER (R_ARM_THM_MOVT_BREL,   	 88)
   RELOC_NUMBER (R_ARM_THM_MOVW_BREL,   	 89)
-  RELOC_NUMBER (R_ARM_TLS_GOTDESC,       90)
-  RELOC_NUMBER (R_ARM_TLS_CALL,          91)
-  RELOC_NUMBER (R_ARM_TLS_DESCSEQ,       92)
-  RELOC_NUMBER (R_ARM_THM_TLS_CALL,      93)
+  /* 90-93 unallocated */
   RELOC_NUMBER (R_ARM_PLT32_ABS,       	 94)
   RELOC_NUMBER (R_ARM_GOT_ABS,	       	 95)
   RELOC_NUMBER (R_ARM_GOT_PREL,	       	 96)
@@ -229,9 +221,6 @@ START_RELOC_NUMBERS (elf_arm_reloc_type)
   RELOC_NUMBER (R_ARM_TLS_IE12GP,     	111)
   /* 112 - 127 private range */
   RELOC_NUMBER (R_ARM_ME_TOO,	        128)   /* obsolete */
-  RELOC_NUMBER (R_ARM_THM_TLS_DESCSEQ  ,129)
-
-  RELOC_NUMBER (R_ARM_IRELATIVE,      	160)
 
   /* Extensions?  R=read-only?  */
   RELOC_NUMBER (R_ARM_RXPC25,         	249)
@@ -329,15 +318,5 @@ enum
 #define ELF_STRING_ARM_unwind_info      ".ARM.extab"
 #define ELF_STRING_ARM_unwind_once      ".gnu.linkonce.armexidx."
 #define ELF_STRING_ARM_unwind_info_once ".gnu.linkonce.armextab."
-
-enum arm_st_branch_type {
-  ST_BRANCH_TO_ARM,
-  ST_BRANCH_TO_THUMB,
-  ST_BRANCH_LONG,
-  ST_BRANCH_UNKNOWN
-};
-
-#define ARM_SYM_BRANCH_TYPE(SYM) \
-  ((enum arm_st_branch_type) (SYM)->st_target_internal)
 
 #endif /* _ELF_ARM_H */

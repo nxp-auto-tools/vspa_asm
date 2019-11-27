@@ -1,5 +1,9 @@
 #include "version.h"
-#define BFD_VERSION_DATE 20141223
-#define BFD_VERSION 225000000
-#define BFD_VERSION_STRING  "(ASM " VSPA_ASM_VERSION " NXP Advanced Accelerating Architectures ADL " VSPA_ADL_VERSION ") " "2.25"
+#define BFD_VERSION_DATE 20110627
+#define BFD_VERSION 221010000
+#ifdef _VSPA2_
+#define BFD_VERSION_STRING  "(FSL VSPA2 ADL " VSPA_ADL_VERSION ") " "2.21.1"
+#else
+#define BFD_VERSION_STRING  "(FSL VSPA ADL " VSPA_ADL_VERSION ") " "2.21.1"
+#endif
 #define REPORT_BUGS_TO "<http://www.sourceware.org/bugzilla/>"

@@ -8,7 +8,7 @@
 # Please note that the actual code is *not* freely available.
 
 PACKAGE = bfd
-VERSION = 2.25
+VERSION = 2.21.1
 
 SHELL = /bin/sh
 
@@ -39,7 +39,7 @@ XGETTEXT = PATH=../src:$$PATH /usr/bin/xgettext
 MSGMERGE = PATH=../src:$$PATH msgmerge
 
 DEFS = -DHAVE_CONFIG_H
-CFLAGS = -g -fpic
+CFLAGS = -g -O2 -fpic
 CPPFLAGS = 
 
 INCLUDES = -I.. -I$(top_srcdir)/intl
@@ -47,8 +47,8 @@ INCLUDES = -I.. -I$(top_srcdir)/intl
 COMPILE = $(CC) -c $(DEFS) $(INCLUDES) $(CPPFLAGS) $(CFLAGS) $(XCFLAGS)
 
 SOURCES = cat-id-tbl.c
-POFILES =  fr.po tr.po ja.po es.po sv.po da.po zh_CN.po ro.po rw.po vi.po fi.po id.po ru.po uk.po
-GMOFILES =  fr.gmo tr.gmo ja.gmo es.gmo sv.gmo da.gmo zh_CN.gmo ro.gmo rw.gmo vi.gmo fi.gmo id.gmo ru.gmo uk.gmo
+POFILES =  fr.po tr.po ja.po es.po sv.po da.po zh_CN.po ro.po rw.po vi.po fi.po id.po ru.po
+GMOFILES =  fr.gmo tr.gmo ja.gmo es.gmo sv.gmo da.gmo zh_CN.gmo ro.gmo rw.gmo vi.gmo fi.gmo id.gmo ru.gmo
 DISTFILES = ChangeLog Makefile.in.in SRC-POTFILES.in BLD-POTFILES.in $(PACKAGE).pot \
 stamp-cat-id $(POFILES) $(GMOFILES) $(SOURCES)
 
@@ -419,7 +419,7 @@ INSTOBJEXT = .mo
 
 all: all-yes
 
-all-yes: $(CATALOGS) # $(PACKAGE).pot
+all-yes: $(CATALOGS)  $(PACKAGE).pot
 all-no:
 
 $(srcdir)/$(PACKAGE).pot: $(SRC-POTFILES) $(BLD-POTFILES)
@@ -596,10 +596,10 @@ BLD-POTFILES: BLD-POTFILES.in
 	    && chmod a-w $@-t \
 	    && mv $@-t $@ )
 
-SRC-POTFILES.in: # ../Makefile
+SRC-POTFILES.in:  ../Makefile
 	cd .. && $(MAKE) po/SRC-POTFILES.in
 
-BLD-POTFILES.in: # ../Makefile
+BLD-POTFILES.in:  ../Makefile
 	cd .. && $(MAKE) po/BLD-POTFILES.in
 
 # Note - The presence of SRC-POTFILES and BLD-POTFILES as dependencies

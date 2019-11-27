@@ -1,5 +1,6 @@
 /* resres.c: read_res_file and write_res_file implementation for windres.
-   Copyright (C) 1998-2014 Free Software Foundation, Inc.
+   Copyright 1998, 1999, 2001, 2002, 2005, 2007, 2008
+   Free Software Foundation, Inc.
    Written by Anders Norlander <anorland@hem2.passagen.se>.
    Rewritten by Kai Tietz, Onevision.
 
@@ -31,6 +32,7 @@
 #include "windres.h"
 
 #include <assert.h>
+#include <time.h>
 
 static rc_uint_type write_res_directory (windres_bfd *, rc_uint_type,
 				    	 const rc_res_directory *, const rc_res_id *,
@@ -96,7 +98,7 @@ read_res_file (const char *fn)
   off = 0;
 
   if (! probe_binary (&wrbfd, flen))
-    set_windres_bfd_endianness (&wrbfd, ! target_is_bigendian);
+    set_windres_bfd_endianess (&wrbfd, ! target_is_bigendian);
 
   skip_null_resource (&wrbfd, &off, flen);
 
@@ -658,13 +660,17 @@ res_append_resource (rc_res_directory **res_dirs, rc_res_resource *resource,
 
       if (*res_dirs == NULL)
 	{
+	  static unsigned long timeval;
+
+	  /* Use the same timestamp for every resource created in a
+	     single run.  */
+	  if (timeval == 0)
+	    timeval = time (NULL);
+
 	  *res_dirs = ((rc_res_directory *)
 			res_alloc (sizeof (rc_res_directory)));
-
 	  (*res_dirs)->characteristics = 0;
-	  /* Using a real timestamp only serves to create non-deterministic
-	     results.  Use zero instead.  */
-	  (*res_dirs)->time = 0;
+	  (*res_dirs)->time = timeval;
 	  (*res_dirs)->major = 0;
 	  (*res_dirs)->minor = 0;
 	  (*res_dirs)->entries = NULL;

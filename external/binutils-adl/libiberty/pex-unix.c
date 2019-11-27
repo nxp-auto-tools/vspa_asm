@@ -1,8 +1,8 @@
 /* Utilities to execute a program in a subprocess (possibly linked by pipes
    with other subprocesses), and wait for it.  Generic Unix version
    (also used for UWIN and VMS).
-   Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2003, 2004, 2005, 2009,
-   2010 Free Software Foundation, Inc.
+   Copyright (C) 1996, 1997, 1998, 1999, 2000, 2001, 2003, 2004, 2005, 2009
+   Free Software Foundation, Inc.
 
 This file is part of the libiberty library.
 Libiberty is free software; you can redistribute it and/or
@@ -85,15 +85,13 @@ to_ptr32 (char **ptr64)
   int argc;
   __char_ptr_char_ptr32 short_argv;
 
-  /* Count number of arguments.  */
-  for (argc = 0; ptr64[argc] != NULL; argc++)
-    ;
+  for (argc=0; ptr64[argc]; argc++);
 
   /* Reallocate argv with 32 bit pointers.  */
   short_argv = (__char_ptr_char_ptr32) decc$malloc
     (sizeof (__char_ptr32) * (argc + 1));
 
-  for (argc = 0; ptr64[argc] != NULL; argc++)
+  for (argc=0; ptr64[argc]; argc++)
     short_argv[argc] = (__char_ptr32) decc$strdup (ptr64[argc]);
 
   short_argv[argc] = (__char_ptr32) 0;
@@ -301,7 +299,7 @@ pex_wait (struct pex_obj *obj, pid_t pid, int *status, struct pex_time *time)
 static void pex_child_error (struct pex_obj *, const char *, const char *, int)
      ATTRIBUTE_NORETURN;
 static int pex_unix_open_read (struct pex_obj *, const char *, int);
-static int pex_unix_open_write (struct pex_obj *, const char *, int, int);
+static int pex_unix_open_write (struct pex_obj *, const char *, int);
 static pid_t pex_unix_exec_child (struct pex_obj *, int, const char *,
 				 char * const *, char * const *,
 				 int, int, int, int,
@@ -350,12 +348,11 @@ pex_unix_open_read (struct pex_obj *obj ATTRIBUTE_UNUSED, const char *name,
 
 static int
 pex_unix_open_write (struct pex_obj *obj ATTRIBUTE_UNUSED, const char *name,
-		     int binary ATTRIBUTE_UNUSED, int append)
+		     int binary ATTRIBUTE_UNUSED)
 {
   /* Note that we can't use O_EXCL here because gcc may have already
      created the temporary file via make_temp_file.  */
-  return open (name, O_WRONLY | O_CREAT
-		     | (append ? O_APPEND : O_TRUNC), PUBLIC_MODE);
+  return open (name, O_WRONLY | O_CREAT | O_TRUNC, PUBLIC_MODE);
 }
 
 /* Close a file.  */

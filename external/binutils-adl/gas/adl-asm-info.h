@@ -41,36 +41,6 @@
   void insert_modifier(unsigned *, const adl_operand *, expressionS *, uint32_t);
   void insert_modifier(unsigned *, const adl_operand *, expressionS *, uint32_t, const adl_operand_macro *); //
 
-  // Ugh- this should be a std::shared_ptr, but we have to have simple types in
-  // the fixup type, so we can't use a complex object there.  So, we have to
-  // have our own hacked up version here.
-  struct shared_expr {
-    shared_expr(expressionS *expr,unsigned count) : _count(1)
-    {
-      _ptr = new expressionS[count];
-      memcpy(_ptr, expr, sizeof(expressionS)*count);
-    }
-
-    expressionS *get() { return _ptr; };
-    
-    void incr() { ++_count; };
-
-    bool release()
-    {
-      --_count;
-      if (!_count) {
-        delete [] _ptr;
-        return true;
-      }
-      return false;
-    }
-
-  private:
-    unsigned     _count;
-    expressionS *_ptr;
-  };
-
-
 namespace adl {
 
   // Stores fixup information during the first pass.
@@ -78,26 +48,12 @@ namespace adl {
   {
     expressionS exp;
     int is_relative;
-    unsigned                  instr_size;     // Instruction size, in bytes.
     const adl_operand        *operand;        // The operand to be fixed-up.
     adl_opcode               *opcode;         // Info about all operands (maybe 0 if not needed). // Mutable for macro instruction
-	shared_expr              *operand_values; // All other operands, to handle
-											  // modifiers (may be 0, if not
-											  // needed).  This is shared
-											  // amongst all fixups for the
-											  // instruction, in order to be
-											  // able to share values for
-											  // complex modifier functions.
-    int                       operand_arg;    // For instructions with modifier
-                                              // functions, this is the index of
-                                              // the operand_values array which
-                                              // needs the fixup so that the
-                                              // modifier functions can be
-                                              // evaluated.
+    expressionS              *operand_values; // All other uperands, to handle modifiers (may be 0, if not needed).
     int line_number;                          // The PC, essentially.
     int order;                                // If sorting of fixups is required.  Propagated from InstrInfo::order.
     bfd_reloc_code_real_type reloc;
-    bool                     md_extra;        // Relocation needs machine-dependent extra handling.
     adl_operand_macro        *operand_macro;  // The related operand in the macro instruction
     bool is_macro;                            //
   };
@@ -116,88 +72,52 @@ namespace adl {
   
   typedef std::vector<Arg> Args;
 
-  // Used by aliases which define an assembler action function.  This provides
-  // an interface for querying and creating instruction arguments.
-  class InstrArg {
-  public:
-    InstrArg ();
-    InstrArg (offsetT v);
-    InstrArg (const expressionS &ex,const std::string &arg);
+	// Instruction info used during the first pass.
+	struct InstrInfo {
+		// Instruction string.
+		std::string str;
+		// Pointer to opcode data.
+		adl_opcode *opcode;
+		// Pointer to source opcode data if shorthand.
+		adl_opcode *src_opcode;
+		expressionS *operand_values;
+		int num_operand_values;
+		// Original string value, corresponding to operand_values.
+		std::vector<std::string> args;
+		int line_number;
+		int num_fixups;
+		int instr_table;
+		const char *instr_table_name;
+		int maxfields;
+		// Pointer to frag/buf for storing assembled data.  Must be allocated
+		// after any re-ordering takes place of instructions.
+		char *f;
+		// Indicates packet order. Initially set to same as index in
+		// InstrBundle, but since re-ordering can take place, this preserves an
+		// idea of what initial ordering was.
+		int order;
 
-	bool has_reloc() const;
-	std::string get_reloc() const;
-	void set_reloc(const std::string &r);
+		static std::string empty_string;
+		// Pointer to array of adl_operand_macro structures.
+		adl_operand_macro *operand_macro;
+		// Flag that shows whether the instruction is macro one or not;
+		// by default, is false.
+		bool is_macro;
 
-    void copy_expr(expressionS *trg) const;
-    
-    offsetT  value() const { return _ex.X_add_number; };
-    void set_value(offsetT v) { _ex.X_add_number = v; };
-
-    const std::string &arg() const { return _arg; };
-    
-    bool is_constant() const { return _ex.X_op == O_constant; };
-    bool is_register() const { return _ex.X_op == O_register; };
-    bool is_symbol() const { return _ex.X_op == O_symbol; };
-    
-  private:
-    expressionS  _ex;  // Original expression.
-    std::string  _arg; // Argument string- used for setting new relocations.
-  };  
-  
-  struct InstrArgs : public std::vector<InstrArg> {};
-
-  // Instruction info used during the first pass.
-  struct InstrInfo {
-    std::string str;                 // Argument string.
-    adl_opcode *opcode;              // Pointer to opcode data.  If a shorthand,
-                                     // then this is the shorthand instantiation
-                                     // of the target, with all fixed fields set
-                                     // in the ocpode.
-    adl_opcode *src_opcode;          // Pointer to source opcode data if shorthand.
-	expressionS *operand_values;     // Parsed data values corresponding to the
-									 // arguments.  This can be larger than the
-									 // number of arguments if we have expressions.
-	unsigned num_opv;                // Number of operand value items.
-    std::vector<std::string> args;   // Original string value, corresponding to operand_values.
-    const char *file_name;
-    int line_number;
-    unsigned pc;                     // An attempt at tracking the program counter (per byte).
-    int num_fixups;
-    int instr_table;
-    const char *instr_table_name;
-    fragS *frag;                     // Pointer to frag object associated with
-                                     // this instruction.  The 'f' pointer will
-                                     // point to the actual frag buffer space.
-    char *f;                         // Pointer to frag/buf for storing assembled
-                                     // data.  Must be allocated after any
-                                     // re-ordering takes place of instructions.
-    int order;                       // Indicates packet order.  Initially set
-                                     // to same as index in InstrBundle, but
-                                     // since re-ordering can take place, this
-                                     // preserves an idea of what initial
-                                     // ordering was.
-
-    static std::string empty_string;
-    adl_operand_macro *operand_macro;// Pointer to array of adl_operand_macro structures
-    bool is_macro;                   // Flag shows whether the instruction is macro one or not, by default, false
-    
     // Remember to initialize, and process the members in copy constructor and assignment operator accordingly
-
     InstrInfo() :
       opcode(0), 
       operand_values(0),
-      num_opv(0),
-      file_name(0),
+      num_operand_values(0),
       line_number(-1), 
-      pc(0),
       num_fixups(0), 
       instr_table(0), 
-      instr_table_name(0),
-      frag(0),
+      instr_table_name(0), 
+      maxfields(0), 
       f(0),
       order(-1),
-      operand_macro(0),
-      is_macro(false)
+      operand_macro(0) ,            //
+      is_macro(false)               //
     {
     }
     
@@ -206,20 +126,20 @@ namespace adl {
       // opcode = x.opcode;
       src_opcode = x.src_opcode;
 
-      num_opv = x.num_opv;
-      if (x.num_operand_values()) {
-        operand_values = (expressionS*)xmalloc(sizeof(expressionS)*x.num_operand_values());
-        memcpy(operand_values, x.operand_values, sizeof(expressionS)*x.num_operand_values());
+      // operand_values = 0;   // Must initialize due to operations inside alloc_operand_values()
+      // alloc_operand_values(x.num_operand_values);  // Set num_operand_values inside alloc_operand_values()
+      num_operand_values = x.num_operand_values;
+      if (x.num_operand_values) {
+        operand_values = (expressionS*)xmalloc(sizeof(expressionS)*x.num_operand_values);
+        memcpy(operand_values, x.operand_values, sizeof(expressionS)*x.num_operand_values);
       } else { operand_values = 0; }
 
       args = x.args;
-      file_name = x.file_name;
       line_number = x.line_number;
-      pc = x.pc;
       num_fixups = x.num_fixups;
       instr_table = x.instr_table;
       instr_table_name = x.instr_table_name;
-      frag = x.frag;
+      maxfields = x.maxfields;
       f = x.f;
       order = x.order;
       is_macro = x.is_macro;
@@ -235,8 +155,8 @@ namespace adl {
         } else { opcode->operands = 0; }
         
         if (x.operand_macro) {
-          operand_macro = (adl_operand_macro*)xmalloc(sizeof(adl_operand_macro)*x.num_operand_values());
-          memcpy(operand_macro, x.operand_macro, sizeof(adl_operand_macro)*x.num_operand_values()); 
+            operand_macro = (adl_operand_macro*)xmalloc(sizeof(adl_operand_macro)*x.num_operand_values);
+            memcpy(operand_macro, x.operand_macro, sizeof(adl_operand_macro)*x.num_operand_values); 
         } else { operand_macro = 0; }   
       } else { 
         opcode = x.opcode;
@@ -251,16 +171,14 @@ namespace adl {
         swap(x.str, y.str);
         swap(x.opcode, y.opcode);
         swap(x.src_opcode, y.src_opcode);
+        swap(x.num_operand_values, y.num_operand_values);
         swap(x.operand_values, y.operand_values);
-        swap(x.num_opv, y.num_opv);
         swap(x.args, y.args);
-        swap(x.file_name, y.file_name);
         swap(x.line_number, y.line_number);
-        swap(x.pc, y.pc);
         swap(x.num_fixups, y.num_fixups);
         swap(x.instr_table, y.instr_table);
         swap(x.instr_table_name, y.instr_table_name);
-        swap(x.frag, y.frag);
+        swap(x.maxfields, y.maxfields);
         swap(x.f, y.f);
         swap(x.order, y.order);
         swap(x.operand_macro,y.operand_macro);
@@ -286,47 +204,27 @@ namespace adl {
     }
    
     void alloc_operand_values(int p_num_operand_values);
-    void alloc_args(int n);
-    void set_opcode(adl_opcode *p_opcode,const char *caller);
+    void set_opcode(adl_opcode *p_opcode);
 
-    unsigned num_operand_values() const { return num_opv; };
-    
     void init(char *p_s, adl_opcode *p_opcode,adl_opcode *p_src_opcode,expressionS *p_operand_values,
-              const Args &args, const char *p_file_name, int p_line_number, unsigned p_pc, int p_maxfields, 
+              const Args &args, int p_line_number,  int p_maxfields, 
               int p_instr_table, const char *p_instr_table_name);
 
     const char *instrName() const { return (opcode) ? opcode->name : ""; };
 
     // Return true if the item has the specified attribute.
     bool instrHasAttr(unsigned attr) const;
-	// Return true if the item has the specified attribute on the src_opcode.
-	bool instrSrcHasAttr(unsigned attr) const;
+    // Return true if the item has the specified attribute on the src_opcode.
+    bool instrSrcHasAttr(unsigned attr) const;
     // Return true if an instruction has an attribute and that attribute has a give
     // numerical value.
-    bool instrHasAttrVal(unsigned attr,unsigned val) const;
+    bool instrHasAttrVal(unsigned attr, unsigned val) const;
     // Return true if an instruction has an attribute and that attribute has a
     // give string value.
-    bool instrHasAttrVal(unsigned attr,const std::string &val) const;
-	// Return true if an instruction has an attribute and the value of the attribute
-	// if present
-	bool instrGetAttrVal(unsigned attr, std::string &val) const;
-
-    // Return a relocation name (abbreviation) if it exists for the specified
-    // argument.
-    std::string getReloc(unsigned index) const;
-    // Replace a relocation with a new relocation.  Returns true if the
-    // replacement happened, false otherwise.
-    bool replaceReloc(unsigned index,const std::string &new_reloc);
-
-	// Fetch the raw argument string for a given operand.
-	const std::string &getRawArg(unsigned i) const { return (i < args.size()) ? args[i] : empty_string; };
-
-	// Return the numerical value of an operand.
-	offsetT getOpValue(unsigned i) const;
-
-	// Return an instruction argument object, which encapsulates information
-	// about the numerical value, symbols, relocations, etc.
-	InstrArg getArg(unsigned i) const;
+    bool instrHasAttrVal(unsigned attr, const std::string &val) const;
+    // Return true if an instruction has an attribute and the value of the attribute
+    // if present
+    bool instrGetAttrVal(unsigned attr, std::string &val) const;
 
     unsigned numInstrBlks() const { return (opcode) ? opcode->num_blks : 0; };
     bool instrBlk(int blk) const { 
@@ -343,6 +241,7 @@ namespace adl {
     int instrOrder() const { return order; };
     unsigned size() const { assert(opcode); return opcode->size; };
     unsigned width() const { assert(opcode); return opcode->width; }; // Return instruction width in bits
+    const std::string &get_arg(unsigned i) { return (i < args.size()) ? args[i] : empty_string; };
 
   };
 
@@ -351,7 +250,7 @@ namespace adl {
   struct InstrBundle : public std::vector<InstrInfo> {
     InstrBundle() : _has_prefix(0), _pfx_index(0) {};
 
-    InstrInfo &get_instr(unsigned i) 
+    InstrInfo &get_instr(unsigned i)
     {
       if (_has_prefix) {
         if (i == 0) {
@@ -363,6 +262,7 @@ namespace adl {
         return at(i);
       }
     }
+
     const InstrInfo &get_instr(unsigned i) const { return const_cast<InstrBundle&>(*this).get_instr(i); };
 
     InstrInfo &get_prefix() { return _prefix; };
@@ -380,17 +280,11 @@ namespace adl {
     unsigned prefix_index() const { return _pfx_index; };
     void set_prefix_index(unsigned p) { _pfx_index = p; };
 
-    const std::vector<std::string> &separators() const { return _separators; };
-
   protected:
-    friend struct InstrBundles;
-    
-    void add_separator(const std::string &sep) { _separators.push_back(sep); };
-    
-    bool                     _has_prefix;
-    unsigned                 _pfx_index;  // Where to insert the prefix in the packet.  0 => beginning.
-    InstrInfo                _prefix;     // Stores prefix information, if applicable.
-    std::vector<std::string> _separators; // Separator strings used by this packet.
+
+    bool      _has_prefix;
+    unsigned  _pfx_index;  // Where to insert the prefix in the packet.  0 => beginning.
+    InstrInfo _prefix;     // Stores prefix information, if applicable.
   };
 
   // A group of packets (of instructions).
@@ -427,12 +321,6 @@ namespace adl {
       InstrInfo &last = packet.back();
       return last;
     }
-
-    void add_separator(const std::string &sep)
-    {
-      InstrBundle &packet = at(_current_group);
-      packet.add_separator(sep);
-    }
   
     unsigned current_group() const { return _current_group; };
     void set_current_group(unsigned i)  { _current_group = i; };
@@ -451,34 +339,15 @@ namespace adl {
 adl::InstrInfo replaceInstr(const adl::InstrInfo &instr,const std::string &new_name);
 
 // Returns an instruction object which references the named instruction.
-// Ugh:  We should be using variadic templates, but there are issues with MSVC and gcc dialects.
-adl::InstrInfo createInstr(const std::string &new_name, const adl::InstrArgs &args);
-adl::InstrInfo createInstr(const std::string &new_name);
-adl::InstrInfo createInstr(const std::string &new_name,const adl::InstrArg &arg0);
-adl::InstrInfo createInstr(const std::string &new_name,const adl::InstrArg &arg0,const adl::InstrArg &arg1);
-adl::InstrInfo createInstr(const std::string &new_name,const adl::InstrArg &arg0,const adl::InstrArg &arg1,const adl::InstrArg &arg2);
-adl::InstrInfo createInstr(const std::string &new_name,const adl::InstrArg &arg0,const adl::InstrArg &arg1,const adl::InstrArg &arg2,const adl::InstrArg &arg3);
-adl::InstrInfo createInstr(const std::string &new_name,const adl::InstrArg &arg0,const adl::InstrArg &arg1,const adl::InstrArg &arg2,const adl::InstrArg &arg3,const adl::InstrArg &arg4);
-adl::InstrInfo createInstr(const std::string &new_name,const adl::InstrArg &arg0,const adl::InstrArg &arg1,const adl::InstrArg &arg2,const adl::InstrArg &arg3,const adl::InstrArg &arg4,const adl::InstrArg &arg5);
-
+adl::InstrInfo createInstr(int num_args, const char *new_name, ...);
 
 // Returns an instruction object which references the named instruction
 // Combine micro instructions into a macro one 
-adl::InstrInfo combineInstr(int num_args, const char* new_name, ...);
+adl::InstrInfo combineInstr(int num_args, const char *new_name, ...);
 
 // Returns an instruction object which references the named instruction 
 // Patch a macro instruction at the 32 LSBs with a micro one
 adl::InstrInfo patchInstr(const adl::InstrInfo &macro, const adl::InstrInfo &micro, int shift);
-
-// Gain access to a prior packet.  Only valid of queue_offset is non-zero.  The
-// index is an offset from the current position.
-adl::InstrBundle &getPriorPacket(unsigned index);
-
-// Returns true if we have a label defined at this point.
-bool hasLabel();
-
-// Adjust a current label by the specified offset.
-void adjustCurLabel(int offset);
 
 // Figure out if we need a prefix instrution and save it.  Called automatically,
 // but may be called by the user if additional checks are required.
@@ -504,7 +373,7 @@ void adl_setup_endianness(bool big_endian);
 // Performs setup operation- called by md_begin.
 void adl_setup_general(const char *min_terminating_chars,const char *terminating_chars, bool is_parallel, adl_pre_asm_t pre_asm, 
                        adl_post_asm_t post_asm, adl_post_packet_asm_t post_packet_asm,adl_post_packet_checker_t post_packet_chekcer,
-                       unsigned q_size,unsigned q_offset,bool show_warnings,bool big_mem,int min_instr_len);
+                       int q_size,bool show_warnings,bool big_mem);
 
 void adl_setup_comments(const char **comment_strs, int num_comment_strs, 
                         const char **line_comment_strs, int num_line_comment_strs);
@@ -526,50 +395,31 @@ struct hash_control *adl_setup_asm_instructions (struct adl_asm_instr *instructi
 
 struct hash_control *adl_setup_instr_pfx_fields (const char *field_values[],int num_items);
 
-void adl_setup_relocations(const reloc_howto_type *relocs,int num_relocs,
-                           const adl_reloc_name *relocs_by_index,int num_relocs_by_index);
-
-void adl_setup_finish();
+void adl_setup_relocations(const reloc_howto_type *relocs, int num_relocs,
+    const struct adl_name_pair *relocs_by_index, int num_relocs_by_index,
+    const struct adl_int_pair *reloc_offsets, int num_reloc_offsets);
 
 // Returns true if custom relocations are defined.
 bool adl_have_custom_relocs();
 
-// Returns true if this is a parallel architecture.
-bool adl_parallel_arch();
-
 // Lookup a relocation by name, returning the type code.
-std::pair<bfd_reloc_code_real_type, bool> adl_get_reloc_by_name(const std::string &str, expressionS *ex, const struct adl_operand *operand);
+bfd_reloc_code_real_type adl_get_reloc_by_name(const char *str,expressionS *ex,const struct adl_operand *operand);
 
-// Convert an internal BFD code to a HOWTO type value.
-unsigned adl_bfd_code_to_type(bfd_reloc_code_real_type code);
-
-// Get the relocation type using the relocation name
 bfd_reloc_code_real_type adl_get_reloc_type_by_name(const char *reloc_name);
 
-// Given a relocation type code, return the offset (within the instruction) to
-// use for this offset.
-unsigned adl_reloc_offset(bfd_reloc_code_real_type code, const struct adl_operand *oprnd, int instr_sz);
-
-// ADL:  Maps an internal BFD type code to a HOWTO data structure.
-extern "C" reloc_howto_type *adl_bfd_code_to_howto(bfd_reloc_code_real_type code);
-
-// ADL:  Maps howto type to special setter functions, action code, etc.
-typedef void(*reloc_setter)(unsigned *, unsigned, int, bfd_uint64_t);
-typedef bfd_uint64_t(*reloc_action)(bfd_uint64_t, bfd_uint64_t, int);
-extern "C" void adl_get_reloc_funcs(unsigned type, reloc_setter *setter, reloc_action *action, int *size, int *inner_size, int *offset);
-
+// Given a type code, return a pointer to the object, or 0 if a bad relocation
+// type.
+const reloc_howto_type *adl_reloc_type_lookup(bfd *abfd, bfd_reloc_code_real_type code);
 
 // These are functions which the main code expects to be implemented by an
 // assembler-dependent file.
 void handle_itable_change(const char* table_name, int instr_table);
-void save_instr(adl::InstrBundles &instrInfos,char *s,adl_opcode *op,adl_opcode *src,expressionS *,
-                const adl::Args &args,const char *file_name,int line_number,unsigned pc,int,int,const char *,
-                const std::string &eoi_str);
+void save_instr(adl::InstrBundles &instrInfos,char *s,adl_opcode *op,adl_opcode *src,expressionS *,const adl::Args &args,int,int,int,const char *);
 void alloc_instr_buf(adl::InstrInfo &info);
 void write_instr(char *f, unsigned *instr,int instr_sz,fragS *frag_n, uint32_t addr_mask);
 void collect_func_info();
 void handle_fixups(char *f,fragS *curr_frag,adl::adl_fixup *fixups,int num_fixups, int instr_sz);
-segT parse_expr(expressionS *,char*,int,bool &, bool &,bool &, bool &);
+segT parse_expr(expressionS *, char*, int, bool &, bool &, bool &, bool &);
 extern "C" void free_buffer(unsigned x);
 
 
@@ -589,14 +439,14 @@ extern std::string adl_asm_version;
 
 extern bool check_loop_end(adl::InstrBundle &);
 extern bool check_set_loop_labels(adl::InstrInfo &instr);
-extern bool check_set_loop_labels(const struct adl_opcode *);
+extern bool check_set_loop_labels(struct adl_opcode *);
 extern bool check_compactable(adl::InstrBundle &, int &, int &, bool&);
 extern bool check_opS_instr(adl::InstrInfo &);
 extern bool check_null_instr(adl::InstrInfo &);
 
 extern void check_control_dmem_instrs(adl::InstrBundle &, bool &, bool &,
-	size_t &, bool &, size_t &,
-	struct jmp_jsr_info &, bool &, bool &);
+									  size_t &, bool &, size_t &,
+									  struct jmp_jsr_info &, bool &, bool &);
 extern bool check_is_pseudo(const struct adl_opcode *opcode);
 extern void check_generic_instrs(adl::InstrBundle &current_instr_bundle);
 extern bool get_instance_name(const adl::InstrInfo &instr,
@@ -607,11 +457,10 @@ extern bool check_invalid(const adl::InstrInfo &instr);
 extern void check_instr_restrictions(const adl::InstrInfo &instr);
 extern void check_bundle_restrictions(const adl::InstrBundle &instr_bundle);
 extern void check_rv_write_restriction(const adl::InstrBundle &instr_bundle);
-extern void check_mv_load_restriction(const adl::InstrBundle &instr_bundle);
-extern void check_mv_loadstore_restriction2(const adl::InstrBundle &instr_bundle);
-extern void check_ld_Vldb_restriction(const adl::InstrBundle &instr_bundle);
+void check_mv_load_restriction(const adl::InstrBundle &instr_bundle);
 extern bool check_wide_imm(const struct adl_opcode *);
 extern bool check_disabled(const struct adl_opcode *opcode);
 extern bool check_var_instr(const adl::InstrInfo &instr, bool &mask32);
 extern void reorder_opcodes(struct adl_instr *);
+
 #endif

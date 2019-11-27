@@ -2,6 +2,8 @@
 
 AUTOMAKE_OPTIONS = foreign
 
+AUTOMAKE_OPTIONS = cygnus
+
 # What version of the manual you want; "all" includes everything
 CONFIG=all
 

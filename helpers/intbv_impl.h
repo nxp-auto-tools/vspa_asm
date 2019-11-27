@@ -42,8 +42,12 @@ namespace adl {
   // copy (diff size)
   template <size_t _Nb> template <size_t _Nb2>
   inline intbv<_Nb>::intbv (const intbv <_Nb2> &x) 
-  {
-    _Base::_construct_from_other_size(x);
+  { 
+    if (_Nb >_Nb2) {   
+      _Base::_construct_from_smaller_sized (x);
+    } else if (_Nb < _Nb2) {
+      _Base::_construct_from_larger_sized (x);   
+    }
     _sanitize();
   }
 
@@ -71,59 +75,17 @@ namespace adl {
   }
 
   template <size_t _Nb>
-  inline intbv<_Nb> & intbv<_Nb>::set (size_t start, size_t stop,int32_t x)
-  { 
-    _Base::_setField(_Nb,start % _Nb,stop % _Nb,intbv<32>(x));
-    return *this;
-  }
-  
-  template <size_t _Nb>
-  inline intbv<_Nb> & intbv<_Nb>::set (size_t start, size_t stop,uint32_t x)
-  { 
-    _Base::_setField(_Nb,start % _Nb,stop % _Nb,intbv<32>(x));
-    return *this;
-  }
-
-  template <size_t _Nb>
-  inline intbv<_Nb> & intbv<_Nb>::set (size_t start, size_t stop,int64_t x)
-  { 
-    _Base::_setField(_Nb,start % _Nb,stop % _Nb,intbv<64>(x));
-    return *this;
-  }
-
-  template <size_t _Nb>
-  inline intbv<_Nb> & intbv<_Nb>::set (size_t start, size_t stop,uint64_t x)
-  { 
-    _Base::_setField(_Nb,start % _Nb,stop % _Nb,intbv<64>(x));
-    return *this;
-  }
-  
-  template <size_t _Nb>
   inline intbv<_Nb> & intbv<_Nb>::set (size_t start, size_t stop,const intbv<_Nb>& x)
   { 
     _Base::_setField(_Nb,start % _Nb,stop % _Nb,x);
     return *this;
   }
 
-  template<>
-#ifdef WIN32
-  __forceinline
-#endif
-	inline intbv<0> & intbv<0>::set(size_t, size_t, const intbv<0>&){
-	  return *this;
-  }
-
 
   template <size_t _Nb> template <size_t _Nb2>    
   inline intbv<_Nb> & intbv<_Nb>::set (size_t start, size_t stop, const intbv<_Nb2>& x)
   {    
-    _Base::_setField(_Nb,start % _Nb,stop % _Nb,x);
-    return *this;
-  }
-
-  template <> template <size_t _Nb2>    
-  inline intbv<0> & intbv<0>::set (size_t start, size_t stop, const intbv<_Nb2>& x)
-  {    
+    _Base::_setField(_Nb,start % _Nb,stop % _Nb,intbv<_Nb>(x));
     return *this;
   }
 
@@ -222,7 +184,7 @@ namespace adl {
   template <size_t _Nb>    
   inline const intbv<_Nb> intbv<_Nb>::get (size_t start, size_t stop) const
   {
-    intbv<_Nb> res;
+    intbv<_Nb> res(*this);
     _Base::_getField(_Nb,start % _Nb,stop % _Nb,res);
     res._sanitize();
     return res; 
@@ -251,9 +213,9 @@ namespace adl {
     // should this be overloaded, if so 2 more functions needed:
     //  1. getField (unsigned,unsigned) the work should be here, others just wrappers
     //  2. getField (intbv,intbv)
-    intbv<_Nb2> res;
-    _Base::_getField(_Nb,start % _Nb,stop % _Nb,res);
-    return res;
+    intbv<_Nb> tmp(*this);
+    _Base::_getField(_Nb,start % _Nb,stop % _Nb,tmp);
+    return intbv<_Nb2>(tmp);
   }
 
   template <size_t _Nb> template <size_t _Nb1,size_t _Nb2,size_t _Nb3>
@@ -1537,12 +1499,11 @@ namespace adl {
   
   // Same size
   template<size_t _Nb>
-  inline intbv<_Nb> operator%(const intbv<_Nb> &x, const intbv<_Nb>& y)
+  inline intbv<_Nb> operator%(intbv<_Nb> x, const intbv<_Nb>& y)
   {
     // operates on same sized intbv's (requires one fewer temporary)
-    intbv <_Nb> tmp_x (x);
-    tmp_x %= y;
-    return tmp_x; 
+    x %= y;
+    return x;
   }
 
   // Different size
@@ -1610,93 +1571,6 @@ namespace adl {
     return operator%(x,static_cast<intbv<MAX(_Nb,32)> >(y));
   }
 
-  /////////////////////////////////
-  //
-  // Signed modulus
-  //
-    
-  // Same size
-  template<size_t _Nb>
-  inline intbv<_Nb> signedMod(const intbv<_Nb>& x, const intbv<_Nb>& y)
-  {
-    intbv<_Nb> tmp_x(x);
-    intbv<_Nb> tmp_y(y);
-    bool neg = false;
-
-    if (tmp_x.get(0)) {
-      tmp_x.negate();
-      neg = true;
-    }
-
-    if (tmp_y.get(0)) {
-      tmp_y.negate();
-    }
-
-    tmp_x = tmp_x % tmp_y;
-    if (neg) {
-      tmp_x.negate();
-    }
-
-    return tmp_x;
-  }
-  
-  // Different size
-  template<size_t _Nb1, size_t _Nb2>
-  inline intbv<MAX(_Nb1,_Nb2)> signedMod(const intbv<_Nb1>& x, const intbv<_Nb2>& y)
-  {
-    ArithArgCheck(_Nb1,_Nb2);
-    intbv<_WORD_ALIGNED(MAX(_Nb1,_Nb2))> tmp_x = x.template signExtend<_WORD_ALIGNED(MAX(_Nb1,_Nb2))>();
-    intbv<_WORD_ALIGNED(MAX(_Nb1,_Nb2))> tmp_y = y.template signExtend<_WORD_ALIGNED(MAX(_Nb1,_Nb2))>(); 
-
-    return signedMod(tmp_x,tmp_y);
-  }
-  
-  // uint64_t
-  template<size_t _Nb>
-  inline intbv<MAX(_Nb,64)> signedMod(const intbv<_Nb>& x, uint64_t y)
-  {
-    ArithArgCheck(_Nb,64);
-    return signedMod(x,intbv<64>(y));
-  }
-
-  template<size_t _Nb>
-  inline intbv<MAX(_Nb,64)> signedMod(uint64_t x,const intbv<_Nb>& y)
-  {
-    ArithArgCheck(64,_Nb);
-    return signedMod(intbv<64>(x),y);
-  }
-
-  // uint32_t
-  template<size_t _Nb>
-  inline intbv<MAX(_Nb,32)> signedMod(const intbv<_Nb>& x, uint32_t y)
-  {
-    ArithArgCheck(_Nb,32);
-    return signedMod(x,intbv<32>(y));
-  }
-
-  template<size_t _Nb>
-  inline intbv<MAX(_Nb,32)> signedMod(uint32_t x,const intbv<_Nb>& y)
-  {
-    ArithArgCheck(32,_Nb);
-    return signedMod(intbv<32>(x),y);
-  }  
-  
-  // int32_t
-  template<size_t _Nb>
-  inline intbv<MAX(_Nb,32)> signedMod(const intbv<_Nb>& x, int32_t y)
-  {
-    ArithArgCheck(_Nb,32);
-    return signedMod(x.template signExtend<_WORD_ALIGNED(MAX(_Nb,32))>(),intbv<32>(y));
-  }
-
-  template<size_t _Nb>
-  inline intbv<MAX(_Nb,32)> signedMod(int32_t x,const intbv<_Nb>& y)
-  {
-    ArithArgCheck(32,_Nb);
-    return signedMod(intbv<32>(x),y.template signExtend<_WORD_ALIGNED(MAX(_Nb,32))>());
-  }  
-
-  
   ///////////////////////////
   //
   // Comparisons

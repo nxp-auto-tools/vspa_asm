@@ -8,21 +8,22 @@
 // The DevTech assembler interface functions.
 //
 
-extern "C" {
-#define  COMMON
-#include "as.h"
-#include "xregex.h"
-#include "safe-ctype.h"
+#include <iostream>
 
+extern "C" {
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/types.h>
 #include <inttypes.h>
 
+#define  COMMON
+#include "xregex.h"
+#include "as.h"
+#include "safe-ctype.h"
+
   bfd_boolean  dt_debug(void);
 }
 
-#include <iostream>
 #include <algorithm>
 
 #include "adl-asm-impl.h"
@@ -155,7 +156,7 @@ extern "C" {
 
       // md_assembler modifies input line
       strcpy(&buffer[0],vles.c_str());
-      md_assemble(&buffer[0]);
+      md_assemble(&buffer[0],0);
 
       const char *vCode = 0;
 

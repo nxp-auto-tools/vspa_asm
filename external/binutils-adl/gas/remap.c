@@ -1,5 +1,5 @@
 /* Remap file names for debug info for GNU assembler.
-   Copyright (C) 2007-2014 Free Software Foundation, Inc.
+   Copyright 2007 Free Software Foundation, Inc.
 
    This file is part of GAS, the GNU Assembler.
 
@@ -19,7 +19,6 @@
    02110-1301, USA.  */
 
 #include "as.h"
-#include "filenames.h"
 
 /* Structure recording the mapping from source file and directory
    names at compile time to those to be embedded in debug
@@ -65,9 +64,8 @@ add_debug_prefix_map (const char *arg)
   debug_prefix_maps = map;
 }
 
-/* Perform user-specified mapping of debug filename prefixes.  Returns
-   a newly allocated buffer containing the name corresponding to FILENAME.
-   It is the caller's responsibility to free the buffer.  */
+/* Perform user-specified mapping of debug filename prefixes.  Return
+   the new name corresponding to FILENAME.  */
 
 const char *
 remap_debug_filename (const char *filename)
@@ -78,10 +76,10 @@ remap_debug_filename (const char *filename)
   size_t name_len;
 
   for (map = debug_prefix_maps; map; map = map->next)
-    if (filename_ncmp (filename, map->old_prefix, map->old_len) == 0)
+    if (strncmp (filename, map->old_prefix, map->old_len) == 0)
       break;
   if (!map)
-    return xstrdup (filename);
+    return filename;
   name = filename + map->old_len;
   name_len = strlen (name) + 1;
   s = (char *) alloca (name_len + map->new_len);

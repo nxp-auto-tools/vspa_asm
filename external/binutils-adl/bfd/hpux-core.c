@@ -1,5 +1,6 @@
 /* BFD back-end for HP/UX core files.
-   Copyright (C) 1993-2014 Free Software Foundation, Inc.
+   Copyright 1993, 1994, 1996, 1998, 1999, 2001, 2002, 2003, 2004, 2005, 2006,
+   2007, 2008 Free Software Foundation, Inc.
    Written by Stu Grossman, Cygnus Support.
    Converted to back-end form by Ian Lance Taylor, Cygnus SUpport
 
@@ -376,7 +377,7 @@ swap_abort (void)
 #define	NO_PUT64 ((void (*) (bfd_uint64_t, void *)) swap_abort)
 #define	NO_GETS64 ((bfd_int64_t (*) (const void *)) swap_abort)
 
-const bfd_target core_hpux_vec =
+const bfd_target hpux_core_vec =
   {
     "hpux-core",
     bfd_target_unknown_flavour,
@@ -386,10 +387,9 @@ const bfd_target core_hpux_vec =
      HAS_LINENO | HAS_DEBUG |
      HAS_SYMS | HAS_LOCALS | WP_TEXT | D_PAGED),
     (SEC_HAS_CONTENTS | SEC_ALLOC | SEC_LOAD | SEC_RELOC), /* section flags */
-    0,				/* symbol prefix */
-    ' ',			/* ar_pad_char */
-    16,				/* ar_max_namelen */
-    0,				/* match priority.  */
+    0,			                                   /* symbol prefix */
+    ' ',						   /* ar_pad_char */
+    16,							   /* ar_max_namelen */
     NO_GET64, NO_GETS64, NO_PUT64,	/* 64 bit data */
     NO_GET, NO_GETS, NO_PUT,		/* 32 bit data */
     NO_GET, NO_GETS, NO_PUT,		/* 16 bit data */
@@ -424,5 +424,5 @@ const bfd_target core_hpux_vec =
 
     NULL,
 
-    NULL			/* backend_data */
+    (PTR) 0			/* backend_data */
   };

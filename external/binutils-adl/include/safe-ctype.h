@@ -142,9 +142,13 @@ extern const unsigned char  _sch_tolower[256];
 #define isupper(c) do_not_use_isupper_with_safe_ctype
 #undef isxdigit
 #define isxdigit(c) do_not_use_isxdigit_with_safe_ctype
+
+// Do not define these for MSVC, as it conflicts with locale declarations.
+#ifndef _MSC_VER
 #undef toupper
 #define toupper(c) do_not_use_toupper_with_safe_ctype
 #undef tolower
 #define tolower(c) do_not_use_tolower_with_safe_ctype
+#endif
 
 #endif /* SAFE_CTYPE_H */

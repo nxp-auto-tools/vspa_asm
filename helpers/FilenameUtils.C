@@ -19,7 +19,6 @@
 # include "helpers/Macros.h"
 #else
 # include <libgen.h>
-# include <unistd.h>
 #endif
 
 #include "FilenameUtils.h"
@@ -42,10 +41,9 @@ namespace adl {
 #     else
 	  _splitpath(fn.c_str(),drive,dir,file,ext);
 #     endif
-	  return string(file) + ext;
+	  return file;
 #   else
-    string tmp = fn.c_str();
-    return basename((char *)tmp.c_str());
+    return basename((char *)string(fn).c_str());
 #   endif
   }
 
@@ -65,8 +63,7 @@ namespace adl {
 #     endif
 	  return string(drive)+string(dir);
 #   else
-    string tmp = fn.c_str();
-	  return dirname((char *)tmp.c_str());
+	  return dirname((char *)string(fn).c_str());
 #   endif
   }
 
@@ -119,17 +116,6 @@ namespace adl {
       base.erase(es);
     }
     return base + ext;
-  }
-
-  std::pair<std::string,std::string> split_file_name(const std::string &filename)
-  {
-    string bn = base_name(filename);
-    unsigned e = bn.find(".");
-    unsigned b_bn = filename.find(bn);
-    string fn = filename.substr(0,b_bn+e);
-    string ext = filename.substr(b_bn+e);
-
-    return make_pair(fn,ext);
   }
 
   // On Linux, we use /proc/self/exe to get our name.  On Windows, we use

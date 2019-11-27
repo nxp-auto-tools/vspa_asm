@@ -22,11 +22,18 @@
 # include "adl_config.h"
 #endif
 
-#include <memory>
+#if defined(ADL_MINIMAL_BUILD) || defined(NO_GC)
 # include <vector>
-# include <unordered_map>
-# define OptionVector std::vector
-# define OptionHashMap std::unordered_map
+# include <map>
+# define Vector std::vector
+# define HashMap std::map
+# define GC_INIT()
+#else
+# include "gc_vector.h"
+# include "gc_map.h"
+# define Vector gc_vector
+# define HashMap gc_map
+#endif
 
 #include "BasicTypes.h"
 
@@ -34,7 +41,7 @@ namespace adl {
 
   class AnyOption {
   public:
-    typedef OptionVector<std::string> Values;
+    typedef Vector<std::string> Values;
 
     AnyOption();
     AnyOption(unsigned argc,const char *argv[]);
@@ -117,7 +124,7 @@ namespace adl {
     // is supplied, then this is the value given to the option if the option is
     // simply set as a flag.  It defaults to the default value used for setting
     // a flag.
-    bool setOptionalValue( const std::string &opt, const std::string &set_value = "");
+    void setOptionalValue( const std::string &opt, const std::string &set_value = "");
 
     //
     // Process the options, registered using useCommandArgs() and useFileName();
@@ -173,12 +180,6 @@ namespace adl {
     // if not set.
     bool getFlag( const std::string &option,bool def) const;
 
-    // Force in values for options.  Returns false if the option doesn't exist,
-    // otherwise true.
-    bool setValue( const std::string &option, const std::string & );
-    bool setFlagOn( const std::string &option );
-    bool setFlagOff( const std::string &option );
-
     //
     // Print Usage
     //
@@ -190,10 +191,6 @@ namespace adl {
     // Returns argv[0], which is usually the name of the executable.
     const char *getArgv0() const { return _argv[0]; };
         
-    // Default flag-set/flag-not-set string values.
-    const std::string &flagSet() const;
-    const std::string &flagUnset() const;
-
     // 
     // Get the argument count and arguments sans the options.  Returns 0 if the
     // parameter doesn't exist.
@@ -207,21 +204,21 @@ namespace adl {
     virtual int handleUnknown(const char *orig,const char *arg,int aix,int split_at);
 
     struct Option;
-    typedef OptionHashMap<std::string,std::shared_ptr<Option> > Options;
+    typedef HashMap<std::string,Option *> Options;
 
   private:
-    unsigned _argc;           // commandline arg count
-    const char **_argv;       // commndline args
-    std::string _filename;    // the option file
-    const char* _appname;     // the application name from argv[0]
+    unsigned _argc;             // commandline arg count
+    const char **_argv;    // commndline args
+    std::string _filename; // the option file
+    const char* _appname;  // the application name from argv[0]
 
-    OptionVector<int> _args;  // Remaining args (indices into _argv).
+    Vector<int> _args;  // Remaining args (indices into _argv).
 
-    int _max_legal_args;      // ignore extra arguments
+    int _max_legal_args;   // ignore extra arguments
 
     Options  _options;
 
-    OptionVector<std::string> _usage;
+    Vector<std::string> _usage;
 
     bool _error_on_unknown; // true => return false if unknown options are encountered.
                             // false => return true and null-out known options.

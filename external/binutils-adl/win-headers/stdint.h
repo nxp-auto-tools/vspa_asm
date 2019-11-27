@@ -158,9 +158,7 @@ typedef unsigned long long uintmax_t;
 #define SIG_ATOMIC_MIN INTPTR_MIN
 #define SIG_ATOMIC_MAX INTPTR_MAX
 
-#ifndef SIZE_MAX
-# define SIZE_MAX UINTPTR_MAX
-#endif
+#define SIZE_MAX UINTPTR_MAX
 
 #ifndef WCHAR_MIN  /* also in wchar.h */ 
 #define WCHAR_MIN 0

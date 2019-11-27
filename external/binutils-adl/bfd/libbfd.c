@@ -1,5 +1,7 @@
 /* Assorted BFD support routines, only used internally.
-   Copyright (C) 1990-2014 Free Software Foundation, Inc.
+   Copyright 1990, 1991, 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999,
+   2000, 2001, 2002, 2003, 2004, 2005, 2007, 2008, 2009, 2010, 2011
+   Free Software Foundation, Inc.
    Written by Cygnus Support.
 
    This file is part of BFD, the Binary File Descriptor library.
@@ -548,10 +550,11 @@ DESCRIPTION
 .*/
 
 /* Sign extension to bfd_signed_vma.  */
-#define COERCE16(x) (((bfd_vma) (x) ^ 0x8000) - 0x8000)
-#define COERCE32(x) (((bfd_vma) (x) ^ 0x80000000) - 0x80000000)
+#define COERCE16(x) (((bfd_signed_vma) (x) ^ 0x8000) - 0x8000)
+#define COERCE32(x) (((bfd_signed_vma) (x) ^ 0x80000000) - 0x80000000)
+#define EIGHT_GAZILLION ((bfd_int64_t) 1 << 63)
 #define COERCE64(x) \
-  (((bfd_uint64_t) (x) ^ ((bfd_uint64_t) 1 << 63)) - ((bfd_uint64_t) 1 << 63))
+  (((bfd_int64_t) (x) ^ EIGHT_GAZILLION) - EIGHT_GAZILLION)
 
 bfd_vma
 bfd_getb16 (const void *p)
@@ -863,15 +866,7 @@ _bfd_generic_get_section_contents (bfd *abfd,
       return FALSE;
     }
 
-  /* We do allow reading of a section after bfd_final_link has
-     written the contents out to disk.  In that situation, rawsize is
-     just a stale version of size, so ignore it.  Otherwise we must be
-     reading an input section, where rawsize, if different to size,
-     is the on-disk size.  */
-  if (abfd->direction != write_direction && section->rawsize != 0)
-    sz = section->rawsize;
-  else
-    sz = section->size;
+  sz = section->rawsize ? section->rawsize : section->size;
   if (offset + count < count
       || offset + count > sz)
     {
@@ -924,10 +919,7 @@ _bfd_generic_get_section_contents_in_window
       w->data = w->i->data;
       return bfd_get_section_contents (abfd, section, w->data, offset, count);
     }
-  if (abfd->direction != write_direction && section->rawsize != 0)
-    sz = section->rawsize;
-  else
-    sz = section->size;
+  sz = section->rawsize ? section->rawsize : section->size;
   if (offset + count > sz
       || ! bfd_get_file_window (abfd, section->filepos + offset, count, w,
 				TRUE))
@@ -1102,6 +1094,16 @@ read_signed_leb128 (bfd *abfd ATTRIBUTE_UNUSED,
     result |= (((bfd_vma) -1) << shift);
   *bytes_read_ptr = num_read;
   return result;
+}
+
+bfd_boolean
+_bfd_generic_find_line (bfd *abfd ATTRIBUTE_UNUSED,
+		       asymbol **symbols ATTRIBUTE_UNUSED,
+		       asymbol *symbol ATTRIBUTE_UNUSED,
+		       const char **filename_ptr ATTRIBUTE_UNUSED,
+		       unsigned int *linenumber_ptr ATTRIBUTE_UNUSED)
+{
+  return FALSE;
 }
 
 bfd_boolean

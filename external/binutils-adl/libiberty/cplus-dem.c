@@ -1,6 +1,6 @@
 /* Demangler for GNU C++
    Copyright 1989, 1991, 1994, 1995, 1996, 1997, 1998, 1999,
-   2000, 2001, 2002, 2003, 2004, 2010 Free Software Foundation, Inc.
+   2000, 2001, 2002, 2003, 2004 Free Software Foundation, Inc.
    Written by James Clark (jjc@jclark.uucp)
    Rewritten by Fred Fish (fnf@cygnus.com) for ARM and Lucid demangling
    Modified by Satish Pai (pai@apollo.hp.com) for HP demangling
@@ -1175,11 +1175,6 @@ internal_cplus_demangle (struct work_stuff *work, const char *mangled)
       if ((AUTO_DEMANGLING || GNU_DEMANGLING))
 	{
 	  success = gnu_special (work, &mangled, &decl);
-	  if (!success)
-	    {
-	      delete_work_stuff (work);
-	      string_delete (&decl);
-	    }
 	}
       if (!success)
 	{
@@ -1223,12 +1218,10 @@ squangle_mop_up (struct work_stuff *work)
   if (work -> btypevec != NULL)
     {
       free ((char *) work -> btypevec);
-      work->btypevec = NULL;
     }
   if (work -> ktypevec != NULL)
     {
       free ((char *) work -> ktypevec);
-      work->ktypevec = NULL;
     }
 }
 
@@ -1318,7 +1311,8 @@ delete_non_B_K_work_stuff (struct work_stuff *work)
       int i;
 
       for (i = 0; i < work->ntmpl_args; i++)
-	free ((char*) work->tmpl_argvec[i]);
+	if (work->tmpl_argvec[i])
+	  free ((char*) work->tmpl_argvec[i]);
 
       free ((char*) work->tmpl_argvec);
       work->tmpl_argvec = NULL;
@@ -3663,10 +3657,7 @@ do_type (struct work_stuff *work, const char **mangled, string *result)
 		    string_delete (&temp);
 		  }
 		else
-		  {
-		    string_delete (&temp);
-		    break;
-		  }
+		  break;
 	      }
 	    else if (**mangled == 'Q')
 	      {

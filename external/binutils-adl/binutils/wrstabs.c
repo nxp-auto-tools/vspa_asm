@@ -1,5 +1,6 @@
 /* wrstabs.c -- Output stabs debugging information
-   Copyright (C) 1996-2014 Free Software Foundation, Inc.
+   Copyright 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2005, 2006,
+   2007, 2009   Free Software Foundation, Inc.
    Written by Ian Lance Taylor <ian@cygnus.com>.
 
    This file is part of GNU Binutils.
@@ -26,7 +27,6 @@
 #include <assert.h>
 #include "bfd.h"
 #include "libiberty.h"
-#include "filenames.h"
 #include "safe-ctype.h"
 #include "bucomm.h"
 #include "debug.h"
@@ -1311,7 +1311,9 @@ stab_start_struct_type (void *p, const char *tag, unsigned int id,
   struct stab_write_handle *info = (struct stab_write_handle *) p;
   long tindex;
   bfd_boolean definition;
-  char buf[40];
+  char *buf;
+
+  buf = (char *) xmalloc (40);
 
   if (id == 0)
     {
@@ -2259,7 +2261,7 @@ stab_lineno (void *p, const char *file, unsigned long lineno, bfd_vma addr)
   if (addr > info->last_text_address)
     info->last_text_address = addr;
 
-  if (filename_cmp (file, info->lineno_filename) != 0)
+  if (strcmp (file, info->lineno_filename) != 0)
     {
       if (! stab_write_symbol (info, N_SOL, 0, addr, file))
 	return FALSE;

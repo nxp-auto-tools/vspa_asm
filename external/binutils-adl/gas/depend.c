@@ -1,5 +1,6 @@
 /* depend.c - Handle dependency tracking.
-   Copyright (C) 1997-2014 Free Software Foundation, Inc.
+   Copyright 1997, 1998, 2000, 2001, 2003, 2004, 2005, 2007
+   Free Software Foundation, Inc.
 
    This file is part of GAS, the GNU Assembler.
 
@@ -19,7 +20,6 @@
    02110-1301, USA.  */
 
 #include "as.h"
-#include "filenames.h"
 
 /* The file to write to, or NULL if no dependencies being kept.  */
 static char * dep_file = NULL;
@@ -63,7 +63,7 @@ register_dependency (char *filename)
 
   for (dep = dep_chain; dep != NULL; dep = dep->next)
     {
-      if (!filename_cmp (filename, dep->file))
+      if (!strcmp (filename, dep->file))
 	return;
     }
 

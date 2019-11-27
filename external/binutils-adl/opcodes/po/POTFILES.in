@@ -1,5 +1,5 @@
-adl-support.c
+disassemble.c
 dis-buf.c
 dis-init.c
-disassemble.c
+ppc-support.c
 sysdep.h

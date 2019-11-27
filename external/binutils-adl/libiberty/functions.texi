@@ -3,7 +3,7 @@
 @c Edit the *.c files, configure with --enable-maintainer-mode,
 @c and let gather-docs build you a new copy.
 
-@c splay-tree.c:303
+@c splay-tree.c:277
 @defvr Extension HOST_CHARSET
 This macro indicates the basic character set and encoding used by the
 host: more precisely, the encoding used for character constants in
@@ -24,13 +24,13 @@ The host character set is some variant of EBCDIC.  (Only one of the
 nineteen EBCDIC varying characters is tested; exercise caution.)
 @end ftable
 @end defvr
-@deftypefn Supplemental splay_tree splay_tree_new_with_typed_alloc @
-(splay_tree_compare_fn @var{compare_fn}, @
-splay_tree_delete_key_fn @var{delete_key_fn}, @
-splay_tree_delete_value_fn @var{delete_value_fn}, @
-splay_tree_allocate_fn @var{tree_allocate_fn}, @
-splay_tree_allocate_fn @var{node_allocate_fn}, @
-splay_tree_deallocate_fn @var{deallocate_fn}, @
+@deftypefn Supplemental splay_tree splay_tree_new_with_typed_alloc
+(splay_tree_compare_fn @var{compare_fn},
+splay_tree_delete_key_fn @var{delete_key_fn},
+splay_tree_delete_value_fn @var{delete_value_fn},
+splay_tree_allocate_fn @var{tree_allocate_fn},
+splay_tree_allocate_fn @var{node_allocate_fn},
+splay_tree_deallocate_fn @var{deallocate_fn},
 void * @var{allocate_data})
 
 This function creates a splay tree that uses two different allocators
@@ -110,9 +110,7 @@ Copies @var{length} bytes from memory region @var{in} to region
 @end deftypefn
 
 @c bsearch.c:33
-@deftypefn Supplemental void* bsearch (const void *@var{key}, @
-  const void *@var{base}, size_t @var{nmemb}, size_t @var{size}, @
-  int (*@var{compar})(const void *, const void *))
+@deftypefn Supplemental void* bsearch (const void *@var{key}, const void *@var{base}, size_t @var{nmemb}, size_t @var{size}, int (*@var{compar})(const void *, const void *))
 
 Performs a search over an array of @var{nmemb} elements pointed to by
 @var{base} for a member that matches the object pointed to by @var{key}.
@@ -125,7 +123,7 @@ is respectively less than, matching, or greater than the array member.
 
 @end deftypefn
 
-@c argv.c:135
+@c argv.c:142
 @deftypefn Extension char** buildargv (char *@var{sp})
 
 Given a pointer to a string, parse the string extracting fields
@@ -136,7 +134,7 @@ remains unchanged.  The last element of the vector is followed by a
 @code{NULL} element.
 
 All of the memory for the pointer array and copies of the string
-is obtained from @code{xmalloc}.  All of the memory can be returned to the
+is obtained from @code{malloc}.  All of the memory can be returned to the
 system with the single function call @code{freeargv}, which takes the
 returned result of @code{buildargv}, as it's argument.
 
@@ -179,7 +177,7 @@ not recommended.
 
 @end deftypefn
 
-@c make-temp-file.c:96
+@c make-temp-file.c:95
 @deftypefn Replacement char* choose_tmpdir ()
 
 Returns a pointer to a directory path suitable for creating temporary
@@ -197,20 +195,12 @@ number of seconds used.
 @end deftypefn
 
 @c concat.c:24
-@deftypefn Extension char* concat (const char *@var{s1}, const char *@var{s2}, @
-  @dots{}, @code{NULL})
+@deftypefn Extension char* concat (const char *@var{s1}, const char *@var{s2}, @dots{}, @code{NULL})
 
 Concatenate zero or more of strings and return the result in freshly
-@code{xmalloc}ed memory.  The argument list is terminated by the first
-@code{NULL} pointer encountered.  Pointers to empty strings are ignored.
-
-@end deftypefn
-
-@c argv.c:470
-@deftypefn Extension int countargv (char **@var{argv})
-
-Return the number of elements in @var{argv}.
-Returns zero if @var{argv} is NULL.
+@code{xmalloc}ed memory.  Returns @code{NULL} if insufficient memory is
+available.  The argument list is terminated by the first @code{NULL}
+pointer encountered.  Pointers to empty strings are ignored.
 
 @end deftypefn
 
@@ -243,7 +233,7 @@ symbolic name or message.
 
 @end deftypefn
 
-@c argv.c:341
+@c argv.c:361
 @deftypefn Extension void expandargv (int *@var{argcp}, char ***@var{argvp})
 
 The @var{argcp} and @code{argvp} arguments are pointers to the usual
@@ -278,9 +268,8 @@ and inode numbers.
 
 @end deftypefn
 
-@c fopen_unlocked.c:49
-@deftypefn Extension {FILE *} fdopen_unlocked (int @var{fildes}, @
-  const char * @var{mode})
+@c fopen_unlocked.c:48
+@deftypefn Extension {FILE *} fdopen_unlocked (int @var{fildes}, const char * @var{mode})
 
 Opens and returns a @code{FILE} pointer via @code{fdopen}.  If the
 operating system supports it, ensure that the stream is setup to avoid
@@ -295,58 +284,6 @@ unchanged.
 Find the first (least significant) bit set in @var{valu}.  Bits are
 numbered from right to left, starting with bit 1 (corresponding to the
 value 1).  If @var{valu} is zero, zero is returned.
-
-@end deftypefn
-
-@c filename_cmp.c:32
-@deftypefn Extension int filename_cmp (const char *@var{s1}, const char *@var{s2})
-
-Return zero if the two file names @var{s1} and @var{s2} are equivalent.
-If not equivalent, the returned value is similar to what @code{strcmp}
-would return.  In other words, it returns a negative value if @var{s1}
-is less than @var{s2}, or a positive value if @var{s2} is greater than
-@var{s2}.
-
-This function does not normalize file names.  As a result, this function
-will treat filenames that are spelled differently as different even in
-the case when the two filenames point to the same underlying file.
-However, it does handle the fact that on DOS-like file systems, forward
-and backward slashes are equal.
-
-@end deftypefn
-
-@c filename_cmp.c:178
-@deftypefn Extension int filename_eq (const void *@var{s1}, const void *@var{s2})
-
-Return non-zero if file names @var{s1} and @var{s2} are equivalent.
-This function is for use with hashtab.c hash tables.
-
-@end deftypefn
-
-@c filename_cmp.c:147
-@deftypefn Extension hashval_t filename_hash (const void *@var{s})
-
-Return the hash value for file name @var{s} that will be compared
-using filename_cmp.
-This function is for use with hashtab.c hash tables.
-
-@end deftypefn
-
-@c filename_cmp.c:89
-@deftypefn Extension int filename_ncmp (const char *@var{s1}, const char *@var{s2}, size_t @var{n})
-
-Return zero if the two file names @var{s1} and @var{s2} are equivalent
-in range @var{n}.
-If not equivalent, the returned value is similar to what @code{strncmp}
-would return.  In other words, it returns a negative value if @var{s1}
-is less than @var{s2}, or a positive value if @var{s2} is greater than
-@var{s2}.
-
-This function does not normalize file names.  As a result, this function
-will treat filenames that are spelled differently as different even in
-the case when the two filenames point to the same underlying file.
-However, it does handle the fact that on DOS-like file systems, forward
-and backward slashes are equal.
 
 @end deftypefn
 
@@ -401,8 +338,7 @@ Ignores case when performing the comparison.
 @end deftypefn
 
 @c fopen_unlocked.c:39
-@deftypefn Extension {FILE *} fopen_unlocked (const char *@var{path}, @
-  const char * @var{mode})
+@deftypefn Extension {FILE *} fopen_unlocked (const char *@var{path}, const char * @var{mode})
 
 Opens and returns a @code{FILE} pointer via @code{fopen}.  If the
 operating system supports it, ensure that the stream is setup to avoid
@@ -411,7 +347,7 @@ unchanged.
 
 @end deftypefn
 
-@c argv.c:90
+@c argv.c:97
 @deftypefn Extension void freeargv (char **@var{vector})
 
 Free an argument vector that was built using @code{buildargv}.  Simply
@@ -421,9 +357,8 @@ itself.
 
 @end deftypefn
 
-@c fopen_unlocked.c:59
-@deftypefn Extension {FILE *} freopen_unlocked (const char * @var{path}, @
-  const char * @var{mode}, FILE * @var{stream})
+@c fopen_unlocked.c:57
+@deftypefn Extension {FILE *} freopen_unlocked (const char * @var{path}, const char * @var{mode}, FILE * @var{stream})
 
 Opens and returns a @code{FILE} pointer via @code{freopen}.  If the
 operating system supports it, ensure that the stream is setup to avoid
@@ -516,10 +451,10 @@ systems.
 
 @end deftypefn
 
-@c hashtab.c:328
-@deftypefn Supplemental htab_t htab_create_typed_alloc (size_t @var{size}, @
-htab_hash @var{hash_f}, htab_eq @var{eq_f}, htab_del @var{del_f}, @
-htab_alloc @var{alloc_tab_f}, htab_alloc @var{alloc_f}, @
+@c hashtab.c:336
+@deftypefn Supplemental htab_t htab_create_typed_alloc (size_t @var{size},
+htab_hash @var{hash_f}, htab_eq @var{eq_f}, htab_del @var{del_f},
+htab_alloc @var{alloc_tab_f}, htab_alloc @var{alloc_f},
 htab_free @var{free_f})
 
 This function creates a hash table that uses two different allocators
@@ -544,8 +479,7 @@ deprecated in new programs in favor of @code{strchr}.
 @end deftypefn
 
 @c insque.c:6
-@deftypefn Supplemental void insque (struct qelem *@var{elem}, @
-  struct qelem *@var{pred})
+@deftypefn Supplemental void insque (struct qelem *@var{elem}, struct qelem *@var{pred})
 @deftypefnx Supplemental void remque (struct qelem *@var{elem})
 
 Routines to manipulate queues built from doubly linked lists.  The
@@ -664,8 +598,7 @@ components will be simplified.  The returned value will be allocated using
 @end deftypefn
 
 @c make-relative-prefix.c:24
-@deftypefn Extension {const char*} make_relative_prefix (const char *@var{progname}, @
-  const char *@var{bin_prefix}, const char *@var{prefix})
+@deftypefn Extension {const char*} make_relative_prefix (const char *@var{progname}, const char *@var{bin_prefix}, const char *@var{prefix})
 
 Given three paths @var{progname}, @var{bin_prefix}, @var{prefix},
 return the path that is in the same position relative to
@@ -689,7 +622,7 @@ relative prefix can be found, return @code{NULL}.
 
 @end deftypefn
 
-@c make-temp-file.c:174
+@c make-temp-file.c:173
 @deftypefn Replacement char* make_temp_file (const char *@var{suffix})
 
 Return a temporary file name (as a string) or @code{NULL} if unable to
@@ -699,8 +632,7 @@ string is @code{malloc}ed, and the temporary file has been created.
 @end deftypefn
 
 @c memchr.c:3
-@deftypefn Supplemental void* memchr (const void *@var{s}, int @var{c}, @
-  size_t @var{n})
+@deftypefn Supplemental void* memchr (const void *@var{s}, int @var{c}, size_t @var{n})
 
 This function searches memory starting at @code{*@var{s}} for the
 character @var{c}.  The search only ends with the first occurrence of
@@ -713,8 +645,7 @@ returned.
 @end deftypefn
 
 @c memcmp.c:6
-@deftypefn Supplemental int memcmp (const void *@var{x}, const void *@var{y}, @
-  size_t @var{count})
+@deftypefn Supplemental int memcmp (const void *@var{x}, const void *@var{y}, size_t @var{count})
 
 Compares the first @var{count} bytes of two areas of memory.  Returns
 zero if they are the same, a value less than zero if @var{x} is
@@ -725,8 +656,7 @@ as if comparing unsigned char arrays.
 @end deftypefn
 
 @c memcpy.c:6
-@deftypefn Supplemental void* memcpy (void *@var{out}, const void *@var{in}, @
-  size_t @var{length})
+@deftypefn Supplemental void* memcpy (void *@var{out}, const void *@var{in}, size_t @var{length})
 
 Copies @var{length} bytes from memory region @var{in} to region
 @var{out}.  Returns a pointer to @var{out}.
@@ -734,8 +664,7 @@ Copies @var{length} bytes from memory region @var{in} to region
 @end deftypefn
 
 @c memmove.c:6
-@deftypefn Supplemental void* memmove (void *@var{from}, const void *@var{to}, @
-  size_t @var{count})
+@deftypefn Supplemental void* memmove (void *@var{from}, const void *@var{to}, size_t @var{count})
 
 Copies @var{count} bytes from memory area @var{from} to memory area
 @var{to}, returning a pointer to @var{to}.
@@ -743,8 +672,7 @@ Copies @var{count} bytes from memory area @var{from} to memory area
 @end deftypefn
 
 @c mempcpy.c:23
-@deftypefn Supplemental void* mempcpy (void *@var{out}, const void *@var{in}, @
-  size_t @var{length})
+@deftypefn Supplemental void* mempcpy (void *@var{out}, const void *@var{in}, size_t @var{length})
 
 Copies @var{length} bytes from memory region @var{in} to region
 @var{out}.  Returns a pointer to @var{out} + @var{length}.
@@ -752,8 +680,7 @@ Copies @var{length} bytes from memory region @var{in} to region
 @end deftypefn
 
 @c memset.c:6
-@deftypefn Supplemental void* memset (void *@var{s}, int @var{c}, @
-  size_t @var{count})
+@deftypefn Supplemental void* memset (void *@var{s}, int @var{c}, size_t @var{count})
 
 Sets the first @var{count} bytes of @var{s} to the constant byte
 @var{c}, returning a pointer to @var{s}.
@@ -1009,8 +936,7 @@ Another part of the old execution interface.
 @c random.c:39
 @deftypefn Supplement {long int} random (void)
 @deftypefnx Supplement void srandom (unsigned int @var{seed})
-@deftypefnx Supplement void* initstate (unsigned int @var{seed}, @
-  void *@var{arg_state}, unsigned long @var{n})
+@deftypefnx Supplement void* initstate (unsigned int @var{seed}, void *@var{arg_state}, unsigned long @var{n})
 @deftypefnx Supplement void* setstate (void *@var{arg_state})
 
 Random number functions.  @code{random} returns a random number in the
@@ -1022,9 +948,8 @@ control over the state of the random number generator.
 
 @end deftypefn
 
-@c concat.c:160
-@deftypefn Extension char* reconcat (char *@var{optr}, const char *@var{s1}, @
-  @dots{}, @code{NULL})
+@c concat.c:173
+@deftypefn Extension char* reconcat (char *@var{optr}, const char *@var{s1}, @dots{}, @code{NULL})
 
 Same as @code{concat}, except that if @var{optr} is not @code{NULL} it
 is freed after the string is created.  This is intended to be useful
@@ -1054,9 +979,8 @@ deprecated in new programs in favor of @code{strrchr}.
 
 @end deftypefn
 
-@c setenv.c:23
-@deftypefn Supplemental int setenv (const char *@var{name}, @
-  const char *@var{value}, int @var{overwrite})
+@c setenv.c:22
+@deftypefn Supplemental int setenv (const char *@var{name}, const char *@var{value}, int @var{overwrite})
 @deftypefnx Supplemental void unsetenv (const char *@var{name})
 
 @code{setenv} adds @var{name} to the environment with value
@@ -1095,8 +1019,7 @@ be the value @code{1}).
 @end deftypefn
 
 @c snprintf.c:28
-@deftypefn Supplemental int snprintf (char *@var{buf}, size_t @var{n}, @
-  const char *@var{format}, ...)
+@deftypefn Supplemental int snprintf (char *@var{buf}, size_t @var{n}, const char *@var{format}, ...)
 
 This function is similar to @code{sprintf}, but it will write to
 @var{buf} at most @code{@var{n}-1} bytes of text, followed by a
@@ -1128,8 +1051,7 @@ Copies the string @var{src} into @var{dst}.  Returns a pointer to
 @end deftypefn
 
 @c stpncpy.c:23
-@deftypefn Supplemental char* stpncpy (char *@var{dst}, const char *@var{src}, @
-  size_t @var{len})
+@deftypefn Supplemental char* stpncpy (char *@var{dst}, const char *@var{src}, size_t @var{len})
 
 Copies the string @var{src} into @var{dst}, copying exactly @var{len}
 and padding with zeros if necessary.  If @var{len} < strlen(@var{src})
@@ -1211,8 +1133,7 @@ A case-insensitive @code{strncmp}.
 @end deftypefn
 
 @c strncmp.c:6
-@deftypefn Supplemental int strncmp (const char *@var{s1}, @
-  const char *@var{s2}, size_t @var{n})
+@deftypefn Supplemental int strncmp (const char *@var{s1}, const char *@var{s2}, size_t @var{n})
 
 Compares the first @var{n} bytes of two strings, returning a value as
 @code{strcmp}.
@@ -1289,8 +1210,7 @@ length, the function returns @var{string}.
 @end deftypefn
 
 @c strtod.c:27
-@deftypefn Supplemental double strtod (const char *@var{string}, @
-  char **@var{endptr})
+@deftypefn Supplemental double strtod (const char *@var{string}, char **@var{endptr})
 
 This ISO C function converts the initial portion of @var{string} to a
 @code{double}.  If @var{endptr} is not @code{NULL}, a pointer to the
@@ -1310,10 +1230,8 @@ to an errno value.  If no translation is found, returns 0.
 @end deftypefn
 
 @c strtol.c:33
-@deftypefn Supplemental {long int} strtol (const char *@var{string}, @
-  char **@var{endptr}, int @var{base})
-@deftypefnx Supplemental {unsigned long int} strtoul (const char *@var{string}, @
-  char **@var{endptr}, int @var{base})
+@deftypefn Supplemental {long int} strtol (const char *@var{string}, char **@var{endptr}, int @var{base})
+@deftypefnx Supplemental {unsigned long int} strtoul (const char *@var{string}, char **@var{endptr}, int @var{base})
 
 The @code{strtol} function converts the string in @var{string} to a
 long integer value according to the given @var{base}, which must be
@@ -1422,8 +1340,7 @@ pointer unchanged.  If the @var{stream} is @code{NULL} do nothing.
 @end deftypefn
 
 @c vasprintf.c:47
-@deftypefn Extension int vasprintf (char **@var{resptr}, @
-  const char *@var{format}, va_list @var{args})
+@deftypefn Extension int vasprintf (char **@var{resptr}, const char *@var{format}, va_list @var{args})
 
 Like @code{vsprintf}, but instead of passing a pointer to a buffer,
 you pass a pointer to a pointer.  This function will compute the size
@@ -1444,10 +1361,8 @@ Emulates @code{vfork} by calling @code{fork} and returning its value.
 
 @c vprintf.c:3
 @deftypefn Supplemental int vprintf (const char *@var{format}, va_list @var{ap})
-@deftypefnx Supplemental int vfprintf (FILE *@var{stream}, @
-  const char *@var{format}, va_list @var{ap})
-@deftypefnx Supplemental int vsprintf (char *@var{str}, @
-  const char *@var{format}, va_list @var{ap})
+@deftypefnx Supplemental int vfprintf (FILE *@var{stream}, const char *@var{format}, va_list @var{ap})
+@deftypefnx Supplemental int vsprintf (char *@var{str}, const char *@var{format}, va_list @var{ap})
 
 These functions are the same as @code{printf}, @code{fprintf}, and
 @code{sprintf}, respectively, except that they are called with a
@@ -1459,8 +1374,7 @@ nonstandard but common function @code{_doprnt}.
 @end deftypefn
 
 @c vsnprintf.c:28
-@deftypefn Supplemental int vsnprintf (char *@var{buf}, size_t @var{n}, @
-  const char *@var{format}, va_list @var{ap})
+@deftypefn Supplemental int vsnprintf (char *@var{buf}, size_t @var{n}, const char *@var{format}, va_list @var{ap})
 
 This function is similar to @code{vsprintf}, but it will write to
 @var{buf} at most @code{@var{n}-1} bytes of text, followed by a
@@ -1483,7 +1397,7 @@ does the return value.  The third argument is unused in @libib{}.
 
 @end deftypefn
 
-@c argv.c:286
+@c argv.c:306
 @deftypefn Extension int writeargv (const char **@var{argv}, FILE *@var{file})
 
 Write each member of ARGV, handling all necessary quoting, to the file
@@ -1549,8 +1463,7 @@ You can use this to set the name of the program used by
 @end deftypefn
 
 @c xmemdup.c:7
-@deftypefn Replacement void* xmemdup (void *@var{input}, @
-  size_t @var{copy_size}, size_t @var{alloc_size})
+@deftypefn Replacement void* xmemdup (void *@var{input}, size_t @var{copy_size}, size_t @var{alloc_size})
 
 Duplicates a region of memory without fail.  First, @var{alloc_size} bytes
 are allocated, then @var{copy_size} bytes from @var{input} are copied into

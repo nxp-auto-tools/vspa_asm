@@ -64,7 +64,6 @@ namespace adl {
   public:
     opfxstream(std::streambuf *sb,int indent = 0, char iplus = 0, char iminus = 0);
     opfxstream(std::ostream &o,int indent = 0, char iplus = 0, char iminus = 0);
-    ~opfxstream();
 
     pfxbuf *rdbuf() { return static_cast<pfxbuf*>(std::ostream::rdbuf()); };
     const pfxbuf *rdbuf() const { return static_cast<const pfxbuf*>(std::ostream::rdbuf()); };

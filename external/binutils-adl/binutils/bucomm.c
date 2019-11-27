@@ -1,5 +1,7 @@
 /* bucomm.c -- Bin Utils COMmon code.
-   Copyright (C) 1991-2014 Free Software Foundation, Inc.
+   Copyright 1991, 1992, 1993, 1994, 1995, 1997, 1998, 2000, 2001, 2002,
+   2003, 2005, 2006, 2007, 2008, 2009, 2010, 2011
+   Free Software Foundation, Inc.
 
    This file is part of GNU Binutils.
 
@@ -27,6 +29,7 @@
 #include "filenames.h"
 #include "libbfd.h"
 
+#include <sys/stat.h>
 #include <time.h>		/* ctime, maybe time_t */
 #include <assert.h>
 #include "bucomm.h"
@@ -125,26 +128,24 @@ report (const char * format, va_list args)
 }
 
 void
-fatal (const char *format, ...)
+fatal VPARAMS ((const char *format, ...))
 {
-  va_list args;
-
-  va_start (args, format);
+  VA_OPEN (args, format);
+  VA_FIXEDARG (args, const char *, format);
 
   report (format, args);
-  va_end (args);
+  VA_CLOSE (args);
   xexit (1);
 }
 
 void
-non_fatal (const char *format, ...)
+non_fatal VPARAMS ((const char *format, ...))
 {
-  va_list args;
-
-  va_start (args, format);
+  VA_OPEN (args, format);
+  VA_FIXEDARG (args, const char *, format);
 
   report (format, args);
-  va_end (args);
+  VA_CLOSE (args);
 }
 
 /* Set the default BFD target based on the configured target.  Doing
@@ -152,14 +153,11 @@ non_fatal (const char *format, ...)
    and linked against a shared BFD library which was configured for a
    different target.  */
 
-const char *adl_default_target;
-
 void
 set_default_bfd_target (void)
 {
   /* The macro TARGET is defined by Makefile.  */
-  //  const char *target = TARGET;
-  const char *target = adl_default_target;
+  const char *target = TARGET;
 
   if (! bfd_set_default_target (target))
     fatal (_("can't set BFD default target to `%s': %s"),
@@ -227,9 +225,9 @@ endian_string (enum bfd_endian endian)
 {
   switch (endian)
     {
-    case BFD_ENDIAN_BIG: return _("big endian");
-    case BFD_ENDIAN_LITTLE: return _("little endian");
-    default: return _("endianness unknown");
+    case BFD_ENDIAN_BIG: return "big endian";
+    case BFD_ENDIAN_LITTLE: return "little endian";
+    default: return "endianness unknown";
     }
 }
 
@@ -250,7 +248,7 @@ display_target_list (void)
       bfd *abfd = bfd_openw (dummy_name, p->name);
       int a;
 
-      printf (_("%s\n (header %s, data %s)\n"), p->name,
+      printf ("%s\n (header %s, data %s)\n", p->name,
 	      endian_string (p->header_byteorder),
 	      endian_string (p->byteorder));
 
@@ -430,18 +428,16 @@ print_arelt_descr (FILE *file, bfd *abfd, bfd_boolean verbose)
 	  char timebuf[40];
 	  time_t when = buf.st_mtime;
 	  const char *ctime_result = (const char *) ctime (&when);
-	  bfd_size_type size;
 
 	  /* POSIX format:  skip weekday and seconds from ctime output.  */
 	  sprintf (timebuf, "%.12s %.4s", ctime_result + 4, ctime_result + 20);
 
 	  mode_string (buf.st_mode, modebuf);
 	  modebuf[10] = '\0';
-	  size = buf.st_size;
 	  /* POSIX 1003.2/D11 says to skip first character (entry type).  */
-	  fprintf (file, "%s %ld/%ld %6" BFD_VMA_FMT "u %s ", modebuf + 1,
+	  fprintf (file, "%s %ld/%ld %6ld %s ", modebuf + 1,
 		   (long) buf.st_uid, (long) buf.st_gid,
-		   size, timebuf);
+		   (long) buf.st_size, timebuf);
 	}
     }
 
@@ -515,10 +511,7 @@ make_tempname (char *filename)
   fd = open (tmpname, O_RDWR | O_CREAT | O_EXCL, 0600);
 #endif
   if (fd == -1)
-    {
-      free (tmpname);
-      return NULL;
-    }
+    return NULL;
   close (fd);
   return tmpname;
 }
@@ -626,30 +619,4 @@ bfd_get_archive_filename (const bfd *abfd)
   sprintf (buf, "%s(%s)", bfd_get_filename (abfd->my_archive),
 	   bfd_get_filename (abfd));
   return buf;
-}
-
-/* Returns TRUE iff PATHNAME, a filename of an archive member,
-   is valid for writing.  For security reasons absolute paths
-   and paths containing /../ are not allowed.  See PR 17533.  */
-
-bfd_boolean
-is_valid_archive_path (char const * pathname)
-{
-  const char * n = pathname;
-
-  if (IS_ABSOLUTE_PATH (n))
-    return FALSE;
-
-  while (*n)
-    {
-      if (*n == '.' && *++n == '.' && ( ! *++n || IS_DIR_SEPARATOR (*n)))
-	return FALSE;
-
-      while (*n && ! IS_DIR_SEPARATOR (*n))
-	n++;
-      while (IS_DIR_SEPARATOR (*n))
-	n++;
-    }
-
-  return TRUE;
 }

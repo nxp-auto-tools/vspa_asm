@@ -7,9 +7,6 @@ SUBDIRS = binutils-adl
 BINUTIL = binutils-adl
 BINSRC  = $(shell cd $(srcdir) && pwd)/$(BINUTIL)
 
-BASESRCDIR=$(shell cd $(top_srcdir) && pwd)
-BASEDIR=$(shell cd $(top_builddir) && pwd)
-
 CLEANFILES = *.bz2
 
 install_pfx = binutils
@@ -28,8 +25,7 @@ install_dirs = \
 	opcodes \
 	bfd \
 	intl \
-	libiberty \
-	ld
+	libiberty
 
 asm_disasm_install_files = \
 	gas/libgas-dt.a \
@@ -39,9 +35,7 @@ asm_disasm_install_files = \
 	libiberty/libiberty.a \
 	bfd/libbfd.a \
 	bfd/.libs/libbfd.a \
-	binutils/libobjdump.a \
-	binutils/libaddr2line.a \
-	ld/libld.a
+	binutils/libobjdump.a
 
 # The install process installs files needed for the "build locally" option and
 # also installs a copy of the binutils tarball.

@@ -1,5 +1,6 @@
 /* HP PA-RISC SOM object file format:  definitions internal to BFD.
-   Copyright (C) 1990-2014 Free Software Foundation, Inc.
+   Copyright 1990, 1991, 1992, 1993, 1994, 1995, 1996, 1998, 2000, 2001,
+   2002, 2003, 2004, 2005, 2007, 2008 Free Software Foundation, Inc.
 
    Contributed by the Center for Software Science at the
    University of Utah (pa-gdb-bugs@cs.utah.edu).
@@ -62,7 +63,7 @@ typedef struct som_symbol
       unsigned int hppa_arg_reloc;
       unsigned int hppa_priv_level;
     } ap;
-    void * any;
+    PTR any;
   }
   tc_data;
 
@@ -233,6 +234,5 @@ void         bfd_som_set_symbol_type           (asymbol *, unsigned int);
 bfd_boolean  bfd_som_attach_aux_hdr            (bfd *, int, char *);
 int **       hppa_som_gen_reloc_type           (bfd *, int, int, enum hppa_reloc_field_selector_type_alt, int, asymbol *);
 bfd_boolean  bfd_som_attach_compilation_unit   (bfd *, const char *, const char *, const char *, const char *);
-asection *   bfd_section_from_som_symbol       (bfd *abfd, struct som_external_symbol_dictionary_record *symbol);
 
 #endif /* _SOM_H */

@@ -3,8 +3,8 @@ C_COMPILER = gcc
 
 INCLUDE_PATH=-I"./external/binutils-adl/libiberty" -I"./external/binutils-adl/include" -I"./external/binutils-adl/win-build/bfd" -I"./external/binutils-adl/win-headers" -I"./external/binutils-adl/win-build/opcodes" 
 
-ifeq ($(ARCH_TARGET), vspa3)
-VSPA_VERSION=-D_VSPA3_
+ifeq ($(ARCH_TARGET), vspa2)
+VSPA_VERSION=-D_VSPA2_
 else
 VSPA_VERSION=
 endif
@@ -27,7 +27,7 @@ $(OUTPUT_DIR)/libopcode/opcode/dis-buf.o: external/binutils-adl/opcodes/dis-buf.
 	$(C_COMPILER) $< -c -o $@ $(INCLUDE_PATH) $(PREPROCESSOR_DEFINITIONS) $(COMPILER_FLAGS)
 
 $(OUTPUT_DIR)/libopcode/opcode/dis-init.o: external/binutils-adl/opcodes/dis-init.c
-	$(C_COMPILER) $< -c -o $@ $(INCLUDE_PATH) $(PREPROCESSOR_DEFINFITIONS) $(COMPILER_FLAGS)
+	$(C_COMPILER) $< -c -o $@ $(INCLUDE_PATH) $(PREPROCESSOR_DEFINFITIONS)
 
 $(OUTPUT_DIR)/libopcode/opcode/disassemble.o: external/binutils-adl/opcodes/disassemble.c
 	$(C_COMPILER) $< -c -o $@ $(INCLUDE_PATH) $(PREPROCESSOR_DEFINITIONS) $(COMPILER_FLAGS)

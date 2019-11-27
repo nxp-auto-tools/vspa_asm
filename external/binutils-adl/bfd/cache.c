@@ -1,6 +1,7 @@
 /* BFD library -- caching of file descriptors.
 
-   Copyright (C) 1990-2014 Free Software Foundation, Inc.
+   Copyright 1990, 1991, 1992, 1993, 1994, 1996, 2000, 2001, 2002,
+   2003, 2004, 2005, 2007, 2008, 2009 Free Software Foundation, Inc.
 
    Hacked by Steve Chamberlain of Cygnus Support (steve@cygnus.com).
 
@@ -30,7 +31,7 @@ SECTION
 	regard to the underlying operating system's file descriptor
 	limit (often as low as 20 open files).  The module in
 	<<cache.c>> maintains a least recently used list of
-	<<bfd_cache_max_open>> files, and exports the name
+	<<BFD_CACHE_MAX_OPEN>> files, and exports the name
 	<<bfd_cache_lookup>>, which runs around and makes sure that
 	the required BFD is open. If not, then it chooses a file to
 	close, closes it and opens the one wanted, returning its file
@@ -44,7 +45,6 @@ SUBSECTION
 #include "bfd.h"
 #include "libbfd.h"
 #include "libiberty.h"
-#include "bfd_stdint.h"
 
 #ifdef HAVE_MMAP
 #include <sys/mman.h>
@@ -66,35 +66,9 @@ enum cache_flag {
 };
 
 /* The maximum number of files which the cache will keep open at
-   one time.  When needed call bfd_cache_max_open to initialize.  */
+   one time.  */
 
-static int max_open_files = 0;
-
-/* Set max_open_files, if not already set, to 12.5% of the allowed open
-   file descriptors, but at least 10, and return the value.  */
-static int
-bfd_cache_max_open (void)
-{
-  if (max_open_files == 0)
-    {
-      int max;
-#ifdef HAVE_GETRLIMIT
-      struct rlimit rlim;
-      if (getrlimit (RLIMIT_NOFILE, &rlim) == 0
-	  && rlim.rlim_cur != (rlim_t) RLIM_INFINITY)
-	max = rlim.rlim_cur / 8;
-      else
-#endif /* HAVE_GETRLIMIT */
-#ifdef _SC_OPEN_MAX
-	max = sysconf (_SC_OPEN_MAX) / 8;
-#else
-	max = 10;
-#endif /* _SC_OPEN_MAX */
-      max_open_files = max < 10 ? 10 : max;
-    }
-
-  return max_open_files;
-}
+#define BFD_CACHE_MAX_OPEN 10
 
 /* The number of BFD files we have open.  */
 
@@ -212,7 +186,7 @@ close_one (void)
 /* Called when the macro <<bfd_cache_lookup>> fails to find a
    quick answer.  Find a file descriptor for @var{abfd}.  If
    necessary, it open it.  If there are already more than
-   <<bfd_cache_max_open>> files open, it tries to close one first, to
+   <<BFD_CACHE_MAX_OPEN>> files open, it tries to close one first, to
    avoid running out of file descriptors.  It will return NULL
    if it is unable to (re)open the @var{abfd}.  */
 
@@ -223,7 +197,7 @@ bfd_cache_lookup_worker (bfd *abfd, enum cache_flag flag)
   if ((abfd->flags & BFD_IN_MEMORY) != 0)
     abort ();
 
-  while (abfd->my_archive)
+  if (abfd->my_archive)
     abfd = abfd->my_archive;
 
   if (abfd->iostream != NULL)
@@ -310,7 +284,7 @@ cache_bread_1 (struct bfd *abfd, void *buf, file_ptr nbytes)
   if (nread == (file_ptr)-1)
     {
       bfd_set_error (bfd_error_system_call);
-      return nread;
+      return -1;
     }
 #else
   nread = fread (buf, 1, nbytes, f);
@@ -320,7 +294,7 @@ cache_bread_1 (struct bfd *abfd, void *buf, file_ptr nbytes)
   if (nread < nbytes && ferror (f))
     {
       bfd_set_error (bfd_error_system_call);
-      return nread;
+      return -1;
     }
 #endif
   if (nread < nbytes)
@@ -387,7 +361,7 @@ cache_bwrite (struct bfd *abfd, const void *where, file_ptr nbytes)
 static int
 cache_bclose (struct bfd *abfd)
 {
-  return bfd_cache_close (abfd) - 1;
+  return bfd_cache_close (abfd);
 }
 
 static int
@@ -424,9 +398,7 @@ cache_bmmap (struct bfd *abfd ATTRIBUTE_UNUSED,
 	     bfd_size_type len ATTRIBUTE_UNUSED,
 	     int prot ATTRIBUTE_UNUSED,
 	     int flags ATTRIBUTE_UNUSED,
-	     file_ptr offset ATTRIBUTE_UNUSED,
-             void **map_addr ATTRIBUTE_UNUSED,
-             bfd_size_type *map_len ATTRIBUTE_UNUSED)
+	     file_ptr offset ATTRIBUTE_UNUSED)
 {
   void *ret = (void *) -1;
 
@@ -435,35 +407,13 @@ cache_bmmap (struct bfd *abfd ATTRIBUTE_UNUSED,
 #ifdef HAVE_MMAP
   else
     {
-      static uintptr_t pagesize_m1;
-      FILE *f;
-      file_ptr pg_offset;
-      bfd_size_type pg_len;
-
-      f = bfd_cache_lookup (abfd, CACHE_NO_SEEK_ERROR);
+      FILE *f = bfd_cache_lookup (abfd, CACHE_NO_SEEK_ERROR);
       if (f == NULL)
 	return ret;
 
-      if (pagesize_m1 == 0)
-        pagesize_m1 = getpagesize () - 1;
-
-      /* Handle archive members.  */
-      if (abfd->my_archive != NULL)
-        offset += abfd->origin;
-
-      /* Align.  */
-      pg_offset = offset & ~pagesize_m1;
-      pg_len = (len + (offset - pg_offset) + pagesize_m1) & ~pagesize_m1;
-
-      ret = mmap (addr, pg_len, prot, flags, fileno (f), pg_offset);
+      ret = mmap (addr, len, prot, flags, fileno (f), offset);
       if (ret == (void *) -1)
 	bfd_set_error (bfd_error_system_call);
-      else
-        {
-          *map_addr = ret;
-          *map_len = pg_len;
-          ret = (char *) ret + (offset & pagesize_m1);
-        }
     }
 #endif
 
@@ -491,7 +441,7 @@ bfd_boolean
 bfd_cache_init (bfd *abfd)
 {
   BFD_ASSERT (abfd->iostream != NULL);
-  if (open_files >= bfd_cache_max_open ())
+  if (open_files >= BFD_CACHE_MAX_OPEN)
     {
       if (! close_one ())
 	return FALSE;
@@ -578,7 +528,7 @@ bfd_open_file (bfd *abfd)
 {
   abfd->cacheable = TRUE;	/* Allow it to be closed later.  */
 
-  if (open_files >= bfd_cache_max_open ())
+  if (open_files >= BFD_CACHE_MAX_OPEN)
     {
       if (! close_one ())
 	return NULL;
@@ -588,15 +538,15 @@ bfd_open_file (bfd *abfd)
     {
     case read_direction:
     case no_direction:
-      abfd->iostream = real_fopen (abfd->filename, FOPEN_RB);
+      abfd->iostream = (PTR) real_fopen (abfd->filename, FOPEN_RB);
       break;
     case both_direction:
     case write_direction:
       if (abfd->opened_once)
 	{
-	  abfd->iostream = real_fopen (abfd->filename, FOPEN_RUB);
+	  abfd->iostream = (PTR) real_fopen (abfd->filename, FOPEN_RUB);
 	  if (abfd->iostream == NULL)
-	    abfd->iostream = real_fopen (abfd->filename, FOPEN_WUB);
+	    abfd->iostream = (PTR) real_fopen (abfd->filename, FOPEN_WUB);
 	}
       else
 	{
@@ -626,7 +576,7 @@ bfd_open_file (bfd *abfd)
 	  if (stat (abfd->filename, &s) == 0 && s.st_size != 0)
 	    unlink_if_ordinary (abfd->filename);
 #endif
-	  abfd->iostream = real_fopen (abfd->filename, FOPEN_WUB);
+	  abfd->iostream = (PTR) real_fopen (abfd->filename, FOPEN_WUB);
 	  abfd->opened_once = TRUE;
 	}
       break;

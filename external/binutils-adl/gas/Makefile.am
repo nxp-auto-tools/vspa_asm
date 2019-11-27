@@ -12,7 +12,7 @@ libgas_dt_a_SOURCES = adl-asm-impl-dt.C AsmDriver.C
 
 
 
-AUTOMAKE_OPTIONS = foreign subdir-objects
+AUTOMAKE_OPTIONS = 1.11 foreign 
 ACLOCAL_AMFLAGS = -I .. -I ../config -I ../bfd
 
 SUBDIRS = po
@@ -31,12 +31,9 @@ WARN_CFLAGS = @WARN_CFLAGS@
 NO_WERROR = @NO_WERROR@
 AM_CFLAGS = $(WARN_CFLAGS)
 
-AM_CXXFLAGS = -std=c++0x
-
 # Regular source files.
 
 GAS_CFILES = \
-	adl-asm-impl.C \
 	app.c \
 	as.c \
 	atof-generic.c \
@@ -67,7 +64,8 @@ GAS_CFILES = \
 	subsegs.c \
 	symbols.c \
 	write.c \
-	config/adl-support.C
+	adl-asm-impl.C \
+	config/ppc-support.C
 
 CFILES = $(GAS_CFILES) 
 
@@ -235,7 +233,4 @@ stage3:
 against=stage2
 
 
-# Reconfigure if configure.tgt changes.
-# development.sh is used to determine -Werror default.
-CONFIG_STATUS_DEPENDENCIES = $(srcdir)/configure.tgt $(BFDDIR)/development.sh
-
+CONFIG_STATUS_DEPENDENCIES = $(BFDDIR)/configure.in $(srcdir)/configure.tgt

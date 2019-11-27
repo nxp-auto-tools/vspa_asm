@@ -1,5 +1,6 @@
 /* Target definitions for 32-bit ELF
-   Copyright (C) 1993-2014 Free Software Foundation, Inc.
+   Copyright 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002,
+   2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010 Free Software Foundation, Inc.
 
    This file is part of BFD, the Binary File Descriptor library.
 
@@ -36,7 +37,7 @@ extern bfd_boolean adl_elf_make_object(bfd *abfd);
 #undef bfd_elf32_mkobject
 
 extern bfd_boolean adl_backend_section_from_bfd_section(bfd *abfd,
-	asection *sec, int *retval);
+		asection *sec, int *retval);
 #undef elf_backend_section_from_bfd_section
 
 #ifndef bfd_elf32_close_and_cleanup
@@ -60,9 +61,6 @@ extern bfd_boolean adl_backend_section_from_bfd_section(bfd *abfd,
 #endif
 #ifndef bfd_elf32_find_nearest_line
 #define bfd_elf32_find_nearest_line	_bfd_elf_find_nearest_line
-#endif
-#ifndef bfd_elf32_find_line
-#define bfd_elf32_find_line		_bfd_elf_find_line
 #endif
 #ifndef bfd_elf32_find_inliner_info
 #define bfd_elf32_find_inliner_info	_bfd_elf_find_inliner_info
@@ -122,12 +120,6 @@ extern bfd_boolean adl_backend_section_from_bfd_section(bfd *abfd,
 #ifndef elf_backend_default_execstack
 #define elf_backend_default_execstack 1
 #endif
-#ifndef elf_backend_caches_rawsize
-#define elf_backend_caches_rawsize 0
-#endif
-#ifndef elf_backend_stack_align
-#define elf_backend_stack_align 16
-#endif
 
 #define bfd_elf32_bfd_debug_info_start	bfd_void
 #define bfd_elf32_bfd_debug_info_end	bfd_void
@@ -162,7 +154,7 @@ extern bfd_boolean adl_backend_section_from_bfd_section(bfd *abfd,
 #define elf_backend_gc_mark_hook	_bfd_elf_gc_mark_hook
 #endif
 #ifndef elf_backend_gc_mark_extra_sections
-#define elf_backend_gc_mark_extra_sections _bfd_elf_gc_mark_extra_sections
+#define elf_backend_gc_mark_extra_sections	NULL
 #endif
 #ifndef elf_backend_gc_sweep_hook
 #define elf_backend_gc_sweep_hook	NULL
@@ -191,10 +183,6 @@ extern bfd_boolean adl_backend_section_from_bfd_section(bfd *abfd,
 
 #ifndef bfd_elf32_bfd_define_common_symbol
 #define bfd_elf32_bfd_define_common_symbol bfd_generic_define_common_symbol
-#endif
-
-#ifndef bfd_elf32_bfd_lookup_section_flags
-#define bfd_elf32_bfd_lookup_section_flags bfd_elf_lookup_section_flags
 #endif
 
 #ifndef bfd_elf32_bfd_make_debug_symbol
@@ -246,6 +234,10 @@ extern bfd_boolean adl_backend_section_from_bfd_section(bfd *abfd,
 #ifndef bfd_elf32_canonicalize_dynamic_reloc
 #define bfd_elf32_canonicalize_dynamic_reloc \
   _bfd_elf_canonicalize_dynamic_reloc
+#endif
+
+#ifndef bfd_elf32_bfd_link_hash_table_free
+#define bfd_elf32_bfd_link_hash_table_free _bfd_generic_link_hash_table_free
 #endif
 
 #ifdef elf_backend_relocate_section
@@ -323,10 +315,6 @@ extern bfd_boolean adl_backend_section_from_bfd_section(bfd *abfd,
 
 #ifndef elf_info_to_howto_rel
 #define elf_info_to_howto_rel 0
-#endif
-
-#ifndef elf_backend_arch_data
-#define elf_backend_arch_data NULL
 #endif
 
 #ifndef ELF_TARGET_ID
@@ -434,8 +422,8 @@ extern bfd_boolean adl_backend_section_from_bfd_section(bfd *abfd,
 #ifndef elf_backend_check_directives
 #define elf_backend_check_directives	0
 #endif
-#ifndef elf_backend_notice_as_needed
-#define elf_backend_notice_as_needed	_bfd_elf_notice_as_needed
+#ifndef elf_backend_as_needed_cleanup
+#define elf_backend_as_needed_cleanup	0
 #endif
 #ifndef elf_backend_adjust_dynamic_symbol
 #define elf_backend_adjust_dynamic_symbol 0
@@ -508,7 +496,7 @@ extern bfd_boolean adl_backend_section_from_bfd_section(bfd *abfd,
 #define elf_backend_static_tls_alignment	1
 #endif
 #ifndef elf_backend_post_process_headers
-#define elf_backend_post_process_headers	_bfd_elf_post_process_headers
+#define elf_backend_post_process_headers	NULL
 #endif
 #ifndef elf_backend_print_symbol_all
 #define elf_backend_print_symbol_all		NULL
@@ -526,7 +514,7 @@ extern bfd_boolean adl_backend_section_from_bfd_section(bfd *abfd,
 #define elf_backend_hide_symbol		_bfd_elf_link_hash_hide_symbol
 #endif
 #ifndef elf_backend_fixup_symbol
-#define elf_backend_fixup_symbol		NULL
+#define elf_backend_fixup_symbol		NULL	
 #endif
 #ifndef elf_backend_merge_symbol_attribute
 #define elf_backend_merge_symbol_attribute	NULL
@@ -551,9 +539,6 @@ extern bfd_boolean adl_backend_section_from_bfd_section(bfd *abfd,
 #endif
 #ifndef elf_backend_write_core_note
 #define elf_backend_write_core_note		NULL
-#endif
-#ifndef elf_backend_lookup_section_flags_hook
-#define elf_backend_lookup_section_flags_hook	NULL
 #endif
 #ifndef elf_backend_reloc_type_class
 #define elf_backend_reloc_type_class		_bfd_elf_reloc_type_class
@@ -670,15 +655,6 @@ extern bfd_boolean adl_backend_section_from_bfd_section(bfd *abfd,
 #define elf_backend_is_function_type _bfd_elf_is_function_type
 #endif
 
-#ifndef elf_backend_maybe_function_sym
-#define elf_backend_maybe_function_sym _bfd_elf_maybe_function_sym
-#endif
-
-#ifndef elf_match_priority
-#define elf_match_priority \
-  (ELF_ARCH == bfd_arch_unknown ? 2 : ELF_OSABI == ELFOSABI_NONE ? 1 : 0)
-#endif
-
 extern const struct elf_size_info _bfd_elf32_size_info;
 
 static struct elf_backend_data elf32_bed =
@@ -691,7 +667,6 @@ static struct elf_backend_data elf32_bed =
   ELF_MINPAGESIZE,		/* minpagesize */
   ELF_COMMONPAGESIZE,		/* commonpagesize */
   ELF_DYNAMIC_SEC_FLAGS,	/* dynamic_sec_flags */
-  elf_backend_arch_data,
   elf_info_to_howto,
   elf_info_to_howto_rel,
   elf_backend_sym_is_global,
@@ -715,7 +690,7 @@ static struct elf_backend_data elf32_bed =
   elf_backend_relocs_compatible,
   elf_backend_check_relocs,
   elf_backend_check_directives,
-  elf_backend_notice_as_needed,
+  elf_backend_as_needed_cleanup,
   elf_backend_adjust_dynamic_symbol,
   elf_backend_always_size_sections,
   elf_backend_size_dynamic_sections,
@@ -748,7 +723,6 @@ static struct elf_backend_data elf32_bed =
   elf_backend_grok_prstatus,
   elf_backend_grok_psinfo,
   elf_backend_write_core_note,
-  elf_backend_lookup_section_flags_hook,
   elf_backend_reloc_type_class,
   elf_backend_discard_info,
   elf_backend_ignore_discarded_relocs,
@@ -769,7 +743,6 @@ static struct elf_backend_data elf32_bed =
   elf_backend_merge_symbol,
   elf_backend_hash_symbol,
   elf_backend_is_function_type,
-  elf_backend_maybe_function_sym,
   elf_backend_link_order_error_handler,
   elf_backend_relplt_name,
   ELF_MACHINE_ALT1,
@@ -785,7 +758,6 @@ static struct elf_backend_data elf32_bed =
   elf_backend_obj_attrs_order,
   elf_backend_obj_attrs_handle_unknown,
   elf_backend_static_tls_alignment,
-  elf_backend_stack_align,
   elf_backend_collect,
   elf_backend_type_change_ok,
   elf_backend_may_use_rel_p,
@@ -804,17 +776,16 @@ static struct elf_backend_data elf32_bed =
   elf_backend_want_got_sym,
   elf_backend_want_dynbss,
   elf_backend_want_p_paddr_set_to_zero,
-  elf_backend_default_execstack,
-  elf_backend_caches_rawsize
+  elf_backend_default_execstack
 };
 
 /* Forward declaration for use when initialising alternative_target field.  */
 #ifdef TARGET_LITTLE_SYM
-extern bfd_target TARGET_LITTLE_SYM;
+extern const bfd_target TARGET_LITTLE_SYM;
 #endif
 
 #ifdef TARGET_BIG_SYM
-bfd_target TARGET_BIG_SYM =
+const bfd_target TARGET_BIG_SYM =
 {
   /* name: identify kind of target */
   TARGET_BIG_NAME,
@@ -851,8 +822,6 @@ bfd_target TARGET_BIG_SYM =
      of the archiver and should be independently tunable.  The System V ABI,
      Chapter 7 (Formats & Protocols), Archive section sets this as 15.  */
   15,
-
-  elf_match_priority,
 
   /* Routines to byte-swap various sized integers from the data sections */
   bfd_getb64, bfd_getb_signed_64, bfd_putb64,
@@ -912,7 +881,7 @@ bfd_target TARGET_BIG_SYM =
 #endif
 
 #ifdef TARGET_LITTLE_SYM
-bfd_target TARGET_LITTLE_SYM =
+const bfd_target TARGET_LITTLE_SYM =
 {
   /* name: identify kind of target */
   TARGET_LITTLE_NAME,
@@ -949,8 +918,6 @@ bfd_target TARGET_LITTLE_SYM =
      of the archiver and should be independently tunable.  The System V ABI,
      Chapter 7 (Formats & Protocols), Archive section sets this as 15.  */
   15,
-
-  elf_match_priority,
 
   /* Routines to byte-swap various sized integers from the data sections */
   bfd_getl64, bfd_getl_signed_64, bfd_putl64,

@@ -71,6 +71,11 @@
 
 using namespace std;
 
+BOOST_TYPEOF_REGISTER_TYPE(adl::AnyOption::Options::iterator)
+BOOST_TYPEOF_REGISTER_TYPE(adl::AnyOption::Options::const_iterator)
+BOOST_TYPEOF_REGISTER_TYPE(std::string::iterator)
+BOOST_TYPEOF_REGISTER_TYPE(std::string::const_iterator)
+
 struct EmptyStruct {};
 
 #if defined(ADL_MINIMAL_BUILD) || defined(NO_GC)
@@ -84,12 +89,12 @@ namespace adl {
 #define Verbose(x) { if (_verbose) { cerr << x << "\n"; } }
 #define FVerbose(x,y,z) { if (_verbose) { cerr << x << ":" << y << ":  " << z; } }
 
-  static string FlagSet   = "true";
-  static string FlagUnset = "false";
+  static const char *FlagSet = "true";
+  static const char *FlagUnset = "false";
 
   enum OptType { oNone, oRequire, oOptional };
 
-  struct AnyOption::Option {
+  struct AnyOption::Option : public GC {
     Type    _type;
     OptType _opt;
     string  _abrev;
@@ -122,6 +127,7 @@ namespace adl {
 
   void AnyOption::init()
   {
+      GC_INIT();
     _max_legal_args = 0;
     _argc = 0;
     _argv = 0;
@@ -149,16 +155,6 @@ namespace adl {
     ForEach (_options,i) {
       i->second->reset();
     }
-  }
-
-  const string &AnyOption::flagSet() const
-  {
-    return FlagSet;
-  }
-
-  const string &AnyOption::flagUnset() const
-  {
-    return FlagUnset;
   }
 
   void AnyOption::setCommandPrefixChar( char prefix )
@@ -259,7 +255,7 @@ namespace adl {
   bool AnyOption::addOption( const string &name, const string &abrev, 
                              Type t, const string &h, int opt )
   {
-    shared_ptr<Option> option(new Option(t,(OptType)opt,abrev,h));
+    Option *option = new Option(t,(OptType)opt,abrev,h);
     _options[ name ] = option;
     if (!abrev.empty()) {
       _options[ abrev ] = option;
@@ -267,16 +263,15 @@ namespace adl {
     return true;
   }
 
-  bool AnyOption::setOptionalValue (const string &name,const std::string &set_value)
+  void AnyOption::setOptionalValue (const string &name,const std::string &set_value)
   {
-    auto iter = _options.find(name);
+    Var(iter,_options.find(name));
     if (iter != _options.end() ) {
       iter->second->_opt = oOptional;
       iter->second->_set_value = set_value;
     } else {
       throw runtime_error("Option '" + name + "' is not a valid option.");
     }
-    return true;
   }
 
   bool AnyOption::processOptions()
@@ -554,39 +549,6 @@ namespace adl {
     return def;
   }
 
-  bool AnyOption::setValue( const std::string &option, const std::string &value )
-  {
-    Options::iterator oiter = _options.find(option);
-    if (oiter != _options.end()) {
-      setValue(oiter,value,Cmd);
-      return true;
-    } else {
-      return false;
-    }
-  }
-
-  bool AnyOption::setFlagOn( const std::string &option )
-  {
-    Options::iterator oiter = _options.find(option);
-    if (oiter != _options.end()) {
-      setFlagOn(oiter,Cmd);
-      return true;
-    } else {
-      return false;
-    }
-  }
-
-  bool AnyOption::setFlagOff( const std::string &option )
-  {
-    Options::iterator oiter = _options.find(option);
-    if (oiter != _options.end()) {
-      setFlagOff(oiter,Cmd);
-      return true;
-    } else {
-      return false;
-    }
-  }
-
   void AnyOption::setValue( Options::iterator oiter, const string  &value, Type t )
   {
     Option &opt = *(oiter->second);
@@ -622,7 +584,6 @@ namespace adl {
       Verbose("Option '" << oiter->first << "' is not a resource file flag.");
       _errors = true;
     }
-    
     if (opt._set_value.empty()) {
       opt._values.push_back(FlagSet);
     } else {
@@ -646,7 +607,6 @@ namespace adl {
       Verbose("Option '" << oiter->first << "' is not a resource file flag.");
       _errors = true;
     }
-
     opt._values.push_back(FlagUnset);
   }
 
@@ -801,7 +761,7 @@ namespace adl {
 
   void AnyOption::printUsage() const
   {
-    printUsage(cout);
+    printUsage(cerr);
   }
 
   void AnyOption::printUsage(ostream &o) const

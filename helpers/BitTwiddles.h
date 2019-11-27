@@ -21,13 +21,13 @@
 #endif
 
 // Returns true if the value is a power of 2.
-static inline bool is_power_2(unsigned v)
+inline bool is_power_2(unsigned v)
 {
   return !(v & (v - 1)) && v;
 }
 
 // Counts the number of 1-bits in x.
-static inline int count_ones(uint64_t x)
+inline int count_ones(uint64_t x)
 {
 #if !defined(__GNUC__) || defined(USE_NO_GCC_BUILTINS)  
 	int c;
@@ -40,7 +40,7 @@ static inline int count_ones(uint64_t x)
 # endif
 }
 
-static inline int count_ones(uint32_t x)
+inline int count_ones(uint32_t x)
 {
 #if !defined(__GNUC__) || defined(USE_NO_GCC_BUILTINS)  
 	int c;
@@ -53,13 +53,13 @@ static inline int count_ones(uint32_t x)
 # endif
 }
 
-static inline int count_ones(uint16_t x)
+inline int count_ones(uint16_t x)
 {
   return count_ones((uint32_t)x);
 }
 
 // Count the number of trailing 0s.
-static inline int count_trailing_zeros(uint32_t x)
+inline int count_trailing_zeros(uint32_t x)
 {
 #if !defined(__GNUC__) || defined(USE_NO_GCC_BUILTINS)
   int c = 0; // c will be the number of zero bits on the right,
@@ -94,12 +94,7 @@ static inline int count_trailing_zeros(uint32_t x)
 # endif
 }
 
-static inline int count_trailing_zeros(uint16_t x)
-{
-  return count_trailing_zeros((uint32_t)x);
-}
-
-static inline int count_trailing_zeros(uint64_t x)
+inline int count_trailing_zeros(uint64_t x)
 {
 #if !defined(__GNUC__) || defined(USE_NO_GCC_BUILTINS)
   int c = 0; // c will be the number of zero bits on the right,
@@ -138,58 +133,19 @@ static inline int count_trailing_zeros(uint64_t x)
 # endif
 }
 
-// Counts the number of 1-bits in x.
-static inline int count_leading_zeros(uint64_t x)
-{
-  if (x == 0) return sizeof(x)*8;
-#if !defined(__GNUC__) || defined(USE_NO_GCC_BUILTINS)  
-  unsigned n = 0;
-  while (1) {
-    if (x < 0) break;
-    n++;
-    x <<= 1;
-  }
-  return n;
-# else
-  return __builtin_clzll(x);  
-# endif
-}
-
-static inline int count_leading_zeros(uint32_t x)
-{
-  if (x == 0) return sizeof(x)*8;
-#if !defined(__GNUC__) || defined(USE_NO_GCC_BUILTINS)  
-
-  unsigned n = 0;
-  while (1) {
-    if (x < 0) break;
-    n++;
-    x <<= 1;
-  }
-  return n;
-# else
-  return __builtin_clz(x);  
-# endif
-}
-
-static inline int count_leading_zeros(uint16_t x)
-{
-  return count_leading_zeros((uint32_t)x);
-}
-
 // Just for completeness, so that we can generate calls to swap routines w/o
 // special casing uint8_t.
-static inline uint16_t swap_uint8(uint8_t x)
+inline uint16_t swap_uint8(uint8_t x)
 {
   return x;
 }
 
-static inline uint16_t swap_uint16(uint16_t x)
+inline uint16_t swap_uint16(uint16_t x)
 {
 # if defined(_MSC_VER)
   // Microsoft builtin.
   return _byteswap_ushort(x);
-# elif !defined(USE_NO_GCC_BUILTINS) && (defined(__GNUC__) && (__GNUC__ == 4) && (__GNUC_MINOR__ >= 3))
+# elif (defined(__GNUC__) && (__GNUC__ == 4) && (__GNUC_MINOR__ >= 3))
   // GCC 4.3 and above has a builtin.
   return (__builtin_bswap32(x) >> 16);
 # else
@@ -199,12 +155,12 @@ static inline uint16_t swap_uint16(uint16_t x)
 }
 
 
-static inline uint32_t swap_uint32(uint32_t x)
+inline uint32_t swap_uint32(uint32_t x)
 {
 # if defined(_MSC_VER)
   // Microsoft builtin.
   return _byteswap_ulong(x);
-# elif !defined(USE_NO_GCC_BUILTINS) && (defined(__GNUC__) && (__GNUC__ == 4) && (__GNUC_MINOR__ >= 3))
+# elif (defined(__GNUC__) && (__GNUC__ == 4) && (__GNUC_MINOR__ >= 3))
   // GCC 4.3 and above has a builtin.
   return __builtin_bswap32(x);
 # else
@@ -213,12 +169,12 @@ static inline uint32_t swap_uint32(uint32_t x)
 # endif
 }
 
-static inline uint64_t swap_uint64(uint64_t x)
+inline uint64_t swap_uint64(uint64_t x)
 {
 # if defined(_MSC_VER)
   // Microsoft builtin.
   return _byteswap_uint64(x);
-# elif !defined(USE_NO_GCC_BUILTINS) && (defined(__GNUC__) && (__GNUC__ == 4) && (__GNUC_MINOR__ >= 3))
+# elif (defined(__GNUC__) && (__GNUC__ == 4) && (__GNUC_MINOR__ >= 3))
   // GCC 4.3 and above has a builtin.
   return __builtin_bswap64(x);
 # else

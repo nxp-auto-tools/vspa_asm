@@ -1,5 +1,6 @@
 /* BFD back-end for raw ARM a.out binaries.
-   Copyright (C) 1994-2014 Free Software Foundation, Inc.
+   Copyright 1994, 1995, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2005,
+   2007, 2009, 2010 Free Software Foundation, Inc.
    Contributed by Richard Earnshaw (rwe@pegasus.esprit.ec.org)
 
    This file is part of BFD, the Binary File Descriptor library.
@@ -42,14 +43,14 @@
 #define SEGMENT_SIZE TARGET_PAGE_SIZE
 #define DEFAULT_ARCH bfd_arch_arm
 
-#define MY(OP) CONCAT2 (arm_aout_,OP)
+#define MY(OP) CONCAT2 (aoutarm_,OP)
 #define N_BADMAG(x) ((((x).a_info & ~007200) != ZMAGIC) && \
                      (((x).a_info & ~006000) != OMAGIC) && \
                      ((x).a_info != NMAGIC))
 #define N_MAGIC(x) ((x).a_info & ~07200)
 
-#define MY_bfd_reloc_type_lookup arm_aout_bfd_reloc_type_lookup
-#define MY_bfd_reloc_name_lookup arm_aout_bfd_reloc_name_lookup
+#define MY_bfd_reloc_type_lookup aoutarm_bfd_reloc_type_lookup
+#define MY_bfd_reloc_name_lookup aoutarm_bfd_reloc_name_lookup
 
 #include "libaout.h"
 #include "aout/aout64.h"
@@ -246,7 +247,7 @@ MY (fix_pcrel_26) (bfd *abfd,
   bfd_reloc_status_type flag = bfd_reloc_ok;
 
   /* If this is an undefined symbol, return error.  */
-  if (bfd_is_und_section (symbol->section)
+  if (symbol->section == &bfd_und_section
       && (symbol->flags & BSF_WEAK) == 0)
     return output_bfd ? bfd_reloc_ok : bfd_reloc_undefined;
 
@@ -408,10 +409,10 @@ MY_swap_std_reloc_out (bfd *abfd,
      check for that here.  */
 
   if (bfd_is_com_section (output_section)
-      || bfd_is_abs_section (output_section)
-      || bfd_is_und_section (output_section))
+      || output_section == &bfd_abs_section
+      || output_section == &bfd_und_section)
     {
-      if (bfd_abs_section_ptr->symbol == sym)
+      if (bfd_abs_section.symbol == sym)
 	{
 	  /* Whoops, looked like an abs symbol, but is really an offset
 	     from the abs section.  */
@@ -461,9 +462,9 @@ MY_swap_std_reloc_out (bfd *abfd,
 
 #include "aout-target.h"
 
-extern const bfd_target arm_aout_be_vec;
+extern const bfd_target aout_arm_big_vec;
 
-const bfd_target arm_aout_le_vec =
+const bfd_target aout_arm_little_vec =
 {
   "a.out-arm-little",           /* Name.  */
   bfd_target_aout_flavour,
@@ -476,7 +477,6 @@ const bfd_target arm_aout_le_vec =
   MY_symbol_leading_char,
   AR_PAD_CHAR,                  /* AR_pad_char.  */
   15,                           /* AR_max_namelen.  */
-  0,				/* match priority.  */
   bfd_getl64, bfd_getl_signed_64, bfd_putl64,
   bfd_getl32, bfd_getl_signed_32, bfd_putl32,
   bfd_getl16, bfd_getl_signed_16, bfd_putl16,	/* Data.  */
@@ -500,12 +500,12 @@ const bfd_target arm_aout_le_vec =
   BFD_JUMP_TABLE_LINK (MY),
   BFD_JUMP_TABLE_DYNAMIC (MY),
 
-  & arm_aout_be_vec,
+  & aout_arm_big_vec,
 
   (void *) MY_backend_data,
 };
 
-const bfd_target arm_aout_be_vec =
+const bfd_target aout_arm_big_vec =
 {
   "a.out-arm-big",              /* Name.  */
   bfd_target_aout_flavour,
@@ -516,9 +516,8 @@ const bfd_target arm_aout_be_vec =
    HAS_SYMS | HAS_LOCALS | DYNAMIC | WP_TEXT | D_PAGED),
   (SEC_HAS_CONTENTS | SEC_ALLOC | SEC_LOAD | SEC_RELOC | SEC_CODE | SEC_DATA),
   MY_symbol_leading_char,
-  AR_PAD_CHAR,			/* AR_pad_char.  */
-  15,				/* AR_max_namelen.  */
-  0,				/* match priority.  */
+  AR_PAD_CHAR,                  		/* AR_pad_char.  */
+  15,                           		/* AR_max_namelen.  */
   bfd_getb64, bfd_getb_signed_64, bfd_putb64,
   bfd_getb32, bfd_getb_signed_32, bfd_putb32,
   bfd_getb16, bfd_getb_signed_16, bfd_putb16,	/* Data.  */
@@ -542,7 +541,7 @@ const bfd_target arm_aout_be_vec =
   BFD_JUMP_TABLE_LINK (MY),
   BFD_JUMP_TABLE_DYNAMIC (MY),
 
-  & arm_aout_le_vec,
+  & aout_arm_little_vec,
 
   (void *) MY_backend_data,
 };

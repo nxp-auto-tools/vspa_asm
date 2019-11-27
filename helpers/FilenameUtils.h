@@ -43,10 +43,6 @@ namespace adl {
   // Return directory name/basename as a pair.
   std::pair<std::string,std::string> file_parse(const std::string &filename);
 
-  // Split a file into its filename and extension portion.  A leading directory
-  // goes with the filename.
-  std::pair<std::string,std::string> split_file_name(const std::string &filename);
-
   // Returns the name of the current executable.  Use dir_name to then get just
   // the directory.
   std::string current_exe_name();

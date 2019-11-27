@@ -11,37 +11,19 @@
 
 int ppc_print_insn (bfd_vma memaddr, struct disassemble_info *info,int bigendian);
 
-// Print up to 4 bytes per line, trying to print out as much as possible, based upon the instruction length.
-static void update_bytes_per_chunk(int len,struct disassemble_info *info)
-{
-  if (len % 4 == 0) {
-    info->bytes_per_chunk = 4;
-  } else if (len % 2 == 0) {
-    info->bytes_per_chunk = 2;
-  } else {
-    info->bytes_per_chunk = 1;
-  }
-}
-
 int print_insn_little_powerpc(bfd_vma memaddr, struct disassemble_info *info)
 {
-  int len = ppc_print_insn(memaddr,info,0);
-  update_bytes_per_chunk(len,info);
-  return len;
+  return ppc_print_insn(memaddr,info,0);
 }
 
 int print_insn_big_powerpc(bfd_vma memaddr, struct disassemble_info *info)
 {
-  int len = ppc_print_insn(memaddr,info,1);
-  update_bytes_per_chunk(len,info);
-  return len;
+  return ppc_print_insn(memaddr,info,1);
 }
 
 int print_insn_rs6000(bfd_vma memaddr, struct disassemble_info *info)
 {
-  int len = ppc_print_insn(memaddr,info,1);
-  update_bytes_per_chunk(len,info);
-  return len;
+  return ppc_print_insn(memaddr,info,1);
 }
 
 void print_ppc_disassembler_options (FILE *stream ATTRIBUTE_UNUSED) { }

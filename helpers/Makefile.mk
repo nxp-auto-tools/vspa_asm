@@ -54,6 +54,7 @@ helpers_libAdlLogUsage_la_CPPFLAGS = $(helpers_includes)
 
 
 helpers_HEADERS = \
+	helpers/static_assert.h \
 	helpers/intbv_base.h \
 	helpers/intbv.h \
 	helpers/intbv_impl.h \

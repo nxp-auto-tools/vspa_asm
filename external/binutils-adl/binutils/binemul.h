@@ -1,5 +1,5 @@
 /* Binutils emulation layer.
-   Copyright (C) 2002-2014 Free Software Foundation, Inc.
+   Copyright 2002, 2003, 2005, 2007, 2008 Free Software Foundation, Inc.
    Written by Tom Rix, Red Hat Inc.
 
    This file is part of GNU Binutils.
@@ -32,9 +32,6 @@ extern bfd_boolean ar_emul_append (bfd **, char *, const char *,
 				   bfd_boolean, bfd_boolean);
 extern bfd_boolean ar_emul_default_append (bfd **, char *, const char *,
 					   bfd_boolean, bfd_boolean);
-extern bfd_boolean do_ar_emul_append (bfd **, bfd *,
-				      bfd_boolean, bfd_boolean,
-				      bfd_boolean (*)(bfd *));
 extern bfd_boolean ar_emul_replace (bfd **, char *, const char *,
 				    bfd_boolean);
 extern bfd_boolean ar_emul_default_replace (bfd **, char *,

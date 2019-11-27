@@ -740,4 +740,8 @@ namespace adl {
     }
   }
 
+  void intbv_dummy(const uint32_t *x)
+  {
+  }
+
 }

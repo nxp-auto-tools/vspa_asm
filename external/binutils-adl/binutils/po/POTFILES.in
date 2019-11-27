@@ -1,4 +1,3 @@
-addr2line.c
 binemul.c
 binemul.h
 bucomm.c
@@ -14,7 +13,6 @@ elfcomm.c
 filemode.c
 ieee.c
 ieee.c
-objdump.c
 objdump.c
 prdbg.c
 rdcoff.c

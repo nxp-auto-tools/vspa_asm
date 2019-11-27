@@ -15,7 +15,7 @@
 #ifdef _MSC_VER
 # include <hash_set>
 #else
-# include <tr1/unordered_set>
+# include <ext/hash_set>
 #endif
 
 #include <string>
@@ -37,12 +37,12 @@ public:
 #else
 
 
-template <class _Value, class _HashFcn = std::tr1::hash<_Value>, 
+template <class _Value, class _HashFcn = __gnu_cxx::hash<_Value>, 
           class _EqualKey = std::equal_to<_Value> >
-class gc_hash_set : public gc, public std::tr1::unordered_set<_Value,_HashFcn,_EqualKey,gc_allocator<_Value> >
+class gc_hash_set : public gc, public __gnu_cxx::hash_set<_Value,_HashFcn,_EqualKey,gc_allocator<_Value> >
 {  
 public:
-  typedef typename std::tr1::unordered_set<_Value,_HashFcn,_EqualKey,gc_allocator<_Value> > Base;
+  typedef typename __gnu_cxx::hash_set<_Value,_HashFcn,_EqualKey,gc_allocator<_Value> > Base;
 
   typedef typename Base::key_equal key_equal;
   typedef typename Base::hasher hasher;
@@ -72,12 +72,12 @@ public:
 // Versions which use the traceable_allocator.
 //
 
-template <class _Value, class _HashFcn = std::tr1::hash<_Value>, 
+template <class _Value, class _HashFcn = __gnu_cxx::hash<_Value>, 
           class _EqualKey = std::equal_to<_Value> >
-class tr_hash_set : public gc, public std::tr1::unordered_set<_Value,_HashFcn,_EqualKey,traceable_allocator<_Value> >
+class tr_hash_set : public gc, public __gnu_cxx::hash_set<_Value,_HashFcn,_EqualKey,traceable_allocator<_Value> >
 {  
 public:
-  typedef typename std::tr1::unordered_set<_Value,_HashFcn,_EqualKey,traceable_allocator<_Value> > Base;
+  typedef typename __gnu_cxx::hash_set<_Value,_HashFcn,_EqualKey,traceable_allocator<_Value> > Base;
 
   typedef typename Base::key_equal key_equal;
   typedef typename Base::hasher hasher;
