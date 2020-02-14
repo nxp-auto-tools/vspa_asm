@@ -1,0 +1,1845 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2012-09-28 10:59-0500\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=CHARSET\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: binemul.c:38
+#, c-format
+msgid "  No emulation specific options\n"
+msgstr ""
+
+#. Macros for common output.
+#: binemul.h:46
+#, c-format
+msgid " emulation options: \n"
+msgstr ""
+
+#: bucomm.c:163
+#, c-format
+msgid "can't set BFD default target to `%s': %s"
+msgstr ""
+
+#: bucomm.c:175
+#, c-format
+msgid "%s: Matching formats:"
+msgstr ""
+
+#: bucomm.c:190
+#, c-format
+msgid "Supported targets:"
+msgstr ""
+
+#: bucomm.c:192
+#, c-format
+msgid "%s: supported targets:"
+msgstr ""
+
+#: bucomm.c:210
+#, c-format
+msgid "Supported architectures:"
+msgstr ""
+
+#: bucomm.c:212
+#, c-format
+msgid "%s: supported architectures:"
+msgstr ""
+
+#: bucomm.c:407
+#, c-format
+msgid "BFD header file version %s\n"
+msgstr ""
+
+#: bucomm.c:556
+#, c-format
+msgid "%s: bad number: %s"
+msgstr ""
+
+#: bucomm.c:573
+#, c-format
+msgid "'%s': No such file"
+msgstr ""
+
+#: bucomm.c:575
+#, c-format
+msgid "Warning: could not locate '%s'.  reason: %s"
+msgstr ""
+
+#: bucomm.c:579
+#, c-format
+msgid "Warning: '%s' is not an ordinary file"
+msgstr ""
+
+#: bucomm.c:581
+#, c-format
+msgid "Warning: '%s' has negative size, probably it is too large"
+msgstr ""
+
+#: debug.c:647
+msgid "debug_add_to_current_namespace: no current file"
+msgstr ""
+
+#: debug.c:726
+msgid "debug_start_source: no debug_set_filename call"
+msgstr ""
+
+#: debug.c:782
+msgid "debug_record_function: no debug_set_filename call"
+msgstr ""
+
+#: debug.c:834
+msgid "debug_record_parameter: no current function"
+msgstr ""
+
+#: debug.c:866
+msgid "debug_end_function: no current function"
+msgstr ""
+
+#: debug.c:872
+msgid "debug_end_function: some blocks were not closed"
+msgstr ""
+
+#: debug.c:900
+msgid "debug_start_block: no current block"
+msgstr ""
+
+#: debug.c:936
+msgid "debug_end_block: no current block"
+msgstr ""
+
+#: debug.c:943
+msgid "debug_end_block: attempt to close top level block"
+msgstr ""
+
+#: debug.c:966
+msgid "debug_record_line: no current unit"
+msgstr ""
+
+#. FIXME
+#: debug.c:1019
+msgid "debug_start_common_block: not implemented"
+msgstr ""
+
+#. FIXME
+#: debug.c:1030
+msgid "debug_end_common_block: not implemented"
+msgstr ""
+
+#. FIXME.
+#: debug.c:1114
+msgid "debug_record_label: not implemented"
+msgstr ""
+
+#: debug.c:1136
+msgid "debug_record_variable: no current file"
+msgstr ""
+
+#: debug.c:1664
+msgid "debug_make_undefined_type: unsupported kind"
+msgstr ""
+
+#: debug.c:1841
+msgid "debug_name_type: no current file"
+msgstr ""
+
+#: debug.c:1886
+msgid "debug_tag_type: no current file"
+msgstr ""
+
+#: debug.c:1894
+msgid "debug_tag_type: extra tag attempted"
+msgstr ""
+
+#: debug.c:1931
+#, c-format
+msgid "Warning: changing type size from %d to %d\n"
+msgstr ""
+
+#: debug.c:1953
+msgid "debug_find_named_type: no current compilation unit"
+msgstr ""
+
+#: debug.c:2056
+#, c-format
+msgid "debug_get_real_type: circular debug information for %s\n"
+msgstr ""
+
+#: debug.c:2483
+msgid "debug_write_type: illegal type encountered"
+msgstr ""
+
+#: dwarf.c:203 dwarf.c:2776
+msgid "badly formed extended line op encountered!\n"
+msgstr ""
+
+#: dwarf.c:210
+#, c-format
+msgid "  Extended opcode %d: "
+msgstr ""
+
+#: dwarf.c:215
+#, c-format
+msgid ""
+"End of Sequence\n"
+"\n"
+msgstr ""
+
+#: dwarf.c:221
+#, c-format
+msgid "set Address to 0x%lx\n"
+msgstr ""
+
+#: dwarf.c:227
+#, c-format
+msgid "  define new File Table entry\n"
+msgstr ""
+
+#: dwarf.c:228 dwarf.c:2320
+#, c-format
+msgid "  Entry\tDir\tTime\tSize\tName\n"
+msgstr ""
+
+#: dwarf.c:242
+#, c-format
+msgid "set Discriminator to %lu\n"
+msgstr ""
+
+#. The test against DW_LNW_hi_user is redundant due to
+#. the limited range of the unsigned char data type used
+#. for op_code.
+#. && op_code <= DW_LNE_hi_user
+#: dwarf.c:284
+#, c-format
+msgid "user defined: length %d\n"
+msgstr ""
+
+#: dwarf.c:286 dwarf.c:2808
+#, c-format
+msgid "UNKNOWN: length %d\n"
+msgstr ""
+
+#: dwarf.c:299
+msgid "<no .debug_str section>"
+msgstr ""
+
+#: dwarf.c:305
+#, c-format
+msgid "DW_FORM_strp offset too big: %lx\n"
+msgstr ""
+
+#: dwarf.c:306
+msgid "<offset is too big>"
+msgstr ""
+
+#: dwarf.c:545
+#, c-format
+msgid "Unknown TAG value: %lx"
+msgstr ""
+
+#: dwarf.c:586
+#, c-format
+msgid "Unknown FORM value: %lx"
+msgstr ""
+
+#: dwarf.c:595
+#, c-format
+msgid " %lu byte block: "
+msgstr ""
+
+#: dwarf.c:928
+#, c-format
+msgid "(DW_OP_call_ref in frame info)"
+msgstr ""
+
+#: dwarf.c:998
+#, c-format
+msgid "(DW_OP_GNU_implicit_pointer in frame info)"
+msgstr ""
+
+#: dwarf.c:1056
+#, c-format
+msgid "(User defined location op)"
+msgstr ""
+
+#: dwarf.c:1058
+#, c-format
+msgid "(Unknown location op)"
+msgstr ""
+
+#: dwarf.c:1106
+msgid "Internal error: DWARF version is not 2, 3 or 4.\n"
+msgstr ""
+
+#: dwarf.c:1212
+msgid "DW_FORM_data8 is unsupported when sizeof (unsigned long) != 8\n"
+msgstr ""
+
+#: dwarf.c:1262
+#, c-format
+msgid " (indirect string, offset: 0x%lx): %s"
+msgstr ""
+
+#: dwarf.c:1286
+#, c-format
+msgid "Unrecognized form: %lu\n"
+msgstr ""
+
+#: dwarf.c:1374
+#, c-format
+msgid "(not inlined)"
+msgstr ""
+
+#: dwarf.c:1377
+#, c-format
+msgid "(inlined)"
+msgstr ""
+
+#: dwarf.c:1380
+#, c-format
+msgid "(declared as inline but ignored)"
+msgstr ""
+
+#: dwarf.c:1383
+#, c-format
+msgid "(declared as inline and inlined)"
+msgstr ""
+
+#: dwarf.c:1386
+#, c-format
+msgid "  (Unknown inline attribute value: %lx)"
+msgstr ""
+
+#: dwarf.c:1551
+#, c-format
+msgid "(location list)"
+msgstr ""
+
+#: dwarf.c:1572 dwarf.c:3449
+#, c-format
+msgid " [without DW_AT_frame_base]"
+msgstr ""
+
+#: dwarf.c:1587
+#, c-format
+msgid ""
+"Offset %lx used as value for DW_AT_import attribute of DIE at offset %lx is "
+"too big.\n"
+msgstr ""
+
+#: dwarf.c:1778
+#, c-format
+msgid "Unknown AT value: %lx"
+msgstr ""
+
+#: dwarf.c:1849
+#, c-format
+msgid "Reserved length value (%lx) found in section %s\n"
+msgstr ""
+
+#: dwarf.c:1860
+#, c-format
+msgid "Corrupt unit length (%lx) found in section %s\n"
+msgstr ""
+
+#: dwarf.c:1867
+#, c-format
+msgid "No comp units in %s section ?"
+msgstr ""
+
+#: dwarf.c:1876
+#, c-format
+msgid "Not enough memory for a debug info array of %u entries"
+msgstr ""
+
+#: dwarf.c:1884 dwarf.c:3044 dwarf.c:3138 dwarf.c:3212 dwarf.c:3329
+#: dwarf.c:3484 dwarf.c:3553 dwarf.c:3748
+#, c-format
+msgid ""
+"Contents of the %s section:\n"
+"\n"
+msgstr ""
+
+#: dwarf.c:1892
+#, c-format
+msgid "Unable to locate %s section!\n"
+msgstr ""
+
+#: dwarf.c:1973
+#, c-format
+msgid "  Compilation Unit @ offset 0x%lx:\n"
+msgstr ""
+
+#: dwarf.c:1974
+#, c-format
+msgid "   Length:        0x%lx (%s)\n"
+msgstr ""
+
+#: dwarf.c:1976
+#, c-format
+msgid "   Version:       %d\n"
+msgstr ""
+
+#: dwarf.c:1977
+#, c-format
+msgid "   Abbrev Offset: %ld\n"
+msgstr ""
+
+#: dwarf.c:1978
+#, c-format
+msgid "   Pointer Size:  %d\n"
+msgstr ""
+
+#: dwarf.c:1982
+#, c-format
+msgid "   Signature:     "
+msgstr ""
+
+#: dwarf.c:1986
+#, c-format
+msgid "   Type Offset:   0x%lx\n"
+msgstr ""
+
+#: dwarf.c:1993
+#, c-format
+msgid ""
+"Debug info is corrupted, length of CU at %lx extends beyond end of section "
+"(length = %lx)\n"
+msgstr ""
+
+#: dwarf.c:2004
+#, c-format
+msgid "CU at offset %lx contains corrupt or unsupported version number: %d.\n"
+msgstr ""
+
+#: dwarf.c:2014
+#, c-format
+msgid ""
+"Debug info is corrupted, abbrev offset (%lx) is larger than abbrev section "
+"size (%lx)\n"
+msgstr ""
+
+#: dwarf.c:2061
+#, c-format
+msgid ""
+"Bogus end-of-siblings marker detected at offset %lx in .debug_info section\n"
+msgstr ""
+
+#: dwarf.c:2065
+msgid "Further warnings about bogus end-of-sibling markers suppressed\n"
+msgstr ""
+
+#: dwarf.c:2072
+#, c-format
+msgid " <%d><%lx>: Abbrev Number: %lu"
+msgstr ""
+
+#: dwarf.c:2089
+#, c-format
+msgid ""
+"DIE at offset %lx refers to abbreviation number %lu which does not exist\n"
+msgstr ""
+
+#: dwarf.c:2187
+#, c-format
+msgid ""
+"Raw dump of debug contents of section %s:\n"
+"\n"
+msgstr ""
+
+#: dwarf.c:2225
+#, c-format
+msgid ""
+"The information in section %s appears to be corrupt - the section is too "
+"small\n"
+msgstr ""
+
+#: dwarf.c:2237 dwarf.c:2590
+msgid "Only DWARF version 2, 3 and 4 line info is currently supported.\n"
+msgstr ""
+
+#: dwarf.c:2251 dwarf.c:2605
+msgid "Invalid maximum operations per insn.\n"
+msgstr ""
+
+#: dwarf.c:2270
+#, c-format
+msgid "  Offset:                      0x%lx\n"
+msgstr ""
+
+#: dwarf.c:2271
+#, c-format
+msgid "  Length:                      %ld\n"
+msgstr ""
+
+#: dwarf.c:2272
+#, c-format
+msgid "  DWARF Version:               %d\n"
+msgstr ""
+
+#: dwarf.c:2273
+#, c-format
+msgid "  Prologue Length:             %d\n"
+msgstr ""
+
+#: dwarf.c:2274
+#, c-format
+msgid "  Minimum Instruction Length:  %d\n"
+msgstr ""
+
+#: dwarf.c:2276
+#, c-format
+msgid "  Maximum Ops per Instruction: %d\n"
+msgstr ""
+
+#: dwarf.c:2277
+#, c-format
+msgid "  Initial value of 'is_stmt':  %d\n"
+msgstr ""
+
+#: dwarf.c:2278
+#, c-format
+msgid "  Line Base:                   %d\n"
+msgstr ""
+
+#: dwarf.c:2279
+#, c-format
+msgid "  Line Range:                  %d\n"
+msgstr ""
+
+#: dwarf.c:2280
+#, c-format
+msgid "  Opcode Base:                 %d\n"
+msgstr ""
+
+#: dwarf.c:2289
+#, c-format
+msgid ""
+"\n"
+" Opcodes:\n"
+msgstr ""
+
+#: dwarf.c:2292
+#, c-format
+msgid "  Opcode %d has %d args\n"
+msgstr ""
+
+#: dwarf.c:2298
+#, c-format
+msgid ""
+"\n"
+" The Directory Table is empty.\n"
+msgstr ""
+
+#: dwarf.c:2301
+#, c-format
+msgid ""
+"\n"
+" The Directory Table:\n"
+msgstr ""
+
+#: dwarf.c:2316
+#, c-format
+msgid ""
+"\n"
+" The File Name Table is empty.\n"
+msgstr ""
+
+#: dwarf.c:2319
+#, c-format
+msgid ""
+"\n"
+" The File Name Table:\n"
+msgstr ""
+
+#. Now display the statements.
+#: dwarf.c:2346
+#, c-format
+msgid ""
+"\n"
+" Line Number Statements:\n"
+msgstr ""
+
+#: dwarf.c:2365
+#, c-format
+msgid "  Special opcode %d: advance Address by %lu to 0x%lx"
+msgstr ""
+
+#: dwarf.c:2377
+#, c-format
+msgid "  Special opcode %d: advance Address by %lu to 0x%lx[%d]"
+msgstr ""
+
+#: dwarf.c:2383
+#, c-format
+msgid " and Line by %d to %d\n"
+msgstr ""
+
+#: dwarf.c:2393
+#, c-format
+msgid "  Copy\n"
+msgstr ""
+
+#: dwarf.c:2403
+#, c-format
+msgid "  Advance PC by %lu to 0x%lx\n"
+msgstr ""
+
+#: dwarf.c:2415
+#, c-format
+msgid "  Advance PC by %lu to 0x%lx[%d]\n"
+msgstr ""
+
+#: dwarf.c:2425
+#, c-format
+msgid "  Advance Line by %d to %d\n"
+msgstr ""
+
+#: dwarf.c:2432
+#, c-format
+msgid "  Set File Name to entry %d in the File Name Table\n"
+msgstr ""
+
+#: dwarf.c:2440
+#, c-format
+msgid "  Set column to %lu\n"
+msgstr ""
+
+#: dwarf.c:2447
+#, c-format
+msgid "  Set is_stmt to %d\n"
+msgstr ""
+
+#: dwarf.c:2452
+#, c-format
+msgid "  Set basic block\n"
+msgstr ""
+
+#: dwarf.c:2462
+#, c-format
+msgid "  Advance PC by constant %lu to 0x%lx\n"
+msgstr ""
+
+#: dwarf.c:2474
+#, c-format
+msgid "  Advance PC by constant %lu to 0x%lx[%d]\n"
+msgstr ""
+
+#: dwarf.c:2485
+#, c-format
+msgid "  Advance PC by fixed size amount %lu to 0x%lx\n"
+msgstr ""
+
+#: dwarf.c:2490
+#, c-format
+msgid "  Set prologue_end to true\n"
+msgstr ""
+
+#: dwarf.c:2494
+#, c-format
+msgid "  Set epilogue_begin to true\n"
+msgstr ""
+
+#: dwarf.c:2500 dwarf.c:2913
+#, c-format
+msgid "  Set ISA to %lu\n"
+msgstr ""
+
+#: dwarf.c:2504 dwarf.c:2917
+#, c-format
+msgid "  Unknown opcode %d with operands: "
+msgstr ""
+
+#: dwarf.c:2537
+#, c-format
+msgid ""
+"Decoded dump of debug contents of section %s:\n"
+"\n"
+msgstr ""
+
+#: dwarf.c:2578
+msgid "The line info appears to be corrupt - the section is too small\n"
+msgstr ""
+
+#: dwarf.c:2710
+#, c-format
+msgid "CU: %s:\n"
+msgstr ""
+
+#: dwarf.c:2711 dwarf.c:2721
+#, c-format
+msgid "File name                            Line number    Starting address\n"
+msgstr ""
+
+#: dwarf.c:2716
+#, c-format
+msgid "CU: %s/%s:\n"
+msgstr ""
+
+#: dwarf.c:3078 dwarf.c:3598
+#, c-format
+msgid ""
+".debug_info offset of 0x%lx in %s section does not point to a CU header.\n"
+msgstr ""
+
+#: dwarf.c:3092
+msgid "Only DWARF 2 and 3 pubnames are currently supported\n"
+msgstr ""
+
+#: dwarf.c:3099
+#, c-format
+msgid "  Length:                              %ld\n"
+msgstr ""
+
+#: dwarf.c:3101
+#, c-format
+msgid "  Version:                             %d\n"
+msgstr ""
+
+#: dwarf.c:3103
+#, c-format
+msgid "  Offset into .debug_info section:     0x%lx\n"
+msgstr ""
+
+#: dwarf.c:3105
+#, c-format
+msgid "  Size of area in .debug_info section: %ld\n"
+msgstr ""
+
+#: dwarf.c:3108
+#, c-format
+msgid ""
+"\n"
+"    Offset\tName\n"
+msgstr ""
+
+#: dwarf.c:3159
+#, c-format
+msgid " DW_MACINFO_start_file - lineno: %d filenum: %d\n"
+msgstr ""
+
+#: dwarf.c:3165
+#, c-format
+msgid " DW_MACINFO_end_file\n"
+msgstr ""
+
+#: dwarf.c:3173
+#, c-format
+msgid " DW_MACINFO_define - lineno : %d macro : %s\n"
+msgstr ""
+
+#: dwarf.c:3182
+#, c-format
+msgid " DW_MACINFO_undef - lineno : %d macro : %s\n"
+msgstr ""
+
+#: dwarf.c:3194
+#, c-format
+msgid " DW_MACINFO_vendor_ext - constant : %d string : %s\n"
+msgstr ""
+
+#: dwarf.c:3223
+#, c-format
+msgid "  Number TAG\n"
+msgstr ""
+
+#: dwarf.c:3232
+msgid "has children"
+msgstr ""
+
+#: dwarf.c:3232
+msgid "no children"
+msgstr ""
+
+#: dwarf.c:3268 dwarf.c:3480 dwarf.c:3705
+#, c-format
+msgid ""
+"\n"
+"The %s section is empty.\n"
+msgstr ""
+
+#: dwarf.c:3274 dwarf.c:3711
+#, c-format
+msgid ""
+"Unable to load/parse the .debug_info section, so cannot interpret the %s "
+"section.\n"
+msgstr ""
+
+#. FIXME: Should we handle this case?
+#: dwarf.c:3318
+msgid "Location lists in .debug_info section aren't in ascending order!\n"
+msgstr ""
+
+#: dwarf.c:3321
+msgid "No location lists in .debug_info section!\n"
+msgstr ""
+
+#: dwarf.c:3326
+#, c-format
+msgid "Location lists in %s section start at 0x%lx\n"
+msgstr ""
+
+#: dwarf.c:3330
+#, c-format
+msgid "    Offset   Begin    End      Expression\n"
+msgstr ""
+
+#: dwarf.c:3365
+#, c-format
+msgid "There is a hole [0x%lx - 0x%lx] in .debug_loc section.\n"
+msgstr ""
+
+#: dwarf.c:3369
+#, c-format
+msgid "There is an overlap [0x%lx - 0x%lx] in .debug_loc section.\n"
+msgstr ""
+
+#: dwarf.c:3377
+#, c-format
+msgid "Offset 0x%lx is bigger than .debug_loc section size.\n"
+msgstr ""
+
+#: dwarf.c:3386 dwarf.c:3421 dwarf.c:3431
+#, c-format
+msgid "Location list starting at offset 0x%lx is not terminated.\n"
+msgstr ""
+
+#: dwarf.c:3405 dwarf.c:3799
+#, c-format
+msgid "<End of list>\n"
+msgstr ""
+
+#: dwarf.c:3415
+#, c-format
+msgid "(base address)\n"
+msgstr ""
+
+#: dwarf.c:3452
+msgid " (start == end)"
+msgstr ""
+
+#: dwarf.c:3454
+msgid " (start > end)"
+msgstr ""
+
+#: dwarf.c:3464
+#, c-format
+msgid "There are %ld unused bytes at the end of section %s\n"
+msgstr ""
+
+#: dwarf.c:3609
+msgid "Only DWARF 2 and 3 aranges are currently supported.\n"
+msgstr ""
+
+#: dwarf.c:3613
+#, c-format
+msgid "  Length:                   %ld\n"
+msgstr ""
+
+#: dwarf.c:3614
+#, c-format
+msgid "  Version:                  %d\n"
+msgstr ""
+
+#: dwarf.c:3615
+#, c-format
+msgid "  Offset into .debug_info:  0x%lx\n"
+msgstr ""
+
+#: dwarf.c:3616
+#, c-format
+msgid "  Pointer Size:             %d\n"
+msgstr ""
+
+#: dwarf.c:3617
+#, c-format
+msgid "  Segment Size:             %d\n"
+msgstr ""
+
+#: dwarf.c:3626
+msgid "Pointer size + Segment size is not a power of two.\n"
+msgstr ""
+
+#: dwarf.c:3631
+#, c-format
+msgid ""
+"\n"
+"    Address            Length\n"
+msgstr ""
+
+#: dwarf.c:3633
+#, c-format
+msgid ""
+"\n"
+"    Address    Length\n"
+msgstr ""
+
+#: dwarf.c:3721
+msgid "No range lists in .debug_info section!\n"
+msgstr ""
+
+#: dwarf.c:3745
+#, c-format
+msgid "Range lists in %s section start at 0x%lx\n"
+msgstr ""
+
+#: dwarf.c:3749
+#, c-format
+msgid "    Offset   Begin    End\n"
+msgstr ""
+
+#: dwarf.c:3770
+#, c-format
+msgid "There is a hole [0x%lx - 0x%lx] in %s section.\n"
+msgstr ""
+
+#: dwarf.c:3774
+#, c-format
+msgid "There is an overlap [0x%lx - 0x%lx] in %s section.\n"
+msgstr ""
+
+#: dwarf.c:3817
+msgid "(start == end)"
+msgstr ""
+
+#: dwarf.c:3819
+msgid "(start > end)"
+msgstr ""
+
+#: dwarf.c:4071
+msgid "bad register: "
+msgstr ""
+
+#. The documentation for the format of this file is in gdb/dwarf2read.c.
+#: dwarf.c:4074 dwarf.c:4883
+#, c-format
+msgid "Contents of the %s section:\n"
+msgstr ""
+
+#: dwarf.c:4844
+#, c-format
+msgid "  DW_CFA_??? (User defined call frame op: %#x)\n"
+msgstr ""
+
+#: dwarf.c:4846
+#, c-format
+msgid "unsupported or unknown Dwarf Call Frame Instruction number: %#x\n"
+msgstr ""
+
+#: dwarf.c:4887
+#, c-format
+msgid "Truncated header in the %s section.\n"
+msgstr ""
+
+#: dwarf.c:4892
+#, c-format
+msgid "Version %ld\n"
+msgstr ""
+
+#: dwarf.c:4898
+#, c-format
+msgid "Unsupported version %lu.\n"
+msgstr ""
+
+#: dwarf.c:4914
+#, c-format
+msgid "Corrupt header in the %s section.\n"
+msgstr ""
+
+#: dwarf.c:4929
+#, c-format
+msgid ""
+"\n"
+"CU table:\n"
+msgstr ""
+
+#: dwarf.c:4935
+#, c-format
+msgid "[%3u] 0x%lx - 0x%lx\n"
+msgstr ""
+
+#: dwarf.c:4940
+#, c-format
+msgid ""
+"\n"
+"TU table:\n"
+msgstr ""
+
+#: dwarf.c:4947
+#, c-format
+msgid "[%3u] 0x%lx 0x%lx "
+msgstr ""
+
+#: dwarf.c:4954
+#, c-format
+msgid ""
+"\n"
+"Address table:\n"
+msgstr ""
+
+#: dwarf.c:4963
+#, c-format
+msgid "%lu\n"
+msgstr ""
+
+#: dwarf.c:4966
+#, c-format
+msgid ""
+"\n"
+"Symbol table:\n"
+msgstr ""
+
+#: dwarf.c:5000
+#, c-format
+msgid "Displaying the debug contents of section %s is not yet supported.\n"
+msgstr ""
+
+#: dwarf.c:5136 dwarf.c:5206
+#, c-format
+msgid "Unrecognized debug option '%s'\n"
+msgstr ""
+
+#: elfcomm.c:39
+#, c-format
+msgid "%s: Error: "
+msgstr ""
+
+#: elfcomm.c:50
+#, c-format
+msgid "%s: Warning: "
+msgstr ""
+
+#: elfcomm.c:82 elfcomm.c:117 elfcomm.c:167 elfcomm.c:216
+#, c-format
+msgid "Unhandled data length: %d\n"
+msgstr ""
+
+#: elfcomm.c:263 elfcomm.c:277 elfcomm.c:645
+msgid "Out of memory\n"
+msgstr ""
+
+#: elfcomm.c:312
+#, c-format
+msgid "%s: failed to seek to first archive header\n"
+msgstr ""
+
+#: elfcomm.c:321 elfcomm.c:611
+#, c-format
+msgid "%s: failed to read archive header\n"
+msgstr ""
+
+#: elfcomm.c:347
+#, c-format
+msgid "%s: the archive index is empty\n"
+msgstr ""
+
+#: elfcomm.c:355 elfcomm.c:381
+#, c-format
+msgid "%s: failed to read archive index\n"
+msgstr ""
+
+#: elfcomm.c:365
+#, c-format
+msgid ""
+"%s: the archive index is supposed to have %ld entries, but the size in the "
+"header is too small\n"
+msgstr ""
+
+#: elfcomm.c:373
+msgid "Out of memory whilst trying to read archive symbol index\n"
+msgstr ""
+
+#: elfcomm.c:392
+msgid "Out of memory whilst trying to convert the archive symbol index\n"
+msgstr ""
+
+#: elfcomm.c:405
+#, c-format
+msgid "%s: the archive has an index but no symbols\n"
+msgstr ""
+
+#: elfcomm.c:413
+msgid "Out of memory whilst trying to read archive index symbol table\n"
+msgstr ""
+
+#: elfcomm.c:419
+#, c-format
+msgid "%s: failed to read archive index symbol table\n"
+msgstr ""
+
+#: elfcomm.c:428
+#, c-format
+msgid "%s: failed to skip archive symbol table\n"
+msgstr ""
+
+#: elfcomm.c:440
+#, c-format
+msgid "%s: failed to read archive header following archive index\n"
+msgstr ""
+
+#: elfcomm.c:446
+#, c-format
+msgid "%s has no archive index\n"
+msgstr ""
+
+#: elfcomm.c:457
+msgid "Out of memory reading long symbol names in archive\n"
+msgstr ""
+
+#: elfcomm.c:465
+#, c-format
+msgid "%s: failed to read long symbol name string table\n"
+msgstr ""
+
+#: elfcomm.c:605
+#, c-format
+msgid "%s: failed to seek to next file name\n"
+msgstr ""
+
+#: elfcomm.c:616
+#, c-format
+msgid "%s: did not find a valid archive header\n"
+msgstr ""
+
+#: ieee.c:311
+msgid "unexpected end of debugging information"
+msgstr ""
+
+#: ieee.c:398
+msgid "invalid number"
+msgstr ""
+
+#: ieee.c:451
+msgid "invalid string length"
+msgstr ""
+
+#: ieee.c:506 ieee.c:547
+msgid "expression stack overflow"
+msgstr ""
+
+#: ieee.c:526
+msgid "unsupported IEEE expression operator"
+msgstr ""
+
+#: ieee.c:541
+msgid "unknown section"
+msgstr ""
+
+#: ieee.c:562
+msgid "expression stack underflow"
+msgstr ""
+
+#: ieee.c:576
+msgid "expression stack mismatch"
+msgstr ""
+
+#: ieee.c:613
+msgid "unknown builtin type"
+msgstr ""
+
+#: ieee.c:758
+msgid "BCD float type not supported"
+msgstr ""
+
+#: ieee.c:895
+msgid "unexpected number"
+msgstr ""
+
+#: ieee.c:902
+msgid "unexpected record type"
+msgstr ""
+
+#: ieee.c:935
+msgid "blocks left on stack at end"
+msgstr ""
+
+#: ieee.c:1208
+msgid "unknown BB type"
+msgstr ""
+
+#: ieee.c:1217
+msgid "stack overflow"
+msgstr ""
+
+#: ieee.c:1240
+msgid "stack underflow"
+msgstr ""
+
+#: ieee.c:1352 ieee.c:1422 ieee.c:2120
+msgid "illegal variable index"
+msgstr ""
+
+#: ieee.c:1400
+msgid "illegal type index"
+msgstr ""
+
+#: ieee.c:1410 ieee.c:1447
+msgid "unknown TY code"
+msgstr ""
+
+#: ieee.c:1429
+msgid "undefined variable in TY"
+msgstr ""
+
+#. Pascal file name.  FIXME.
+#: ieee.c:1841
+msgid "Pascal file name not supported"
+msgstr ""
+
+#: ieee.c:1889
+msgid "unsupported qualifier"
+msgstr ""
+
+#: ieee.c:2158
+msgid "undefined variable in ATN"
+msgstr ""
+
+#: ieee.c:2201
+msgid "unknown ATN type"
+msgstr ""
+
+#. Reserved for FORTRAN common.
+#: ieee.c:2323
+msgid "unsupported ATN11"
+msgstr ""
+
+#. We have no way to record this information.  FIXME.
+#: ieee.c:2350
+msgid "unsupported ATN12"
+msgstr ""
+
+#: ieee.c:2410
+msgid "unexpected string in C++ misc"
+msgstr ""
+
+#: ieee.c:2423
+msgid "bad misc record"
+msgstr ""
+
+#: ieee.c:2464
+msgid "unrecognized C++ misc record"
+msgstr ""
+
+#: ieee.c:2579
+msgid "undefined C++ object"
+msgstr ""
+
+#: ieee.c:2613
+msgid "unrecognized C++ object spec"
+msgstr ""
+
+#: ieee.c:2649
+msgid "unsupported C++ object type"
+msgstr ""
+
+#: ieee.c:2659
+msgid "C++ base class not defined"
+msgstr ""
+
+#: ieee.c:2671 ieee.c:2776
+msgid "C++ object has no fields"
+msgstr ""
+
+#: ieee.c:2690
+msgid "C++ base class not found in container"
+msgstr ""
+
+#: ieee.c:2797
+msgid "C++ data member not found in container"
+msgstr ""
+
+#: ieee.c:2838 ieee.c:2988
+msgid "unknown C++ visibility"
+msgstr ""
+
+#: ieee.c:2872
+msgid "bad C++ field bit pos or size"
+msgstr ""
+
+#: ieee.c:2964
+msgid "bad type for C++ method function"
+msgstr ""
+
+#: ieee.c:2974
+msgid "no type information for C++ method function"
+msgstr ""
+
+#: ieee.c:3013
+msgid "C++ static virtual method"
+msgstr ""
+
+#: ieee.c:3108
+msgid "unrecognized C++ object overhead spec"
+msgstr ""
+
+#: ieee.c:3147
+msgid "undefined C++ vtable"
+msgstr ""
+
+#: ieee.c:3216
+msgid "C++ default values not in a function"
+msgstr ""
+
+#: ieee.c:3256
+msgid "unrecognized C++ default type"
+msgstr ""
+
+#: ieee.c:3287
+msgid "reference parameter is not a pointer"
+msgstr ""
+
+#: ieee.c:3370
+msgid "unrecognized C++ reference type"
+msgstr ""
+
+#: ieee.c:3452
+msgid "C++ reference not found"
+msgstr ""
+
+#: ieee.c:3460
+msgid "C++ reference is not pointer"
+msgstr ""
+
+#: ieee.c:3486 ieee.c:3494
+msgid "missing required ASN"
+msgstr ""
+
+#: ieee.c:3521 ieee.c:3529
+msgid "missing required ATN65"
+msgstr ""
+
+#: ieee.c:3543
+msgid "bad ATN65 record"
+msgstr ""
+
+#: ieee.c:4171
+#, c-format
+msgid "IEEE numeric overflow: 0x"
+msgstr ""
+
+#: ieee.c:4215
+#, c-format
+msgid "IEEE string length overflow: %u\n"
+msgstr ""
+
+#: ieee.c:5210
+#, c-format
+msgid "IEEE unsupported integer type size %u\n"
+msgstr ""
+
+#: ieee.c:5244
+#, c-format
+msgid "IEEE unsupported float type size %u\n"
+msgstr ""
+
+#: ieee.c:5278
+#, c-format
+msgid "IEEE unsupported complex type size %u\n"
+msgstr ""
+
+#: objdump.c:191
+#, c-format
+msgid "Usage: %s <option(s)> <file(s)>\n"
+msgstr ""
+
+#: objdump.c:192
+#, c-format
+msgid " Display information from object <file(s)>.\n"
+msgstr ""
+
+#: objdump.c:193
+#, c-format
+msgid " At least one of the following switches must be given:\n"
+msgstr ""
+
+#: objdump.c:194
+#, c-format
+msgid ""
+"  -a, --archive-headers    Display archive header information\n"
+"  -f, --file-headers       Display the contents of the overall file header\n"
+"  -p, --private-headers    Display object format specific file header "
+"contents\n"
+"  -h, --[section-]headers  Display the contents of the section headers\n"
+"  -x, --all-headers        Display the contents of all headers\n"
+"  -d, --disassemble        Display assembler contents of executable "
+"sections\n"
+"  -D, --disassemble-all    Display assembler contents of all sections\n"
+"  -S, --source             Intermix source code with disassembly\n"
+"  -s, --full-contents      Display the full contents of all sections "
+"requested\n"
+"  -g, --debugging          Display debug information in object file\n"
+"  -e, --debugging-tags     Display debug information using ctags style\n"
+"  -G, --stabs              Display (in raw form) any STABS info in the file\n"
+"  -W[lLiaprmfFsoRt] or\n"
+"  --dwarf[=rawline,=decodedline,=info,=abbrev,=pubnames,=aranges,=macro,"
+"=frames,\n"
+"          =frames-interp,=str,=loc,=Ranges,=pubtypes,\n"
+"          =gdb_index,=trace_info,=trace_abbrev,=trace_aranges]\n"
+"                           Display DWARF info in the file\n"
+"  -t, --syms               Display the contents of the symbol table(s)\n"
+"  -T, --dynamic-syms       Display the contents of the dynamic symbol table\n"
+"  -r, --reloc              Display the relocation entries in the file\n"
+"  -R, --dynamic-reloc      Display the dynamic relocation entries in the "
+"file\n"
+"  @<file>                  Read options from <file>\n"
+"  -v, --version            Display this program's version number\n"
+"  -i, --info               List object formats and architectures supported\n"
+"  -H, --help               Display this information\n"
+msgstr ""
+
+#: objdump.c:223
+#, c-format
+msgid ""
+"\n"
+" The following switches are optional:\n"
+msgstr ""
+
+#: objdump.c:224
+#, c-format
+msgid ""
+"  -b, --target=BFDNAME           Specify the target object format as "
+"BFDNAME\n"
+"  -m, --architecture=MACHINE     Specify the target architecture as MACHINE\n"
+"  -j, --section=NAME             Only display information for section NAME\n"
+"  -M, --disassembler-options=OPT Pass text OPT on to the disassembler\n"
+"  -EB --endian=big               Assume big endian format when "
+"disassembling\n"
+"  -EL --endian=little            Assume little endian format when "
+"disassembling\n"
+"      --file-start-context       Include context from start of file (with -"
+"S)\n"
+"  -I, --include=DIR              Add DIR to search list for source files\n"
+"  -l, --line-numbers             Include line numbers and filenames in "
+"output\n"
+"  -F, --file-offsets             Include file offsets when displaying "
+"information\n"
+"  -C, --demangle[=STYLE]         Decode mangled/processed symbol names\n"
+"                                  The STYLE, if specified, can be `auto', "
+"`gnu',\n"
+"                                  `lucid', `arm', `hp', `edg', `gnu-v3', "
+"`java'\n"
+"                                  or `gnat'\n"
+"  -w, --wide                     Format output for more than 80 columns\n"
+"  -z, --disassemble-zeroes       Do not skip blocks of zeroes when "
+"disassembling\n"
+"      --start-address=ADDR       Only process data whose address is >= ADDR\n"
+"      --stop-address=ADDR        Only process data whose address is <= ADDR\n"
+"      --prefix-addresses         Print complete address alongside "
+"disassembly\n"
+"      --[no-]show-raw-insn       Display hex alongside symbolic disassembly\n"
+"      --insn-width=WIDTH         Display WIDTH bytes on a signle line for -"
+"d\n"
+"      --adjust-vma=OFFSET        Add OFFSET to all displayed section "
+"addresses\n"
+"      --special-syms             Include special symbols in symbol dumps\n"
+"      --prefix=PREFIX            Add PREFIX to absolute paths for -S\n"
+"      --prefix-strip=LEVEL       Strip initial directory names for -S\n"
+"\n"
+msgstr ""
+
+#: objdump.c:257
+#, c-format
+msgid "Report bugs to %s.\n"
+msgstr ""
+
+#: objdump.c:397
+#, c-format
+msgid "section '%s' mentioned in a -j option, but not found in any input file"
+msgstr ""
+
+#: objdump.c:501
+#, c-format
+msgid "Sections:\n"
+msgstr ""
+
+#: objdump.c:504 objdump.c:508
+#, c-format
+msgid "Idx Name          Size      VMA       LMA       File off  Algn"
+msgstr ""
+
+#: objdump.c:510
+#, c-format
+msgid ""
+"Idx Name          Size      VMA               LMA               File off  "
+"Algn"
+msgstr ""
+
+#: objdump.c:514
+#, c-format
+msgid "  Flags"
+msgstr ""
+
+#: objdump.c:557
+#, c-format
+msgid "%s: not a dynamic object"
+msgstr ""
+
+#: objdump.c:983 objdump.c:1007
+#, c-format
+msgid " (File Offset: 0x%lx)"
+msgstr ""
+
+#: objdump.c:1633
+#, c-format
+msgid "disassemble_fn returned length %d"
+msgstr ""
+
+#: objdump.c:1938
+#, c-format
+msgid ""
+"\n"
+"Disassembly of section %s:\n"
+msgstr ""
+
+#: objdump.c:2114
+#, c-format
+msgid "can't use supplied machine %s"
+msgstr ""
+
+#: objdump.c:2133
+#, c-format
+msgid "can't disassemble for architecture %s\n"
+msgstr ""
+
+#: objdump.c:2213 objdump.c:2236
+#, c-format
+msgid ""
+"\n"
+"Can't get contents for section '%s'.\n"
+msgstr ""
+
+#: objdump.c:2377
+#, c-format
+msgid ""
+"No %s section present\n"
+"\n"
+msgstr ""
+
+#: objdump.c:2386
+#, c-format
+msgid "reading %s section of %s failed: %s"
+msgstr ""
+
+#: objdump.c:2430
+#, c-format
+msgid ""
+"Contents of %s section:\n"
+"\n"
+msgstr ""
+
+#: objdump.c:2561
+#, c-format
+msgid "architecture: %s, "
+msgstr ""
+
+#: objdump.c:2564
+#, c-format
+msgid "flags 0x%08x:\n"
+msgstr ""
+
+#: objdump.c:2578
+#, c-format
+msgid ""
+"\n"
+"start address 0x"
+msgstr ""
+
+#: objdump.c:2641
+#, c-format
+msgid "Contents of section %s:"
+msgstr ""
+
+#: objdump.c:2643
+#, c-format
+msgid "  (Starting at file offset: 0x%lx)"
+msgstr ""
+
+#: objdump.c:2649
+msgid "Reading section failed"
+msgstr ""
+
+#: objdump.c:2752
+#, c-format
+msgid "no symbols\n"
+msgstr ""
+
+#: objdump.c:2759
+#, c-format
+msgid "no information for symbol number %ld\n"
+msgstr ""
+
+#: objdump.c:2762
+#, c-format
+msgid "could not determine the type of symbol number %ld\n"
+msgstr ""
+
+#: objdump.c:3042
+#, c-format
+msgid ""
+"\n"
+"%s:     file format %s\n"
+msgstr ""
+
+#: objdump.c:3100
+#, c-format
+msgid "%s: printing debugging information failed"
+msgstr ""
+
+#: objdump.c:3204
+#, c-format
+msgid "In archive %s:\n"
+msgstr ""
+
+#: objdump.c:3300
+#, c-format
+msgid "unknown demangling style `%s'"
+msgstr ""
+
+#: objdump.c:3315
+msgid "error: the start address should be before the end address"
+msgstr ""
+
+#: objdump.c:3320
+msgid "error: the stop address should be after the start address"
+msgstr ""
+
+#: objdump.c:3332
+msgid "error: prefix strip must be non-negative"
+msgstr ""
+
+#: objdump.c:3337
+msgid "error: instruction width must be positive"
+msgstr ""
+
+#: objdump.c:3346
+msgid "unrecognized -E option"
+msgstr ""
+
+#: objdump.c:3357
+#, c-format
+msgid "unrecognized --endian type `%s'"
+msgstr ""
+
+#: rdcoff.c:198
+#, c-format
+msgid "parse_coff_type: Bad type code 0x%x"
+msgstr ""
+
+#: rdcoff.c:406 rdcoff.c:511 rdcoff.c:699
+#, c-format
+msgid "bfd_coff_get_syment failed: %s"
+msgstr ""
+
+#: rdcoff.c:422 rdcoff.c:719
+#, c-format
+msgid "bfd_coff_get_auxent failed: %s"
+msgstr ""
+
+#: rdcoff.c:786
+#, c-format
+msgid "%ld: .bf without preceding function"
+msgstr ""
+
+#: rdcoff.c:836
+#, c-format
+msgid "%ld: unexpected .ef\n"
+msgstr ""
+
+#: rddbg.c:88
+#, c-format
+msgid "%s: no recognized debugging information"
+msgstr ""
+
+#: rddbg.c:402
+#, c-format
+msgid "Last stabs entries before error:\n"
+msgstr ""
+
+#: rename.c:128
+#, c-format
+msgid "%s: cannot set time: %s"
+msgstr ""
+
+#. We have to clean up here.
+#: rename.c:163 rename.c:201
+#, c-format
+msgid "unable to rename '%s'; reason: %s"
+msgstr ""
+
+#: rename.c:209
+#, c-format
+msgid "unable to copy file '%s'; reason: %s"
+msgstr ""
+
+#: stabs.c:328 stabs.c:1717
+msgid "numeric overflow"
+msgstr ""
+
+#: stabs.c:338
+#, c-format
+msgid "Bad stab: %s\n"
+msgstr ""
+
+#: stabs.c:346
+#, c-format
+msgid "Warning: %s: %s\n"
+msgstr ""
+
+#: stabs.c:456
+#, c-format
+msgid "N_LBRAC not within function\n"
+msgstr ""
+
+#: stabs.c:495
+#, c-format
+msgid "Too many N_RBRACs\n"
+msgstr ""
+
+#: stabs.c:727
+msgid "unknown C++ encoded name"
+msgstr ""
+
+#. Complain and keep going, so compilers can invent new
+#. cross-reference types.
+#: stabs.c:1262
+msgid "unrecognized cross reference type"
+msgstr ""
+
+#. Does this actually ever happen?  Is that why we are worrying
+#. about dealing with it rather than just calling error_type?
+#: stabs.c:1809
+msgid "missing index type"
+msgstr ""
+
+#: stabs.c:2122
+msgid "unknown virtual character for baseclass"
+msgstr ""
+
+#: stabs.c:2140
+msgid "unknown visibility character for baseclass"
+msgstr ""
+
+#: stabs.c:2326
+msgid "unnamed $vb type"
+msgstr ""
+
+#: stabs.c:2332
+msgid "unrecognized C++ abbreviation"
+msgstr ""
+
+#: stabs.c:2408
+msgid "unknown visibility character for field"
+msgstr ""
+
+#: stabs.c:2660
+msgid "const/volatile indicator missing"
+msgstr ""
+
+#: stabs.c:2896
+#, c-format
+msgid "No mangling for \"%s\"\n"
+msgstr ""
+
+#: stabs.c:3196
+msgid "Undefined N_EXCL"
+msgstr ""
+
+#: stabs.c:3276
+#, c-format
+msgid "Type file number %d out of range\n"
+msgstr ""
+
+#: stabs.c:3281
+#, c-format
+msgid "Type index number %d out of range\n"
+msgstr ""
+
+#: stabs.c:3360
+#, c-format
+msgid "Unrecognized XCOFF type %d\n"
+msgstr ""
+
+#: stabs.c:3652
+#, c-format
+msgid "bad mangled name `%s'\n"
+msgstr ""
+
+#: stabs.c:3747
+#, c-format
+msgid "no argument types in mangled string\n"
+msgstr ""
+
+#: stabs.c:5094
+#, c-format
+msgid "Demangled name is not a function\n"
+msgstr ""
+
+#: stabs.c:5136
+#, c-format
+msgid "Unexpected type in v3 arglist demangling\n"
+msgstr ""
+
+#: stabs.c:5203
+#, c-format
+msgid "Unrecognized demangle component %d\n"
+msgstr ""
+
+#: stabs.c:5255
+#, c-format
+msgid "Failed to print demangled template\n"
+msgstr ""
+
+#: stabs.c:5335
+#, c-format
+msgid "Couldn't get demangled builtin type\n"
+msgstr ""
+
+#: stabs.c:5384
+#, c-format
+msgid "Unexpected demangled varargs\n"
+msgstr ""
+
+#: stabs.c:5391
+#, c-format
+msgid "Unrecognized demangled builtin type\n"
+msgstr ""
+
+#: version.c:36
+#, c-format
+msgid "Copyright 2011 Free Software Foundation, Inc.\n"
+msgstr ""
+
+#: version.c:37
+#, c-format
+msgid ""
+"This program is free software; you may redistribute it under the terms of\n"
+"the GNU General Public License version 3 or (at your option) any later "
+"version.\n"
+"This program has absolutely no warranty.\n"
+msgstr ""
+
+#: wrstabs.c:353 wrstabs.c:1916
+#, c-format
+msgid "string_hash_lookup failed: %s"
+msgstr ""
+
+#: wrstabs.c:636
+#, c-format
+msgid "stab_int_type: bad size %u"
+msgstr ""
+
+#: wrstabs.c:1394
+#, c-format
+msgid "%s: warning: unknown size for field `%s' in struct"
+msgstr ""
