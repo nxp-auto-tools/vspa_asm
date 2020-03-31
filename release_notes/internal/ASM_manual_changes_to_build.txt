@@ -1,0 +1,30 @@
+After generating the files from ADL, there are some manual changes to be performed.
+
+Changes to be performed:
+
+1) Copy the assembler ADL generated files to the "assembler" folder:
+	- VSPA1:
+		"as-vcpu_spec.cc" => "as-vcpu1_spec.cc";
+		"as-ippu_spec.cc" => "as-ippu1_spec.cc";
+	- VSPA2:
+		"as-vcpu_spec.cc" => "as-vcpu2_spec.cc";
+		"as-ippu_spec.cc" => "as-ippu2_spec.cc".
+  - VSPA3:
+    "as-vcpu_spec.cc" => "as-vcpu3_spec.cc"
+    "as-ippu_spec.cc" => "as-ippu3_spec.cc"
+2) Run the "transform.pl" script from within the "enterprise_vspa_asm" directory
+3) For VSPA3, manually undo the changes in the name of include files in as-vcpu3_spec.cc,
+ remove the helpers/* includes form as-ippu3_spec.cc and remove helpers/Macros.h and helpers/LogUsage.h
+ includes from objdump_vcpu3_spec.cc and add adl-asm-impl.h include to the same file. Change bits defines
+ to add adl:: (like #define bits adl::le_intbv) and remove the line using namespace adl.
+
+
+The VSPA1/2/3 assembler requires at least GCC 4.9.1 and the support for C++11 should be enabled.
+In order to build the assembler executable you have to run:
+	- VSPA1:
+		make all CPP_COMPILER="g++ --std=c++11" C_COMPILER="gcc --std=c++11";
+	- VSPA2:
+		make all ARCH_TARGET="vspa2" CPP_COMPILER="g++ --std=c++11" C_COMPILER="gcc --std=c++11".
+  -VSPA3:
+    make all ARCH_TARGET="vspa3" CPP_COMPILER="g++ --std=c++11" C_COMPILER="gcc --std=c++11".
+When building the assembler on Cygwin32, "--std=gnu++11" should be used instead of "--std=c++11".
