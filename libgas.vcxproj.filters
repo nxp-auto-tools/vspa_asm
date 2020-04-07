@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="Header Files\Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav</Extensions>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="external\binutils-adl\gas\adl-asm-common.C">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="external\binutils-adl\gas\adl-asm-impl-gas.C">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="external\binutils-adl\gas\adl-asm-impl.C">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="external\binutils-adl\gas\app.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="external\binutils-adl\gas\as.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="external\binutils-adl\gas\atof-generic.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="external\binutils-adl\gas\config\atof-ieee.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="external\binutils-adl\gas\compress-debug.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="external\binutils-adl\gas\cond.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="external\binutils-adl\gas\depend.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="external\binutils-adl\gas\dw2gencfi.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="external\binutils-adl\gas\dwarf2dbg.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="external\binutils-adl\gas\ecoff.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="external\binutils-adl\gas\ehopt.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="external\binutils-adl\gas\expr.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="external\binutils-adl\gas\flonum-copy.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="external\binutils-adl\gas\flonum-konst.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="external\binutils-adl\gas\flonum-mult.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="external\binutils-adl\gas\frags.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="external\binutils-adl\gas\hash.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="external\binutils-adl\gas\input-file.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="external\binutils-adl\gas\input-scrub.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="external\binutils-adl\gas\listing.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="external\binutils-adl\gas\literal.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="external\binutils-adl\gas\macro.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="external\binutils-adl\gas\messages.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="external\binutils-adl\gas\mw-info.C">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="external\binutils-adl\gas\config\obj-elf.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="external\binutils-adl\gas\output-file.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="external\binutils-adl\gas\config\ppc-support.C">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="external\binutils-adl\gas\read.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="external\binutils-adl\gas\remap.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="external\binutils-adl\gas\sb.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="external\binutils-adl\gas\stabs.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="external\binutils-adl\gas\subsegs.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="external\binutils-adl\gas\symbols.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="external\binutils-adl\gas\write.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="external\binutils-adl\gas\asm-translate.C">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="external\binutils-adl\gas\adl-asm-common.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="external\binutils-adl\gas\adl-asm-impl.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="external\binutils-adl\gas\adl-asm-info.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="external\binutils-adl\gas\adl-asm-setup.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="external\binutils-adl\gas\AsmDriver.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="external\binutils-adl\gas\mw-info.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="external\binutils-adl\gas\asm-translate.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="ReadMe.txt" />
+  </ItemGroup>
+</Project>
