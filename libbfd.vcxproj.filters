@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav</Extensions>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="external\binutils-adl\bfd\aix5ppc-core.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="external\binutils-adl\bfd\archive.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="external\binutils-adl\bfd\archive64.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="external\binutils-adl\bfd\archures.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="external\binutils-adl\bfd\bfd.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="external\binutils-adl\bfd\bfdio.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="external\binutils-adl\bfd\bfdwin.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="external\binutils-adl\bfd\binary.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="external\binutils-adl\bfd\cache.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="external\binutils-adl\bfd\coff-rs6000.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="external\binutils-adl\bfd\coff64-rs6000.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="external\binutils-adl\bfd\coffgen.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="external\binutils-adl\bfd\compress.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="external\binutils-adl\bfd\corefile.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="external\binutils-adl\bfd\cpu-powerpc.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="external\binutils-adl\bfd\cpu-rs6000.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="external\binutils-adl\bfd\dwarf1.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="external\binutils-adl\bfd\dwarf2.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="external\binutils-adl\bfd\elf-attrs.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="external\binutils-adl\bfd\elf-eh-frame.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="external\binutils-adl\bfd\elf-strtab.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="external\binutils-adl\bfd\elf-vxworks.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="external\binutils-adl\bfd\elf.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="external\binutils-adl\bfd\elf32-gen.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="external\binutils-adl\bfd\elf32-ppc.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="external\binutils-adl\bfd\elf32.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="external\binutils-adl\bfd\elf64-gen.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="external\binutils-adl\bfd\elf64-ppc.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="external\binutils-adl\bfd\elf64.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="external\binutils-adl\bfd\elflink.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="external\binutils-adl\bfd\format.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="external\binutils-adl\bfd\hash.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="external\binutils-adl\bfd\ihex.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="external\binutils-adl\bfd\init.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="external\binutils-adl\bfd\libbfd.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="external\binutils-adl\bfd\linker.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="external\binutils-adl\bfd\merge.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="external\binutils-adl\bfd\opncls.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="external\binutils-adl\bfd\reloc.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="external\binutils-adl\bfd\section.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="external\binutils-adl\bfd\simple.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="external\binutils-adl\bfd\srec.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="external\binutils-adl\bfd\stab-syms.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="external\binutils-adl\bfd\stabs.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="external\binutils-adl\bfd\syms.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="external\binutils-adl\bfd\targets.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="external\binutils-adl\bfd\tekhex.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="external\binutils-adl\bfd\verilog.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="external\binutils-adl\bfd\xcofflink.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="external\binutils-adl\win-build\bfd\config.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="external\binutils-adl\win-build\bfd\version.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="ReadMe.txt" />
+  </ItemGroup>
+</Project>
