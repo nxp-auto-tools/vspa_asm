@@ -1,0 +1,72 @@
+
+Microsoft Visual Studio Solution File, Format Version 10.00
+# Visual Studio 2008
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "vspa-as", "vspa-as.vcproj", "{3D20E058-27A5-498A-8220-C7DC48F47A27}"
+	ProjectSection(ProjectDependencies) = postProject
+		{B9914C42-CA8A-452D-88C1-A1BDDE774913} = {B9914C42-CA8A-452D-88C1-A1BDDE774913}
+		{8F69EC84-6F2A-48CA-9869-7999E74C80B3} = {8F69EC84-6F2A-48CA-9869-7999E74C80B3}
+		{05CA59DE-8379-42FA-8660-B8F783AB02AA} = {05CA59DE-8379-42FA-8660-B8F783AB02AA}
+		{3EB130EA-105B-443F-93D7-99BE1D2705E1} = {3EB130EA-105B-443F-93D7-99BE1D2705E1}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libbfd", "libbfd.vcproj", "{8F69EC84-6F2A-48CA-9869-7999E74C80B3}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libgas", "libgas.vcproj", "{B9914C42-CA8A-452D-88C1-A1BDDE774913}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libiberty", "libiberty.vcproj", "{05CA59DE-8379-42FA-8660-B8F783AB02AA}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libopcode", "libopcode.vcproj", "{3EB130EA-105B-443F-93D7-99BE1D2705E1}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		debug_vspa2|Win32 = debug_vspa2|Win32
+		debug|Win32 = debug|Win32
+		release_vspa2|Win32 = release_vspa2|Win32
+		release|Win32 = release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{3D20E058-27A5-498A-8220-C7DC48F47A27}.debug_vspa2|Win32.ActiveCfg = debug_vspa2|Win32
+		{3D20E058-27A5-498A-8220-C7DC48F47A27}.debug_vspa2|Win32.Build.0 = debug_vspa2|Win32
+		{3D20E058-27A5-498A-8220-C7DC48F47A27}.debug|Win32.ActiveCfg = debug|Win32
+		{3D20E058-27A5-498A-8220-C7DC48F47A27}.debug|Win32.Build.0 = debug|Win32
+		{3D20E058-27A5-498A-8220-C7DC48F47A27}.release_vspa2|Win32.ActiveCfg = release_vspa2|Win32
+		{3D20E058-27A5-498A-8220-C7DC48F47A27}.release_vspa2|Win32.Build.0 = release_vspa2|Win32
+		{3D20E058-27A5-498A-8220-C7DC48F47A27}.release|Win32.ActiveCfg = release|Win32
+		{3D20E058-27A5-498A-8220-C7DC48F47A27}.release|Win32.Build.0 = release|Win32
+		{8F69EC84-6F2A-48CA-9869-7999E74C80B3}.debug_vspa2|Win32.ActiveCfg = debug_vspa2|Win32
+		{8F69EC84-6F2A-48CA-9869-7999E74C80B3}.debug_vspa2|Win32.Build.0 = debug_vspa2|Win32
+		{8F69EC84-6F2A-48CA-9869-7999E74C80B3}.debug|Win32.ActiveCfg = debug|Win32
+		{8F69EC84-6F2A-48CA-9869-7999E74C80B3}.debug|Win32.Build.0 = debug|Win32
+		{8F69EC84-6F2A-48CA-9869-7999E74C80B3}.release_vspa2|Win32.ActiveCfg = release_vspa2|Win32
+		{8F69EC84-6F2A-48CA-9869-7999E74C80B3}.release_vspa2|Win32.Build.0 = release_vspa2|Win32
+		{8F69EC84-6F2A-48CA-9869-7999E74C80B3}.release|Win32.ActiveCfg = release|Win32
+		{8F69EC84-6F2A-48CA-9869-7999E74C80B3}.release|Win32.Build.0 = release|Win32
+		{B9914C42-CA8A-452D-88C1-A1BDDE774913}.debug_vspa2|Win32.ActiveCfg = debug_vspa2|Win32
+		{B9914C42-CA8A-452D-88C1-A1BDDE774913}.debug_vspa2|Win32.Build.0 = debug_vspa2|Win32
+		{B9914C42-CA8A-452D-88C1-A1BDDE774913}.debug|Win32.ActiveCfg = debug|Win32
+		{B9914C42-CA8A-452D-88C1-A1BDDE774913}.debug|Win32.Build.0 = debug|Win32
+		{B9914C42-CA8A-452D-88C1-A1BDDE774913}.release_vspa2|Win32.ActiveCfg = release_vspa2|Win32
+		{B9914C42-CA8A-452D-88C1-A1BDDE774913}.release_vspa2|Win32.Build.0 = release_vspa2|Win32
+		{B9914C42-CA8A-452D-88C1-A1BDDE774913}.release|Win32.ActiveCfg = release|Win32
+		{B9914C42-CA8A-452D-88C1-A1BDDE774913}.release|Win32.Build.0 = release|Win32
+		{05CA59DE-8379-42FA-8660-B8F783AB02AA}.debug_vspa2|Win32.ActiveCfg = debug_vspa2|Win32
+		{05CA59DE-8379-42FA-8660-B8F783AB02AA}.debug_vspa2|Win32.Build.0 = debug_vspa2|Win32
+		{05CA59DE-8379-42FA-8660-B8F783AB02AA}.debug|Win32.ActiveCfg = debug|Win32
+		{05CA59DE-8379-42FA-8660-B8F783AB02AA}.debug|Win32.Build.0 = debug|Win32
+		{05CA59DE-8379-42FA-8660-B8F783AB02AA}.release_vspa2|Win32.ActiveCfg = release_vspa2|Win32
+		{05CA59DE-8379-42FA-8660-B8F783AB02AA}.release_vspa2|Win32.Build.0 = release_vspa2|Win32
+		{05CA59DE-8379-42FA-8660-B8F783AB02AA}.release|Win32.ActiveCfg = release|Win32
+		{05CA59DE-8379-42FA-8660-B8F783AB02AA}.release|Win32.Build.0 = release|Win32
+		{3EB130EA-105B-443F-93D7-99BE1D2705E1}.debug_vspa2|Win32.ActiveCfg = debug_vspa2|Win32
+		{3EB130EA-105B-443F-93D7-99BE1D2705E1}.debug_vspa2|Win32.Build.0 = debug_vspa2|Win32
+		{3EB130EA-105B-443F-93D7-99BE1D2705E1}.debug|Win32.ActiveCfg = debug|Win32
+		{3EB130EA-105B-443F-93D7-99BE1D2705E1}.debug|Win32.Build.0 = debug|Win32
+		{3EB130EA-105B-443F-93D7-99BE1D2705E1}.release_vspa2|Win32.ActiveCfg = release_vspa2|Win32
+		{3EB130EA-105B-443F-93D7-99BE1D2705E1}.release_vspa2|Win32.Build.0 = release_vspa2|Win32
+		{3EB130EA-105B-443F-93D7-99BE1D2705E1}.release|Win32.ActiveCfg = release|Win32
+		{3EB130EA-105B-443F-93D7-99BE1D2705E1}.release|Win32.Build.0 = release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
