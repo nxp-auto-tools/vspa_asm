@@ -1,0 +1,237 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav</Extensions>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="external\binutils-adl\libiberty\alloca.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="external\binutils-adl\libiberty\argv.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="external\binutils-adl\libiberty\asprintf.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="external\binutils-adl\libiberty\bcmp.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="external\binutils-adl\libiberty\bcopy.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="external\binutils-adl\libiberty\bzero.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="external\binutils-adl\libiberty\choose-temp.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="external\binutils-adl\libiberty\concat.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="external\binutils-adl\libiberty\cp-demangle.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="external\binutils-adl\libiberty\cp-demint.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="external\binutils-adl\libiberty\cplus-dem.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="external\binutils-adl\libiberty\dyn-string.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="external\binutils-adl\libiberty\fdmatch.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="external\binutils-adl\libiberty\ffs.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="external\binutils-adl\libiberty\fibheap.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="external\binutils-adl\libiberty\floatformat.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="external\binutils-adl\libiberty\fnmatch.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="external\binutils-adl\libiberty\fopen_unlocked.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="external\binutils-adl\libiberty\getopt.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="external\binutils-adl\libiberty\getopt1.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="external\binutils-adl\libiberty\getpwd.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="external\binutils-adl\libiberty\getruntime.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="external\binutils-adl\libiberty\hashtab.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="external\binutils-adl\libiberty\hex.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="external\binutils-adl\libiberty\lbasename.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="external\binutils-adl\libiberty\lrealpath.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="external\binutils-adl\libiberty\make-relative-prefix.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="external\binutils-adl\libiberty\make-temp-file.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="external\binutils-adl\libiberty\md5.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="external\binutils-adl\libiberty\mempcpy.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="external\binutils-adl\libiberty\mkstemps.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="external\binutils-adl\libiberty\objalloc.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="external\binutils-adl\libiberty\obstack.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="external\binutils-adl\libiberty\partition.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="external\binutils-adl\libiberty\pex-common.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="external\binutils-adl\libiberty\pex-one.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="external\binutils-adl\libiberty\pex-win32.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="external\binutils-adl\libiberty\pexecute.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="external\binutils-adl\libiberty\physmem.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="external\binutils-adl\libiberty\random.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="external\binutils-adl\libiberty\regex.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="external\binutils-adl\libiberty\rindex.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="external\binutils-adl\libiberty\safe-ctype.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="external\binutils-adl\libiberty\setenv.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="external\binutils-adl\libiberty\sigsetmask.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="external\binutils-adl\libiberty\snprintf.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="external\binutils-adl\libiberty\sort.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="external\binutils-adl\libiberty\spaces.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="external\binutils-adl\libiberty\splay-tree.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="external\binutils-adl\libiberty\stpncpy.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="external\binutils-adl\libiberty\strcasecmp.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="external\binutils-adl\libiberty\strerror.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="external\binutils-adl\libiberty\strncasecmp.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="external\binutils-adl\libiberty\strndup.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="external\binutils-adl\libiberty\strsignal.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="external\binutils-adl\libiberty\strverscmp.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="external\binutils-adl\libiberty\unlink-if-ordinary.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="external\binutils-adl\libiberty\vasprintf.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="external\binutils-adl\libiberty\vfork.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="external\binutils-adl\libiberty\waitpid.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="external\binutils-adl\libiberty\xatexit.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="external\binutils-adl\libiberty\xexit.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="external\binutils-adl\libiberty\xmalloc.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="external\binutils-adl\libiberty\xmemdup.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="external\binutils-adl\libiberty\xstrdup.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="external\binutils-adl\libiberty\xstrerror.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="external\binutils-adl\libiberty\xstrndup.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="external\binutils-adl\libiberty\filename_cmp.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="external\binutils-adl\win-build\libiberty\config.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="external\binutils-adl\libiberty\cp-demangle.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="external\binutils-adl\libiberty\pex-common.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="ReadMe.txt" />
+  </ItemGroup>
+</Project>
