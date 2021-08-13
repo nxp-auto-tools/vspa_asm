@@ -1,0 +1,1690 @@
+#!/usr/bin/env perl
+
+###########################################################################
+# Script Intended to translate VSPA VCPU/IPPU GCC syntax to ISCAPE syntax
+#
+# Usage 
+#   ./vspa-legacy-trans.pl <input-file> [command-line-options]
+# 
+# If *NO* output file is specified, the translated output is dumped to 'output.asm'
+#
+###########################################################################
+
+use Getopt::Long;
+
+#####################################
+# Variable Declaration
+#####################################
+$VERSION="v0-9-5";
+#####################################
+# Debug  Flag
+# Set to "on" to debug
+#####################################
+$_DEBUG=undef;
+
+#####################################
+# Default files 
+#####################################
+$OUTPUT_FILE="output.asm";
+$DEBUG_FILE="debug.txt";
+
+#####################################
+# Variable Declaration
+#####################################
+$line_number=0;
+$inst_count=0;
+$is_comment=0;
+$P_FILE_STATUS=0;
+$ONLY_PREPROCESS=0;
+
+#####################################
+#       Perform Operation 		              *
+#####################################
+# Hash containing the references to IPPU and VCPU translation subroutines
+# By default, the vcpu translator is invoked if no option is specified
+%translate_insns =
+	(
+		'ippu' => \&translate_ippu_insns,
+		'vcpu' => \&translate_vcpu_insns,
+		'iscape_ippu' => \&translate_iscape_ippu_insns,
+		'iscape_vcpu' => \&translate_iscape_vcpu_insns,
+	);
+
+%gather_syntax =
+	(
+		'ippu' => \&gather_ippu_syntax,
+		'vcpu' => \&gather_vcpu_syntax,
+		'iscape_ippu' => \&gather_iscape_ippu_syntax,
+		'iscape_vcpu' => \&gather_iscape_vcpu_syntax,
+	);
+#####################################
+# Help Information
+#####################################
+sub help()
+{
+	print <<HELP_INFO ;
+
+Usage 
+   ./vspa-gcc-cw-trans input.asm  [ command-line-options ]
+
+Options:
+
+-(d|debug)			: Dump the Debug infomation to debug.log
+
+-(f|format) <dos|unix>		: Enforce <Windows|Unix> style line ending in the output file
+				  [ Default : Use line ending style of the input file ]
+
+-(i|ippu)			: Translate the GCC IPPU assembly syntax to iScape IPPU syntax
+				  [ Default : translate VCPU assembly syntax ]
+
+-(n|new_iscape)			: Translate from old iScape syntax to new iScape syntax
+
+-(o|outfile) <file_name>	: Specify file to dump the translated output.
+				  If not specified, output is dumped to output.asm 	
+
+-m <AU_count>			: AU count
+				  [ Default : 64 ]
+
+-(h|help)			: Display help information
+
+-(v|version)			: Version, same as that of VSPA Programming Manual
+
+HELP_INFO
+
+	exit 0;
+}
+
+
+sub usage()
+{
+	print "Unknown option: @_\n" if  @_ ;
+	&help;
+}
+
+sub version()
+{
+
+	print <<VERSION ;
+vspa-legacy-trans version $VERSION
+VERSION
+	exit 0;
+}
+
+#####################################
+# Process Command Line Options
+#####################################
+sub process_options()
+{
+	usage() if @ARGV < 1 or
+		! GetOptions('help|?' => \$help, 
+		'd|debug' => \$debug, 
+		'E=s' => \$preprocess_file,
+		'f|format=s' => \$format, 
+		'ippu' => \$ippu, 
+		'n|new_iscape' => \$iscape, 
+		'm|dmem=i' => \$dmem, 
+		'outfile=s' => \$outfile,
+		'pfile=s' => \$pfile, 
+		'size=i' => \$size, 
+		'v|version' =>\$version) or defined $help ;
+
+	# Display Help information
+	&help () if defined $help;
+
+	# Display Version Information
+	&version() if defined $version;
+
+	# Get the Input file
+	$INPUT_FILE=shift @ARGV;
+
+	# Reference to points to the IPPU/VCPU translation subroutines
+	( $translate_insns_ref, $gather_new_syntax, $TRANSLATE_IPPU ) =
+		$iscape ?
+			($ippu ?
+				( $translate_insns{iscape_ippu}, $gather_syntax{iscape_ippu}, 1 ) :
+				( $translate_insns{iscape_vcpu}, $gather_syntax{iscape_vcpu}, 0 )) :
+			($ippu ?
+				( $translate_insns{ippu}, $gather_syntax{ippu}, 1 ) :
+				( $translate_insns{vcpu}, $gather_syntax{vcpu}, 0 ));
+
+	if (defined($format))
+	{
+		if ($format !~ /^(d(os)?|u(nix)?)\b/i)
+		{
+			printf "Unrecognized option\n Usage:\n\t -format [d]os|[u]nix\n";
+			exit 1;
+		}
+		$newline = "\r" if $format =~ /d(os)?\b/i;
+		$newline .= "\n";
+		# Enable enforcing line endings
+		$USER_LINE_ENDING="yes";
+	}
+
+	# Dump translated output to specified output file
+	$OUTPUT_FILE=$outfile if defined $outfile;
+
+	# Enable Debug Flag
+	$_DEBUG="on" if defined $debug;
+
+	$DMEM=$dmem  if defined $dmem;
+
+	if (defined($pfile))
+	{
+		$PINPUT_FILE=$pfile;
+		$P_FILE_STATUS=1;
+	}
+
+	if (defined($preprocess_file))
+	{
+		$ONLY_PREPROCESS=1;
+		$PINPUT_FILE=$preprocess_file;
+		&preprocess;
+		exit 0;
+	}
+}
+
+
+#####################################
+# Variable Settings
+#####################################
+sub set_environment_variables
+{
+# Set Environment variables
+	$DMEM ||= 64;
+	$LINES=$DMEM * 2;
+
+	if (defined($_DEBUG)){
+		open DEBUG, ">$DEBUG_FILE" or die "Cannot open $DEBUG_FILE!";
+
+		print DEBUG "Output file ==> $OUTPUT_FILE\n";
+		print DEBUG "Dmem ==> $DMEM\n";
+		print DEBUG "Input file ==> $INPUT_FILE\n";
+		print DEBUG "Preprocess ==> $PINPUT_FILE\n" if $P_FILE_STATUS eq 1;
+	}
+}
+
+###############################################################################
+#	Format the instructions with proper spacing                           #
+###############################################################################
+sub format_insns()
+{
+	#Remove space at the beginning and end
+	s/^(\s+)//; s/(\s+)$//;
+
+	#Provide proper spacing for operands a ,b,c ==> a, b, c
+	s/(\s+)/ /g;s/(\s),/,/g;s/,(\s?)/, /g;
+
+	# Convert +I -> I
+	# Assembler does not support the form +10  
+	s/,(\s?)\+/, /g;
+
+	s/(\s+)/ /g;s/(\s),/,/g;s/,(\s?)/, /g;
+	s/(\s)\*/\*/g;s/\*(\s*)/\*/g;
+	#Provide proper spacing for operands 
+	#st  [ aX  ] + I ==> st [aX]+I
+	#st  [ aX + I ]  ==> st [aX+I]
+	s/(\+|\-)\s*/$1/g;s/(\[)\s*/$1/g; s/\s*(\])/$1/g;
+	s/(\])\s*/$1/g;
+	s/\s*(\))\s*/$1/g; s/(\))\s*/$1/g; s/(\()\s*/$1/g;
+	s/\s*(\/)/$1/g; s/(\/)\s*/$1/g;
+}
+
+###############################################################################
+#	Old IPPU iScape to new IPPU iScape syntax                             #
+###############################################################################
+sub translate_iscape_ippu_insns()
+{
+	return $_;
+}
+
+##########################################
+#  GCC IPPU TO ISCAPE SYNTAX TRANSLATION
+##########################################
+sub translate_ippu_insns()
+{
+	$_= $_[0];
+
+	my @insns = split(';');
+
+	# Remove any duplicate statement terminators if found
+	@insns = grep /\S/, @insns;
+
+	# Keep track of the spaces so to maintain the format in the end
+	my @space_alignment = @insns;
+	s/^(\s+)?.*/\1/g foreach @space_alignment;
+
+	# Get the number of instructions in this line
+	$insn_count = @insns;
+
+	# If multiple instructions found in a line, Isolate each instruction and translate
+	my $insn=0;
+	my $align=0;
+	my $curr_line='';
+
+	#########################################################
+	#      Translate each instruction in this line
+	#########################################################
+	foreach (@insns)
+	{
+
+		# Keep track of the actual line to replicate the source format
+		$actual_line = $_;
+
+		# Format the instructiuon
+		&format_insns;
+
+		$insn_length = length($_);
+
+		# Store any comment and replace it after translation
+		my $found_a_comment = $1 if s/^(\/\*.*\*\/)//;
+
+		# Extract each operand to an array
+		@op = split;
+
+		# Keep track of the spaces after the mnemonic
+		$op_space[0] = "$1" if ($actual_line =~ m/$op[0](\s*)/);
+
+		# Total number of operands
+		$num_operands = @op;
+
+		# Keep track of the spaces between operands obtain proper formatting
+		#for ($count = 1; $count <= $num_operands ; $count++) {
+		#	$op_space[$count] = $1 if ($actual_line =~ m/$op[$count](\s*)/);
+		#}
+
+		# Fix typos like ld.s0, ---> ld.s0 which may end up not finding the pattern
+		$op[0] =~ s/(\s+|,$)//g;
+		$mnemonic = $op[0];
+
+		@opnd = @op[1..$#op];
+
+		#Convert #label --> label , @Var --> Var
+		s/^(@|#)// foreach (@opnd, @op);
+
+		#Make the required modifications to the instruction
+		s/,//g  foreach (@opnd);
+		$_ = $mnemonic;
+
+		SWITCH:{
+
+			# ld.type 
+			/^\bld\.(vcpu|ippu)\b$/ and do {
+				my $str=$1;
+				if($opnd[0] =~ /\bmask\b/){
+					$op[0]= "$ldtype{$opnd[0]}". ".$str";
+					$op[1] = undef;
+				} elsif ($opnd[0] =~ /\bindex/i){
+					$op[0]= "$ldtype{index}" . ".$str";
+					$op[1] = undef;
+				}
+				last SWITCH;
+			};
+
+			# ld
+			/^\bld\b$/ and do {
+				$opnd[1] =~ s/argbase\+?//;
+				$op[2] = $opnd[1];
+				last SWITCH;
+			};
+
+			# clr
+			/^\bclr\b$/ and	do {
+				if($opnd[0] =~ /\bmask\b/){
+					$op[0].= '.' . "$opnd[0]";
+					$op[1] = undef;
+					if ( $opnd[1]  =~ /\ball\b/ ){
+						$op[0].= '.' . "$opnd[1]";
+						$op[2] = undef;
+					}
+				}
+				last SWITCH;
+			};
+
+			# set
+			/^\bset\b$/ and	do {
+				if ( $opnd[0] =~ /\b(incr|range)\B/) {
+					my @fields = split /_/, $opnd[0];
+					$op[0] = $set_ippu{$fields[0]} if grep {/\b$fields[0]\b/} keys %set_ippu;
+					$op[1] = $fields[1].',';
+				} elsif( grep {/\b$opnd[0]\b/} keys %set_ippu ){
+					$op[0] = $set_ippu{$opnd[0]};
+					$op[1] = undef;
+					$op[3] = $br_mode{$opnd[2]} if $opnd[0] =~ /\bbr\b/ and $opnd[2] =~ /mode\d/;
+					@op = ( $op[0] . '.' . $opnd[1] ) if $opnd[0] =~ /\bmask\b/ and $opnd[1] =~ /\ball\b/;
+				}
+				last SWITCH;
+			};
+		}
+
+		#{
+		s/(\s*)$//g foreach "@op";
+		$op_space[0] = ' ' if $op_space[0] !~ m/\s+/;
+		$_  = shift(@op). $op_space[0];
+		$_ .= "@op";
+		s/^/$found_a_comment/ if $found_a_comment;
+		$insns[$insn] = "$_;" if not /^}/;
+		$insns[$insn] =~ s/\s*;$/;/g;
+
+		#$insns[$insn] .=  $space_alignment[$insn+1]  if $insn != $#insns;
+
+		# Compute the instruction lenght along with the space 
+		$insn_length += length($space_alignment[$insn+1]) + 1;
+		$align += length($insns[$insn]) - $insn_length if ( length($insns[$insn]) > $insn_length );
+		if ($align != 0 && (($insn_length-$align) > length($insns[$insn]))){
+			$insn_length -= $align;
+			$align = 0;
+		}
+		$fmt = "%-" . "$insn_length" . "s";
+		# Left align the translated instruction within the provided space
+		$insns[$insn] =  sprintf("$fmt", "$insns[$insn]")  if $insn != $#insns;
+
+		$curr_line .= $insns[$insn];
+		$insn++;
+	}
+	return  "$curr_line";
+}
+
+###############################################################################
+#	Old VCPU iScape to new VCPU iScape syntax                             #
+###############################################################################
+sub translate_iscape_vcpu_insns()
+{
+	$_= $_[0];
+
+	my @insns = split(';');
+
+	# This is to remove any duplicate statement terminators if it exists
+	@insns = grep /\S/, @insns;
+
+	# Keep track of the spaces so to maintain the format in the end
+	my @space_alignment = @insns;
+	s/^(\s+)?.*/\1/g foreach @space_alignment;
+
+	# Get the instruction count in this line
+	$insn_count = @insns;
+
+	# If multiple instructions found in a line, isolate each instruction and translate
+	my $insn=0;
+	my $curr_line='';
+	my $template = 0;
+	my $template_pattern;
+
+	$actual_line = $_;
+	# Format the instructions before we start translating
+	&format_insns foreach(@insns);
+
+	$align = 0;
+
+	# Translate each instruction in this line
+	foreach (@insns)
+	{
+		$insn_length = length($_);
+		# Detect multi-line comment that occurs between multi-line instruction
+		my $found_a_comment = $1 if s/^(\/\*.*\*\/\s*)//;
+
+		# Extract each operand to an array
+		@op = split;
+
+		# Keep track of the spaces after the mnemonic
+		$op_space[0] = $1 if ($actual_line =~ m/$op[0](\s*)/);
+
+		# Total number of operands
+		$num_operands = @op;
+
+		# Fix typos like ld.s0, ---> ld.s0 which may end up not finding the pattern
+		$op[0] =~ s/(\s+|,$)//g;
+		$mnemonic = $op[0];
+
+		@opnd = @op[1..$#op];
+
+		#Make the required modifications to the instruction
+		s/,//g  foreach (@opnd);
+		$_ = $mnemonic;
+
+		SWITCH:{
+			/^\b(mv|cmp|div|mod|mpy|rdiv|rmod|rsub|add|sub)\b$/ and do
+			{
+				my $operands = "g([0-9]|1[01])";
+				if ($mnemonic =~ /^(add|sub)$/)
+				{
+					$operands .= "|sp";
+				}
+
+				if (not((scalar(@opnd) == 2)
+						or ((scalar(@opnd) == 3) and ($opnd[0] eq $opnd[1])))
+					or not($opnd[0] =~ /\b$operands\b/)
+					or not($opnd[$#opnd] =~ /^(((0x|\$)[0-9a-f]+)|([0-9][1-9]*))$/))
+				{
+					last SWITCH;
+				}
+
+				my $value;
+				if ($opnd[$#opnd] =~ /^0x/i)
+				{
+					$value = hex($opnd[$#opnd]);
+				}
+				elsif ($opnd[$#opnd] =~ /^\$/)
+				{
+					$value = hex(substr $opnd[$#opnd], 1);
+				}
+				else
+				{
+					$value = $opnd[$#opnd] + 0;
+				}
+
+				# Add explicit .z for versions using Iu16 values
+				if ($value >= 0 && $value <= 65535)
+				{
+					$op[0] .= ".z";
+				}
+
+				last SWITCH;
+			}; 
+
+			# st
+			/^\bst\b$/ and do
+			{
+				# st [aX]+/-aY, llr_mode, llr_half" ==> st.llr_mode [aX]+/-aY
+				if ($mnemonic eq "st"
+					and scalar(@opnd) == 3
+					and grep {/\Q$opnd[1]/} @llr_mode
+					and grep {/\Q$opnd[2]/} @llr_half)
+				{
+					splice @op, -3;
+					push @op, $opnd[$#opnd-2];
+
+					$op[0] .= ".llr" . $opnd[1];
+					if ($opnd[2] eq "half")
+					{
+						$op[0] .= "half";
+					}
+				}
+				last SWITCH;
+			}; 
+
+		}
+
+		# Get the operand template if it exists
+		if (exists ($operand_template{$mnemonic}))
+		{
+			$template ||= $operand_template{$mnemonic};
+			$template_pattern = $template{$template};
+			$template = undef;
+		}
+
+		# Use the template pattern if its defined
+		if (defined($template_pattern))
+		{
+			$_ = $template_pattern;
+			s/op0/$opnd[0]/; s/op1/$opnd[1]/; s/op2/$opnd[2]/;
+			s/(\s+)/ /g;s/(\s),/,/g;s/,(\s?)/, /g;
+			s/(\s+)$//;
+			$op_space[0] = ' ' if $op_space[0] !~ m/\s+/;
+			$insns[$insn] = "$op[0]". "$op_space" . "$_;";
+			$template_pattern=undef;
+		}
+		else
+		{
+			s/(\s*)$//g foreach "@op";
+			$op_space[0] = ' ' if $op_space[0] !~ m/\s+/;
+			$_  = shift(@op). $op_space[0];
+			$_ .= "@op";
+			#s/(\s+)/ /g;s/(\s),/,/g;s/,(\s?)/, /g;
+			s/^/$found_a_comment/ if $found_a_comment;
+			$insns[$insn] = "$_;" if not /^}/;
+			$insns[$insn] =~ s/\s*;$/;/g;
+		}
+
+		# Compute the instruction length along with the space 
+		$insn_length += length($space_alignment[$insn + 1]) + 1;
+
+		$align += length($insns[$insn]) - $insn_length if ( length($insns[$insn]) > $insn_length );
+		if ($align != 0 && (($insn_length-$align) > length($insns[$insn])))
+		{
+			$insn_length -= $align;
+			$align = 0;
+		}
+		$fmt = "%-" . "$insn_length" . "s";
+
+		# Left align the translated instruction within the provided space
+		$insns[$insn] =  sprintf("$fmt", "$insns[$insn]")  if $insn != $#insns;
+		$curr_line .= $insns[$insn];
+		$insn++;
+	}
+
+	return  "$curr_line";
+}
+##########################################
+#  GCC VCPU TO ISCAPE SYNTAX TRANSLATION
+##########################################
+sub translate_vcpu_insns()
+{
+	$_= $_[0];
+
+	my @insns = split(';');
+
+	# This is to remove any duplicate statement terminators if it exists
+	@insns = grep /\S/, @insns;
+
+	# Keep track of the spaces so to maintain the format in the end
+	my @space_alignment = @insns;
+	s/^(\s+)?.*/\1/g foreach @space_alignment;
+
+	# Get the instruction count in this line
+	$insn_count = @insns;
+
+	# If multiple instructions found in a line, isolate each instruction and translate
+	my $insn=0;
+	my $curr_line='';
+	my $template = 0;
+	my $template_pattern;
+
+	$actual_line = $_;
+
+	# Format the instructions before we start translating
+	&format_insns foreach(@insns);
+
+	##################################################################
+	#         Merge Multiple instructions in a line if Possible
+	##################################################################
+	if ( $insn_count > 1 ) {
+		my $i = 0;
+		my $j = 0;
+		my $append = undef;
+		my @merge;
+		foreach (@insns) {
+			my @sp = split;
+			#Merge all the set Smode instructions
+			if ($sp[0] =~ /set/ && $sp[1] =~ /\bSmode\b$/ ) {
+				if (defined ($append)){
+					$merge[$append-1] .= ", @sp[2..$#sp]";
+				} else {
+					$merge[$j++] = $insns[$i];
+					$append = $j;
+				}
+			} else {
+				$merge[$j++] = "$insns[$i]";
+			}
+			$i++;
+		}
+		# Resultant instruction after merging
+		@insns = ( @merge );
+	}
+
+	$align = 0;
+	#########################################################
+	#      Translate each instruction in this line
+	#########################################################
+	foreach (@insns)
+	{
+		$insn_length = length($_);
+		# Detect multi-line comment that occurs between multi-line instruction
+		my $found_a_comment = $1 if s/^(\/\*.*\*\/\s*)//;
+
+		# Extract each operand to an array
+		@op = split;
+
+		# Keep track of the spaces after the mnemonic
+		$op_space[0] = $1 if ($actual_line =~ m/$op[0](\s*)/);
+
+		# Total number of operands
+		$num_operands = @op;
+
+		# Keep track of the spaces between operands obtain proper formatting
+		#for ($count = 1; $count <= $num_operands ; $count++) {
+		#	$op_space[$count] = $1 if ($actual_line =~ m/$op[$count](\s*)/);
+		#}
+
+		# Fix typos like ld.s0, ---> ld.s0 which may end up not finding the pattern
+		$op[0] =~ s/(\s+|,$)//g;
+		$mnemonic = $op[0];
+
+		# Bug fix
+		# Add comma for for those operands that dont have one
+		if ($num_operands ge 3 && $mnemonic !~ /^\bset\b/){
+			foreach(@op[1..$#op-1]){
+				$_ .= ',' if not /,$/;
+			}
+		}
+		#print "$line_number: $mnemonic ==> $patterns{$mnemonic}\n";
+
+		@opnd = @op[1..$#op];
+
+		# Convert #label --> label , @Var --> Var
+		s/^(@|#)// foreach (@opnd, @op);
+
+		#Make the required modifications to the instruction
+		s/,//g  foreach (@opnd);
+		$_ = $mnemonic;
+
+		SWITCH:{
+				/^\b(mv|cmp|div|mod|mpy|rdiv|rmod|rsub|add|sub)\b$/ and do
+				{
+					my $operands = "g([0-9]|1[01])";
+					if ($mnemonic =~ /^(add|sub)$/)
+					{
+						$operands .= "|sp";
+					}
+
+					if (((scalar(@opnd) == 2)
+							or ((scalar(@opnd) == 3) and ($opnd[0] eq $opnd[1])))
+						and ($opnd[0] =~ /\b$operands\b/)
+						and $opnd[$#opnd] =~ /^(((0x|\$)[0-9A-Fa-f]+)|([0-9][1-9]*))$/)
+					{
+						my $value;
+						if ($opnd[$#opnd] =~ /^0x/i)
+						{
+							$value = hex($opnd[$#opnd]);
+						}
+						elsif ($opnd[$#opnd] =~ /^\$/)
+						{
+							$value = hex(substr $opnd[$#opnd], 1);
+						}
+						else
+						{
+							$value = $opnd[$#opnd] + 0;
+						}
+
+						# Add explicit .z for versions using Iu16 values
+						if ($value >= 0 && $value <= 65535)
+						{
+							$op[0] .= ".z";
+							last SWITCH;
+						}
+					}
+				}; 
+
+				# add.s | st.s | rsub.s | mpy.s | 
+				# rdiv.s | mod.s | rmod.s | mv.s | cmp.s
+				/^\b(add|st|sub|rsub|mpy|div|rdiv|mod|rmod|mv|cmp)\.s\b$/ and	do {
+
+					# Convert hexadecimal to 16-bit signed decimal 
+					$op[2] = unpack('s', pack('S', hex($op[2]))) if $op[2] =~ /^0x/i;
+
+					last SWITCH;
+				}; 
+
+				# addA
+				/^\baddA\b$/ and	do {
+
+					if ( grep (/lines/, @opnd)){
+						s/lines// foreach (@op);
+						$op[0] = $lines{$mnemonic};
+					}
+					last SWITCH;
+				}; 
+
+				# clr
+				/^\bclr\b$/ and	do {
+
+					# clr r  	=>	 clr.VRA
+					# clr R gX, gY  =>	 clr.VRA
+					# clr g I	=>	 clr.g, I
+
+					if($opnd[0] =~ /\b(r|R)\b/){
+						$op[0] .= ".VRA";
+						$op[1] = undef;
+					} elsif ($opnd[0] =~ /\b(g)\b/i){
+						$op[0] .= ".$1";
+						$op[1] = undef;
+					} 
+					last SWITCH;
+				}; 
+
+				# ff0to1 | ff1to0
+				# Remove optional operands
+				/^\b(ff0to1|ff1to0)\b$/ and do {
+
+					# ff0to1 gY, gX(, H) ==>  ff0to1 gY, gX
+					# ff1to0 gY, gX(, H) ==>  ff1to0 gY, gX
+					if ( @op == 4 ){
+						$#op = 2;
+						$op[-1] = $opnd[1];
+					}
+					last SWITCH;
+				};
+
+				# fa0to1
+				# Remove optional operands
+				/^\b(fa0to1)\b$/ and do {
+
+					# fa0to1 (dH, )(H, )Iu2  ==> fa0to1 Iu2
+					if ( @op == 4 || @op == 3 ){
+						$#op = 1;
+						$op[1] = $opnd[-1];
+					}
+					last SWITCH;
+				};
+
+
+				# ld | st
+				/^\b(ld|st)\b$/ and	do {
+
+					# ld RFdes, Rmode          ==>     ld.Rmode RFdes
+					if ( $opnd[1] =~ /^(\w+)$/ && grep {/\b$opnd[1]\b/} keys %ld ){
+						$op[0] = "$ld{$opnd[1]}";
+						$op[1] = $opnd[0];
+						pop @op;
+					} 
+
+					# Remove ptr_mode if it exists; \Q is used to auto-escape regular
+					# expression problematic characters (ENGR00318389)
+					if (grep {/\Q$opnd[$#opnd]/} @ptr_mode)
+					{
+						splice @op, -2;
+						push @op, $opnd[$#opnd-1];
+
+						# Add ptr_mode as mnemonic qualifier for the "br" mode
+						if ($opnd[$#opnd] eq "br")
+						{
+							$op[0] .= ".br";
+						}
+					}
+
+					# st [aX]+/-aY, llr_mode, llr_half" ==> st.llr_mode [aX]+/-aY
+					if ($mnemonic eq "st"
+						and scalar(@opnd) == 3
+						and grep {/\Q$opnd[1]/} @llr_mode
+						and grep {/\Q$opnd[2]/} @llr_half)
+					{
+						splice @op, -3;
+						push @op, $opnd[$#opnd-2];
+
+						$op[0] .= ".llr" . $opnd[1];
+						if ($opnd[2] eq "half")
+						{
+							$op[0] .= "half";
+						}
+					}
+
+					# Remove lines from operand syntax
+					if ( grep (/lines/, @opnd)){
+						$op[0] = $lines{$op[0]};
+						$op[1] = "$`$'" if  $op[1] =~ /(lines)/;
+						$op[2] = "$`$'" if  $op[2] =~ /(lines)/;
+					}
+
+					# Convert [-Imm+sp] ==> [sp-Imm]
+					# Convert [-Imm+aX] ==> [aX-Imm]
+					foreach(@op[1..$#op]){
+						if (/(\[)(.*)(\-|\+)(sp|a\d+)(\],?)$/){
+							my @str =  ($1, $2, $3, $4, $5);
+							if ($str[1] !~ /sp|a\d+/){
+								($str[1],$str[3]) = ($str[3], $str[1]);
+								$str[2] = undef if $str[3] =~ /^\-/;
+								$_ = "@str";
+								s/\s+//g;
+							}
+						}
+					}
+
+					# Convert [ax + I] ==> [aX + (I/(AU*2))] if I < -128 || I > 127
+					# Convert [ax]+I ==> [aX]+(I/(AU*2))] if I < -128 || I > 127
+					if  ($op[1] =~ /(\+|\-)(\d+)/ && $op[1] !~ /sp/){
+						my $VAL="$&";
+						if ($VAL < -128 || $VAL > 127){
+							$VAL=($VAL/($LINES));
+							$VAL = "$1$VAL" if $VAL !~ /^\-/;
+							$op[0] = $lines{$op[0]};
+						}
+						$op[1] = "$`$VAL$'";
+					} elsif ($op[2] =~ /(\+|\-)(\d+)/ && $op[2] !~ /sp/ && $op[1] !~ /H/){
+						my $VAL="$&";
+						if ($VAL < -128 || $VAL > 127){
+							$VAL=($VAL/($LINES));
+							$VAL = "$1$VAL" if $VAL !~ /^\-/;
+							$op[0] = $lines{$op[0]};
+						}
+						$op[2] = "$`$VAL$'";
+					}
+
+					last SWITCH;
+				}; 
+
+				# ld.u and st.u
+				/^\b(ld|st)\.u\b$/ and	do {
+
+					# Remove (.u) for the postincrement instructions
+					$op[0] = substr($op[0], 0, 2) if $opnd[0] !~ /^\[.+?(\+|\-).+?\]/ and $opnd[1] !~ /^\[.+?(\+|\-).+?\]/;
+
+					# Remove ptr_mode if it exists; \Q is used to auto-escape regular
+					# expression problematic characters (ENGR00318389)
+					if (grep {/\Q$opnd[$#opnd]/} @ptr_mode)
+					{
+						splice @op, -2;
+						push @op, $opnd[$#opnd-1];
+
+						# Add ptr_mode as mnemonic qualifier for the "br" mode
+						if ($opnd[$#opnd] eq "br")
+						{
+							$op[0] .= ".br";
+						}
+					}
+
+					# Remove lines from operand syntax
+					if ( grep (/lines/, @opnd)){
+						$op[0] = $lines{$op[0]};
+						$op[1] = "$`$'" if  $op[1] =~ /(lines)/;
+						$op[2] = "$`$'" if  $op[2] =~ /(lines)/;
+					} 
+
+					#Convert [-Imm+sp] ==> [sp-Imm]
+					#Convert [-Imm+aX] ==> [aX-Imm]
+					foreach(@op[1..$#op]){
+						if (/(\[)(.*)(\-|\+)(sp|a\d+)(\],?)$/){
+							my @str =  ($1, $2, $3, $4, $5);
+							if ( $str[1] !~ /(sp|a\d+)/){
+								($str[1], $str[3]) = ($str[3], $str[1]);
+								$str[2] = undef if ($str[3] =~ /^\-/);
+								$_ = "@str";
+								s/\s+//g;
+							}
+						}
+					}
+
+					# Convert [ax + I] ==> [aX + (I/(AU*2))] if I < -128 || I > 127
+					# Convert [ax]+I ==> [aX]+(I/(AU*2))] if I < -128 || I > 127 
+
+					if  ($op[1] =~ /(\+|\-)(\d+)/ && $op[1] !~ /sp/){
+						my $VAL="$&";
+						if ($VAL < -128 || $VAL > 127){
+							$VAL=($VAL/($LINES));
+							$VAL = "$1$VAL" if $VAL !~ /^\-/;
+							$op[0] = $lines{$op[0]};
+						}
+						$op[1] = "$`$VAL$'";
+					} elsif ($op[2] =~ /(\-|\+)(\d+)/ && $op[2] !~ /sp/ && $op[1] !~ /H/){
+						my $VAL="$&";
+						if ($VAL < -128 || $VAL > 127){
+							$VAL=($VAL/($LINES));
+							$VAL = "$1$VAL" if $VAL !~ /^\-/;
+							$op[0] = $lines{$op[0]};
+						}
+						$op[2] = "$`$VAL$'";
+					}
+
+					last SWITCH;
+				};
+
+				# st.w | st.w.u
+				/^\b(st)\.w(\.u)?\b$/ and	do {
+					# Remove (.u) for the postincrement instructions
+					if ($opnd[0] !~ /^\[.+?(\+|\-).+?\]/ && $opnd[1] !~ /^\[.+?(\+|\-).+?\]/){
+						$op[0] = $1 if /(st.w)(.u)?/;
+					}
+
+					# Remove ptr_mode if it exists; \Q is used to auto-escape regular
+					# expression problematic characters (ENGR00318389)
+					if (grep {/\Q$opnd[$#opnd]/} @ptr_mode)
+					{
+						splice @op, -2;
+						push @op, $opnd[$#opnd-1];
+
+						# Add ptr_mode as mnemonic qualifier for the "br" mode
+						if ($opnd[$#opnd] eq "br")
+						{
+							$op[0] .= ".br";
+						}
+					}
+
+
+					# Remove lines from operand syntax
+					if ( grep (/lines/, @opnd)){
+						$op[0] = $lines{$op[0]};
+						$op[1] = "$`$'" if  $op[1] =~ /(lines)/;
+						$op[2] = "$`$'" if  $op[2] =~ /(lines)/;
+					} else {
+						# Convert [ax + I] ==> [aX + (I/(AU*2))] if I < -128 || I > 127
+						# Convert [ax]+I ==> [aX]+(I/(AU*2))] if I < -128 || I > 127 
+						if  ($op[1] =~ /(\+|\-)\s*?(\d+)/ && $op[1] !~ /sp/){
+							my $VAL="$&";
+							if ($VAL < -128 || $VAL > 127){
+								$VAL=($VAL/($LINES));
+								$VAL = "$1$VAL" if $VAL !~ /^\-/;
+								$op[0] = $lines{$op[0]};
+							}
+							$op[1] = "$`$VAL$'";
+						} elsif ($op[2] =~ /(\+|\-)(\d+)/ && $op[2] !~ /sp/ && $op[1] !~ /H/){
+							my $VAL="$&";
+							if ($VAL < -128 || $VAL > 127){
+								$VAL=($VAL/($LINES));
+								$VAL = "$1$VAL" if $VAL !~ /^\-/;
+								$op[0] = $lines{$op[0]};
+							}
+							$op[2] = "$`$VAL$'";
+						}
+					}
+					last SWITCH;
+				};
+
+				# lsb2rf | lsb2rf.sr
+				/^\blsb2rf(\.sr)?\b$/ and	do {
+					#lsb2rf R7[rV], gX
+					#lsb2rf.sr R7[rV], gX
+
+					$op[1] = "[r7V],"  if $opnd[0] =~ /(\[rV\])/;
+
+					last SWITCH;
+				};
+
+				# mv | mv.h | mv.w
+				/^\bmv(\.([hw]|cc))?\b$/ and do
+				{
+					# mv(.cc) GP, div	==>	mv.cc GP, quot
+					# mv(.cc) GP, mod	==>	mv.cc rem
+					if ($opnd[1] =~ /(div|mod)/)
+					{
+						$op[2] = $mvcc{$opnd[1]} ;
+					}
+					else
+					{
+						$op[0] = "mv.w"  if $op[0] =~ /mv$/ && ($opnd[0] =~ /(\[rV\])/ || $opnd[1] =~ /(\[rS0\]$)/);
+						$op[1] = "[r7V],"  if $opnd[0] =~ /(\[rV\])/;
+						$op[2] = $1  if $opnd[1] =~ /(\[rS0\]$)/;
+					}
+
+					last SWITCH;
+				}; 
+
+				# mad | mac | maf | mads | dit | dif | rcp.e | rcp | rrt | rrt.e | srt.e | srt | atan
+				# Remove all optional operands
+				/^\b(mad|mac|maf|mads|dit|dif|rcp\.e|rcp|rrt\.e|rrt|srt\.e|srt|atan)\b$/ and do {
+
+					@op =( $1 );
+
+					last SWITCH;
+				};
+
+				# pushm | popm
+				/^\b(pushm|popm)\b$/ and	do {
+					# Expand g0-5 => g0, g1, g3, g3, g4, g5
+					# Expand as0-5 => as0, as1, as2, as3, as4, as5
+					if ($opnd[0] =~ /([ag][s]?)(\d+)-(\d+)/){
+						$op[1] = undef;
+						$op[1] .= " $1"."$_,"  foreach($2..$3);
+						$op[1] =~ s/,$//;
+					}
+				}; 
+
+				# rd | bin2num
+				# Remove optional operands
+				/^\b(rd|bin2num)\b$/ and do {
+
+					@op = ( $mnemonic, $opnd[0] );
+
+					last SWITCH;
+				};
+
+				#set
+				/^\bset\b$/ and	do {
+
+					if ( $opnd[0] =~ /\b(incr|range[12]?)\B/) {
+						@fields = split /_/, $opnd[0];
+						$op[0] = $set{$fields[0]} if grep {/\b$fields[0]\b/} keys %set;
+						$op[1] = $fields[1].',';
+					} elsif( grep {/\b$opnd[0]\b/} keys %set ){
+						$op[0] = $set{$opnd[0]};
+						$op[1] = undef;
+						$op[3] = $br_mode{$opnd[2]}
+							if $opnd[0] =~ /\bbr\b/
+							and defined($br_mode{$opnd[2]});
+					}
+
+					if ( $opnd[0] =~ /\bSmode\b/){
+						# Orderby S0mode, S1mode, S2mode
+						my @S0, @S1, @S2;
+						foreach (@op[2..$#op]){
+							$_ .= ',' if !/,$/;
+							push @S0, $_ if /^S0/;	
+							push @S1, $_ if /^S1/;	
+							push @S2, $_ if /^S2/;	
+						}
+						@op = ( $op[0], @S0, @S1, @S2);
+						( @S0, @S1, @S2 ) = ( undef );
+						@op[-1] =~ s/,$//;
+					} elsif ( $opnd[0] =~ /\bnco\b/){
+						# Enable conjugate bit and sign.
+						my $conj = 0x40000000;
+						my $sign = "-";
+						if ( $opnd[-1] =~ /\bconj\b/ ) {
+							splice @opnd, -1;
+							splice @op, -1;
+							# Disable conjugate bit and sign.
+							$conj = 0x0;
+							$sign = "";
+						} 
+
+						#  Avoid processing the operands if the second form is detected
+						#  ENGR00262079: Assembler to support the below form
+						# 	set nco {radix2, singles, normal}, Iu10, Is31 
+						if (@opnd[$#opnd-2] =~ /^\d+/){
+							# Convert 
+							# 	set nco {radix2, singles, normal}, Iu10, Iu4, Iu3, Iu2(, conj) 
+							# to the below form
+							#	set.nco {radix2, singles, normal}, Iu10, Is31
+							#
+							# k0 = ( pow(2,30) / pow(2,k0) / pow(3,k1) / pow(5,k2) )+0.5;
+							# where k0 => Iu4, k1 => Iu3, k2 => Iu2
+							@ops = @opnd[$#opnd-2..$#opnd];
+							$ops[0] = ((2**30)/(2**$ops[0])/(3**$ops[1])/(5**$ops[2])+(1/2));
+							$ops[0] &= 0x3fffffff;
+
+							# Add conjugate bit or sign.
+							if ($ops[0] == 0)
+							{
+								$ops[0] = $conj;
+							}
+							else
+							{
+								$ops[0] = $sign . $ops[0];
+							}
+							splice @op, -3;
+							push @op, $ops[0];
+						}
+					}
+					elsif ( $opnd[0] =~ /\bcgu\b/)
+					{
+						if ($opnd[$#opnd - 1] =~ /\b(ovsf)\b/ && $opnd[-1] =~ /\b(conj)\b/) 
+						{
+							# set cgu, cgu_mode, ovsf, conj ==> set.cgu Iu5
+							splice @opnd, -2;
+							splice @op, -2;
+							# Set the bits ovsf and conj (conj => bit(4), ovsf => bit(3), cgu_mode => (0-2))
+							$op[-1] = $cgu_mode{$opnd[-1]} | 0x18;
+						}
+						elsif ( $opnd[-1] =~ /\b(ovsf|conj)\b/ )
+						{
+							# Bits 0-2 => cgu_mode 
+							# Bit 3  => ovsf (i.e. 0x8)
+							my $val = 0x8;  
+							# Bit 4 => conj (i.e. 0x10)
+							$val = 0x10 if $1 =~ /conj/;
+							splice @opnd, -1;
+							splice @op, -1;
+							$op[-1] = $cgu_mode{$opnd[-1]} | $val;
+						}
+						else
+						{
+							$op[-1] = $cgu_mode{$opnd[-1]};
+						}
+					# Insert comma if the input has no comma
+					}
+					elsif ( $opnd[0] =~ /\bc_reg\b/ )
+					{
+						$op[-2] .= ',' if  $op[-2] !~ /,$/;
+					}
+
+					foreach(@op[2..$#op]){
+						if (/lines/){
+							if (/(\d+)(\.)?(\d+)lines\b/){
+								$_ = "__VRA_ELEM($1, $3)";
+							} elsif (/(\d+)lines\b/){
+								$_ = "__VRA_ELEM($1, 0)";
+							}
+						}
+						$_ .= ',' if !/,$/;
+					}
+					$op[$#op] =~ s/,$//;
+
+					last SWITCH;
+				}; 
+
+				#setA | setB
+				/^\bset[AB]\b$/ and	do {
+
+					if ( $opnd[0] =~ /\bpage\B/) {
+						my @fields = split /_/, $opnd[0];
+						$op[0] .= ".$set{$fields[0]}" if grep {/\b$fields[0]\b/} keys %set;
+						$op[1] = $fields[1].',';
+					} else {
+						$op[0] .= ".VRAptr";
+						$op[1] .= ',' if $op[1] !~ /,$/;
+					}
+					if ( grep (/lines/, @opnd)){
+						$op[1] = ($1 * $LINES * 2) + $3 if  $op[1] =~ /(\d*)(\.)?(\d*)lines\b/;
+						$op[2] = ($1 * $LINES * 2) + $3 if  $op[2] =~ /(\d*)(\.)?(\d*)lines\b/;
+						$op[2] .= ',' if $op[2] !~ /,$/ and $#op == 3;
+					}
+
+					last SWITCH
+				};
+
+				#wr
+				/^\bwr\b$/ and	do {
+
+					# wr R[rV], Vmode	==>	wr.Vmode 
+					if ( defined($opnd[-1]) && grep {/\b$opnd[-1]\b/} keys %wr ){
+						@op = ( $wr{$opnd[-1]} );
+					}
+					last SWITCH;
+				}; 
+
+				#xtrm
+				/^\bxtrm\b$/ and	do {
+
+					# xtrm gX, aY	==>    xtrm aY, gX	
+					( $op[1], $op[2] ) = ( "$opnd[1],", $opnd[0] ) if $op[1] =~ /g[0-9]+/ and $op[2] =~ /a[0-9]/;
+
+					last SWITCH;
+				}; 
+		}
+
+		# Get the operand template if it exists
+		if (exists ($operand_template{$mnemonic})){
+			$template ||= $operand_template{$mnemonic};
+			$template_pattern = $template{$template};
+			$template=undef;
+		}
+
+		# Use the template pattern if its defined
+		if (defined($template_pattern)){
+			$_ = $template_pattern;
+			s/op0/$opnd[0]/; s/op1/$opnd[1]/; s/op2/$opnd[2]/;
+			s/(\s+)/ /g;s/(\s),/,/g;s/,(\s?)/, /g;
+			s/(\s+)$//;
+			$op_space[0] = ' ' if $op_space[0] !~ m/\s+/;
+			$insns[$insn] = "$op[0]". "$op_space" . "$_;";
+			$template_pattern=undef;
+		} else {
+			s/(\s*)$//g foreach "@op";
+			$op_space[0] = ' ' if $op_space[0] !~ m/\s+/;
+			$_  = shift(@op). $op_space[0];
+			$_ .= "@op";
+			#s/(\s+)/ /g;s/(\s),/,/g;s/,(\s?)/, /g;
+			s/^/$found_a_comment/ if $found_a_comment;
+			$insns[$insn] = "$_;" if not /^}/;
+			$insns[$insn] =~ s/\s*;$/;/g;
+		}
+		# Compute the instruction lenght along with the space 
+		$insn_length += length($space_alignment[$insn+1]) + 1;
+		
+		$align += length($insns[$insn]) - $insn_length if ( length($insns[$insn]) > $insn_length );
+		if ($align != 0 && (($insn_length-$align) > length($insns[$insn]))){
+			$insn_length -= $align;
+			$align = 0;
+		}
+		$fmt = "%-" . "$insn_length" . "s";
+
+		# Left align the translated instruction within the provided space
+		$insns[$insn] =  sprintf("$fmt", "$insns[$insn]")  if $insn != $#insns;
+		$curr_line .= $insns[$insn];
+		$insn++;
+	}
+	return  "$curr_line";
+}
+
+#####################################
+# Function Preprocess 
+#####################################
+sub preprocess
+{
+	print "preprocessing file ...\n";
+	$PTEMP_FILE = "$INPUT_FILE.E";
+	$POUT_FILE = "$INPUT_FILE.txt";
+	system("cp -f $INPUT_FILE $PTEMP_FILE");
+
+	#print "PINPUT_FILE ==> $PINPUT_FILE\n";
+	open PREAD, "<$PINPUT_FILE" or die "Cannot open $PINPUT_FILE!";
+	open INFILE, "<$PTEMP_FILE" or die "Cannot open $PTEMP_FILE!";
+
+	LINE: while (<PREAD>){
+
+		#ignore comments and empty lines
+		s/^(\s+)//g;
+		#Get the Pattern and Replacement text
+		($variable,$value)=split('=');
+
+		$variable =~ s/(\s+)//g;
+		$value =~ s/(\s+)//g;
+
+		open PWRITE, ">$POUT_FILE";
+		line: while (<INFILE>){
+			if (/^($|\/\/)/) { print PWRITE; next line; } 
+
+			if (/\/\//){
+				my @this=split('//');
+				$_ = shift(@this);
+				s/\b$variable\b/$value/g;
+				print PWRITE "$_" . "//" . "@this";
+				next line;
+			}
+			s/\b$variable\b/$value/g;
+			print PWRITE;
+		}
+		close INFILE;
+		close PWRITE;
+		system("mv $POUT_FILE $PTEMP_FILE");
+		open INFILE, "<$PTEMP_FILE" or die "Cannot open $PTEMP_FILE!";
+		next LINE;
+	}
+	close PREAD;
+
+	if ($ONLY_PREPROCESS eq 1){
+		print "preprocessed output to file $PTEMP_FILE\n";
+	} else {
+		system("mv $PTEMP_FILE $INPUT_FILE");
+		print "done peprocessing ...\n";
+	}
+}
+
+
+###############################################################################
+#	IPPU syntax                                                           #
+###############################################################################
+sub gather_ippu_syntax
+{
+	%br_mode = (
+		'mode0'  =>   'fft32',
+		'mode1'  =>    'fft64',
+		'mode2'  =>   'fft128',
+		'mode3'  =>    'fft256',
+		'mode4'  =>   'fft512',
+		'mode5'  =>   'fft1024',
+		'mode6'  =>   'fft2048',
+		'mode7'  =>   'fft4096',
+		'mode8'  =>   'fft8192',
+		'mode9'  =>   'fft16384',
+	);
+
+	%ldtype = (
+		"index"         =>     "ld.index",
+		"mask"          =>      "ld.mask",
+	);
+
+	%set_ippu = (
+		'br'    	=>	'set.br',
+		'dr_config'    	=>	'set.dr.config',
+		'dr_radix'    	=>	'set.dr.radix',
+		'mask' 		=>	'set.mask',
+		'range'		=> 	'set.range',
+		'loop' 		=> 	'set.loop',
+	);
+
+
+	%ippu_directives = (
+	 text     => '.section .itext, "ax", @progbits',
+	 data    => '.section .idata, "aw", @progbits',
+	rodata   => '.section .irodata, "a", @progbits',
+	 bss     => '.section .ibss, "aw", @nobits',
+ );
+}
+
+###############################################################################
+#	iScape IPPU syntax                                                    #
+###############################################################################
+sub  gather_iscape_ippu_syntax
+{
+}
+
+###############################################################################
+#	VCPU syntax                                                           #
+###############################################################################
+sub gather_vcpu_syntax
+{
+
+	%set = (
+		'c_reg'		=> 	'set.creg',
+		'cgu'		=> 	'set.cgu',
+		'incr' 		=> 	'set.VRAincr',
+		'loop' 		=> 	'set.loop',
+		'nco'		=>	'set.nco',
+		'nco_k'		=>	'mv nco_k,',
+		'range1'	=> 	'set.VRArange1',
+		'range2'	=>	'set.VRArange2',
+		'range'		=> 	'set.range',
+		'range_bdr'	=>	'set.range.bdr',
+		'Rrot'		=> 	'set.Rrot',
+		'Smode'		=> 	'set.Smode',
+		'VRAptrs'	=> 	'set.VRAptr',
+		'VRAincrs'	=>	'set.VRAincr',
+		'Vprec'		=>	'set.prec',
+		'xtrm'		=>	'set.xtrm',
+		'page'		=>	'VRApg',
+		'br'		=>	'set.br',
+	);
+
+	%wr = (
+		"fn"		=>	"wr.fn",
+		"fn1"		=>	"wr.fn1",
+		"normal"	=>	"wr.normal",
+		"even"		=>	"wr.even",
+		"fftn"		=>	"wr.fftn",
+		"fft1"		=>	"wr.fft1",
+		"fft2"		=>	"wr.fft2",
+		"fft3"		=>	"wr.fft3",
+		"fft4"		=>	"wr.fft4",
+		"fft5"		=>	"wr.fft5",
+		"fft6"		=>	"wr.fft6",
+		"fft7"		=>	"wr.fft7",
+	);
+
+	%ld = (
+		"h2h"          =>     "ld.h2h",
+		"h2l"          =>     "ld.h2l",
+		"h2l_l2h"      =>     "ld.h2l_l2h",
+		"l2h"          =>     "ld.l2h",
+		"l2l"          =>     "ld.l2l",
+		"l2h_h2l"      =>     "ld.l2h_h2l",
+		"normal"       =>     "ld.normal",
+		"qam"          =>     "ld.qam",
+		"replace_h"    =>     "ld.replace_h",
+		"replace_l"    =>     "ld.replace_l",
+		"trans_h"      =>     "ld.trans_h",
+		"trans_l"      =>     "ld.trans_l",
+		"zeros"        =>     "clr",
+	);
+
+
+	%mvcc = (
+		"div"		=> "quot",
+		"mod"		=> "rem",
+	);
+
+	%br_mode = (
+		'32'   => '0',
+		'64'   => '1',
+		'128'  => '2',
+		'256'  => '3',
+		'512'  => '4',
+		'1024' => '5',
+		'2048' => '6',
+	);
+
+	%lines = (
+		"addA"		=> "addA.laddr",
+		"ld"		=> "ld.laddr",
+		"ld.u"		=> "ld.laddr.u",
+		"st"		=> "st.laddr",
+		"st.u"		=> "st.laddr.u",
+		"st.w"		=> "st.laddr.w",
+		"st.w.u"	=> "st.laddr.w.u",
+	);
+
+
+	%cgu_mode = (
+		"dl_sc_singles" => 0,
+		"dl_sc"		=> 1,
+		"ul_sc_long"	=> 2,
+		"ul_sc_short"	=> 3,
+		"lte_gold"	=> 4, 
+	);
+
+	@ptr_mode = qw( 
+	br
+	dr
+	bdr
+	di
+	);
+
+	@llr_mode = qw(
+	4
+	8
+	);
+
+	@llr_half = qw(
+	half
+	half_fixed
+	);
+
+	@Rmode	= qw (
+	normal
+	zeros
+	l2l
+	h2h
+	h2l_l2h
+	l2h_h2l
+	h2l
+	l2h
+	replace_h
+	replace_l
+	trans_h
+	trans_l
+	qam
+	);
+
+	@Vmode = qw (
+	normal
+	fft1
+	fft2
+	fft3
+	fft4
+	fft5
+	fft6
+	);
+
+#**************************************************************
+#----------------- Template Patterns -------------------------*
+#**************************************************************
+	%template = (
+		'template_1' => '[op0]op1',
+		'template_2' => 'range_op0 op1, op2',
+		'template_3' => 'R7[rV], op0',
+		'template_4' => 'op0, op1, cmp_ptr',
+		'template_5' => 'op1 op0 op2',
+		'template_6' => '[op0]op2, op1',
+		'template_7' => 'range1_op0 op1, op2',
+		'template_8' => 'range2_op0 op1, op2',
+		'template_9' => 'op0, op1',
+		'template_10' => 'incr_op0 op1',
+	);
+
+}
+
+###############################################################################
+#	iScape VCPU syntax                                                    #
+###############################################################################
+sub gather_iscape_vcpu_syntax
+{
+	@llr_mode = qw(
+		4
+		8
+	);
+
+	@llr_half = qw(
+		half
+		half_fixed
+	);
+}
+
+#####################################
+# Print Instructions (for debugging)
+#####################################
+sub print_insns()
+{
+	print DEBUG  '-' x 35 ,"\n";
+	$_=$_[0];
+	print DEBUG  "Line $line_number: \n\t";
+	print DEBUG;
+	my @insns = split(';');
+	$insn_count = @insns;
+	print DEBUG "\n\nNo of instructions in this line: $insn_count\n";
+
+	#print each instruction
+	my $j=1;
+	foreach (@insns)
+	{
+		s/^(\s+)//;
+		#Provide proper spacing for operands a ,b,c ==> a, b, c
+		s/(\s+)/ /g;s/(\s),/,/g;s/,(\s?)/, /g;
+		print DEBUG "\nInstruction $j : \n\t";
+		$j++;
+		print DEBUG;
+		@operands = split;
+		$num_operands = @operands - 1;
+		print DEBUG "\n\nNo of Operands in this instruction ==> $num_operands \n";
+		my $i=0;
+		foreach $operand (@operands)
+		{
+			$operand =~ s/,$//;
+			print DEBUG "\tMnemonic --> $operand\n"   if $i eq 0;
+			print DEBUG "\tOperand $i --> $operand\n" if $i;
+			$i++;
+		}
+	}
+	print DEBUG  '-' x 35 ,"\n";
+}
+
+sub translate_ippu_directives
+{
+	my $line_terminator= $1 if s/(\s+)$//;
+	s/\.i//;s/\s*//;
+	s/.*/$ippu_directives{$_}$line_terminator/;
+}
+
+sub begin_translation
+{
+	#Open files to read/write
+	open INFILE, "<$INPUT_FILE" or die "Cannot open $INFILE!";
+	open OUTFILE, ">$OUTPUT_FILE" or die "Cannot open $OUTPUT_FILE!";
+
+	$ignore_line="no";
+
+	# Read each line
+	LINE: while (<INFILE>)
+	{
+		$line_number += 1;
+
+		# Translate IPPU Directives 
+		&translate_ippu_directives if $TRANSLATE_IPPU and m/^\s*\.i(text|data|rodata|bss)/;
+
+		# Ignore Empty lines
+		if (/^($|\s*?$)/)
+		{
+			s/(\s+)$/$newline/ if defined $USER_LINE_ENDING;
+			print OUTFILE;
+			next LINE;
+		}
+
+		# ignore multi-line comments
+		if (/^\s*\/(\/|\*)/ || ($ignore_line eq "yes")){
+			$ignore_line="yes";
+			$ignore_line="no" if (/(\/|\*)\//);
+
+			s/(\s+)$/$newline/ if defined $USER_LINE_ENDING;
+			print OUTFILE;
+			next LINE;
+		}
+
+		# Replace all spaces at the beginning with a tab
+		# May ignore labels, #defines, opening and closing braces
+		s/^/\t/ if not /^(#|\/\/|\.?\w+:|\s+)/;
+
+		$space = "";
+		# Keep the leading spaces in place
+		if (/^(\s+)/)
+		{
+			$space = "$1";
+			s/^(\s+)//g; 
+		}
+		
+		# ignore comments, directives and labels
+		if (/^(#|\/\/|\.?\w+:\s*?$|\s+\.|\s*?{\s*?$|\s+}\s*?$)/)
+		{
+			s/(\s+)$/$newline/ if defined $USER_LINE_ENDING;
+			$_ = $space . $_;
+			print OUTFILE;
+			next LINE;
+		}
+
+		if (/^(\{\s*)/)
+		{
+			$space .= "$1"; 
+			s/^\{\s*?//g;
+		}
+
+		# Set the initialize the instruction count  zero
+		# Convert  instruction  //comment  ----> instruction; //comment
+		if (/(\s*)\/\//)
+		{
+			@instruction=split('//');
+			$_ = shift(@instruction);
+			$inst_len =  length($_);
+			$inst_fmt = "%-" . "$inst_len" . "s";
+
+			# Keep the comments to print it later on after the processing
+			#$comment = "\t\t\t//"."@instruction";
+			#$comment = "$1//"."@instruction";
+			$comment = "//"."@instruction";
+
+			# Enforce line ending
+			$comment =~ s/(\s+)$/$newline/ if defined $USER_LINE_ENDING;
+			$is_comment = 1;
+		}
+
+		{
+			s/(\s+)$//g;
+			# Preserve the Source line ending and use the same in the translated file
+			$newline=$1 if not defined $USER_LINE_ENDING;
+
+			# Add statement terminator at the end for instructions that don't have one
+			$no_terminator=1 if not /;$/;
+		}
+
+		# Handle case where loop label and instruction are on the same line
+		if (/^(\.?\w+):(\s*)(.*)$/){
+			$space = "$1:$2";
+			$_ = "$3";
+		}
+
+		# Translate the instructions
+		# The reference points to the required operations
+		# that get set based on the options provided by the user
+		$translated_line = $translate_insns_ref->($_); 
+
+		$translated_line =~ s/;$// if $no_terminator == 1;
+
+		# Print the instruction...This is meant for debugging
+		&print_insns($_) if defined $_DEBUG; 
+
+		# Add the comments to the instruction if any
+		if ($is_comment eq 1){
+		        $translated_line =  sprintf("$inst_fmt", "$translated_line");
+			$translated_line .= $comment;
+			$is_comment=0 ; 
+		} else {
+			$translated_line .= $newline;
+		}
+
+		$translated_line = "$space" . "$translated_line"; 
+		$space = undef;
+		$no_terminator = 0;
+
+		print OUTFILE $translated_line;
+		next LINE;
+	}
+	close INFILE;
+	close OUTFILE;
+}
+
+#####################################
+# Main Function
+#####################################
+sub main()
+{
+	#Process Options
+	&process_options;
+
+	# Environment Setting
+	&set_environment_variables;
+
+	# Gather the new syntax
+	$gather_new_syntax->();
+
+	# Begin Translation
+	&begin_translation;
+
+	# Pre-process the file
+	if ($P_FILE_STATUS eq 1)
+	{
+		$INPUT_FILE=$OUTPUT_FILE;
+		&preprocess 
+	}
+
+	close DEBUG if defined $_DEBUG;
+}
+
+#####################################
+#Calling main 
+#####################################
+&main;
+
