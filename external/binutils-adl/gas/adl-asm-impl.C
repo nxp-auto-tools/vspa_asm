@@ -4947,7 +4947,8 @@ static bool check_null_bundle(InstrBundle &instr_bundle)
 static void check_delay_slot_restrictions(
 	const bool &prev_rts,
 	const bool &prev_jmp_jsr,
-	const struct jmp_jsr_info &prev_jj_info)
+	const struct jmp_jsr_info &prev_jj_info,
+	const bool &two_opS)
 {
 	if (prev_rts)
 	{
@@ -4962,6 +4963,9 @@ static void check_delay_slot_restrictions(
 		else if (ms.jmp_jsr)
 		{
 			as_bad("found \'" JMP_JSR_INST "\' in the delay slot of a \'rts\'");
+		}
+		else if (two_opS){
+			as_bad("found a packet with two opS instructions in the delay slot of a rts");
 		}
 	}
 
@@ -4995,6 +4999,10 @@ static void check_delay_slot_restrictions(
 					"slot of %sconditional \'" JMP_JSR_INST "\'", type);
 			}
 		}
+		if (two_opS){
+			as_bad("found a packet with two opS instructions in the delay slot of a %sconditional" JMP_JSR_INST,type);
+		}
+		
 	}
 }
 
@@ -5401,11 +5409,12 @@ static void check_instr_bundle(InstrBundle &instr_bundle, struct coff_info &cinf
 	extract_coff_info(instr_bundle, cinfo);
 	ms.li = lis->top()->clone();
 	assert(ms.li);
+	bool two_opS = check_two_opS(instr_bundle);
 	struct section_flags *sf = ss->get_section_flags(now_seg);
 
 	// Check the delay slot restrictions.
-	check_delay_slot_restrictions(sf->prev2_rts, sf->prev2_jmp_jsr, sf->prev2_jj_info);
-	check_delay_slot_restrictions(sf->prev_rts, sf->prev_jmp_jsr, sf->prev_jj_info);
+	check_delay_slot_restrictions(sf->prev2_rts, sf->prev2_jmp_jsr, sf->prev2_jj_info, two_opS);
+	check_delay_slot_restrictions(sf->prev_rts, sf->prev_jmp_jsr, sf->prev_jj_info,two_opS);
 	if ((sf->prev2_load || sf->prev_load) && ms.move)
 	{
 		as_bad("Found a move instruction in the next two sets after a load");

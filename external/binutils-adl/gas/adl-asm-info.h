@@ -590,6 +590,7 @@ extern std::string adl_asm_version;
 extern bool check_loop_end(adl::InstrBundle &);
 extern bool check_set_loop_labels(adl::InstrInfo &instr);
 extern bool check_set_loop_labels(const struct adl_opcode *);
+extern bool check_two_opS(adl::InstrBundle &instr_bundle);
 extern bool check_compactable(adl::InstrBundle &, int &, int &, bool&);
 extern bool check_opS_instr(adl::InstrInfo &);
 extern bool check_null_instr(adl::InstrInfo &);

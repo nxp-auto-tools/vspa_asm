@@ -44,6 +44,25 @@ bool check_set_loop_labels(const struct adl_opcode *opcode)
 	return opcode && opcode_has_attr(opcode, instr_loop_label);
 }
 
+//  Check if an instruction bundle contains two opS instructions
+bool check_two_opS(adl::InstrBundle &instr_bundle)
+	
+{
+	unsigned size = instr_bundle.group_size();
+	int opS=0;
+
+	for (unsigned i = 0; i < size; i++)
+	{
+		adl::InstrInfo instr = instr_bundle[i];
+
+		if(instr.instrHasAttr(instr_opS)||instr.instrHasAttr(instr_opBS))
+		{
+			opS++;
+		}
+	}
+	return opS==2;
+}
+
 //  Check if an instruction bundle can be compacted.
 bool check_compactable(adl::InstrBundle &instr_bundle,
 	int &posX,
@@ -193,8 +212,9 @@ void check_control_dmem_instrs(adl::InstrBundle &instr_bundle,
 			// we exit in between such loads
 			if (strncmp(instr.str.c_str(), " R", 2) == 0 || strncmp(instr.str.c_str(), " r", 2) == 0 )
 			{
-				assert(ms.between_loads);
-				ms.between_loads--;
+				
+				if (ms.between_loads>0)
+					ms.between_loads--;
 				// we cannot have a mv rX,ry in the same packet with a ld Rx
 				ms.load_R = true;
 				is_load_into_Rx = true;
