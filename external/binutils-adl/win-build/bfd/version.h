@@ -1,6 +1,11 @@
-#define VSPA_ASM_VERSION "2.117"
+#define VSPA_ASM_VERSION "2.118"
 #define VSPA_ADL_VERSION "#58"
 
+// 2.118
+//  Bugfix CMPVSPA-4170 CMPVSPA-4500: assembler didn't give an error for packets
+//  with two opS instructions in a delay slot
+//  Assembler didn't give an error for packets with two opS instructions in a
+//  delay slot of a jmp/rts
 // 2.117
 //  Bugfix CMPVSPA-4263 CMPVSPA-4339: assembler didn't give an error for loops
 //  containing one more than maximum allowed instructions
